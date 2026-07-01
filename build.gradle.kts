@@ -18,11 +18,14 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "sonatype"
     }
+    maven("https://maven.joutak.ru/releases")
 }
 
 dependencies {
     compileOnly(libs.kotlin)
     compileOnly(libs.paper)
+
+    implementation("ru.joutak:minigamesapi:3.6.3")
 }
 
 kotlin {
