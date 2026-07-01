@@ -2,6 +2,7 @@ package ru.joutak.adhd
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
+import ru.joutak.minigames.MiniGamesCore
 import java.io.File
 
 class ADHDPlugin : JavaPlugin() {
@@ -24,6 +25,8 @@ class ADHDPlugin : JavaPlugin() {
      */
     override fun onEnable() {
         instance = this
+
+        MiniGamesCore.initialize(this)
 
         loadConfig()
 
