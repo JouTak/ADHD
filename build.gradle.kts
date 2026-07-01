@@ -31,6 +31,12 @@ kotlin {
             .get()
             .toInt(),
     )
+
+    compilerOptions {
+        jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_26
+        )
+    }
 }
 
 tasks.build {
@@ -42,10 +48,14 @@ tasks.jar {
 }
 
 tasks.processResources {
+    val paperVersion = libs.versions.paper.get()
+
     val minecraftVersion =
-        libs.versions.paper
-            .get()
-            .substringBefore("-")
+        if (".build." in paperVersion) {
+            paperVersion.substringBefore(".build")
+        } else {
+            paperVersion.substringBefore("-")
+        }
 
     val commitHash = project.findProperty("commitHash") as String?
 

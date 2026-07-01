@@ -1,7 +1,7 @@
 [versions]
-kotlin = "2.2.0"
-jdk = "21"
-paper = "1.21.5-R0.1-SNAPSHOT"
+kotlin = "2.4.0"
+jdk = "26"
+paper = "26.1.2.build.+"
 shadow = "9.1.0"
 
 [libraries]

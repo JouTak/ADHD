@@ -1,13 +1,13 @@
-package ru.joutak.template
+package ru.joutak.adhd
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
-class EmptyPlugin : JavaPlugin() {
+class ADHDPlugin : JavaPlugin() {
     companion object {
         @JvmStatic
-        lateinit var instance: EmptyPlugin
+        lateinit var instance: ADHDPlugin
     }
 
     private var customConfig = YamlConfiguration()
