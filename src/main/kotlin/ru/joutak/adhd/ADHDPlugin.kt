@@ -46,7 +46,7 @@ class ADHDPlugin : JavaPlugin() {
             val gInstance = MatchmakingManager.pollReady()
 
             if (gInstance != null) {
-                instance.logger.info("Ready!")
+                TournamentManager.createTournament(gInstance)
             }
         }, 20L, 20L)
     }

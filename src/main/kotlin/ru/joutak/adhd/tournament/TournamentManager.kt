@@ -8,7 +8,9 @@ import org.bukkit.WorldCreator
 import org.bukkit.WorldType
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
+import ru.joutak.minigames.domain.MatchmakingMode
 import ru.joutak.minigames.managers.MatchmakingManager
 
 object TournamentManager {
@@ -22,7 +24,24 @@ object TournamentManager {
     }
 
     fun load() {
-        MatchmakingManager.loadInstances(listOf(GameInstanceConfig("default", 1, 8)))
+        MatchmakingManager.loadInstances(listOf(GameInstanceConfig("default", 4, 1, matchmakingMode = MatchmakingMode.SOLO)))
+    }
+
+    fun createTournament(instance: GameInstance) {
+        //TODO: Implement such player count system in minigames api instead
+
+        var toRemove = instance.teams.toMutableList().flatten()
+
+        toRemove = toRemove.subList(toRemove.size / 2 * 2, toRemove.size)
+
+        for (player in toRemove) {
+            instance.removeActivePlayer(player.uniqueId)
+            instance.removePlayer(player)
+        }
+
+        val participants = instance.startMatchAndSnapshotPlayers()
+
+        ADHDPlugin.instance.logger.info("Started with: $participants")
     }
 
     fun sendToLobby(player: Player) {
