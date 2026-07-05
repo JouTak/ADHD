@@ -11,6 +11,7 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
 import ru.joutak.minigames.domain.MatchmakingMode
+import ru.joutak.minigames.lobby.LobbyItemsManager
 import ru.joutak.minigames.managers.MatchmakingManager
 
 object TournamentManager {
@@ -35,13 +36,24 @@ object TournamentManager {
         toRemove = toRemove.subList(toRemove.size / 2 * 2, toRemove.size)
 
         for (player in toRemove) {
-            instance.removeActivePlayer(player.uniqueId)
             instance.removePlayer(player)
         }
 
         val participants = instance.startMatchAndSnapshotPlayers()
 
-        ADHDPlugin.instance.logger.info("Started with: $participants")
+        instance.teams.clear()
+
+        for (player in toRemove) {
+            MatchmakingManager.removePlayer(player)
+            MatchmakingManager.addPlayer(player)
+            LobbyItemsManager.ensure(player)
+        }
+
+        val list: List<String> =
+            participants
+                .mapNotNull { uuid -> Bukkit.getPlayer(uuid)?.displayName }
+
+        ADHDPlugin.instance.logger.info("Started with: $list")
     }
 
     fun sendToLobby(player: Player) {
