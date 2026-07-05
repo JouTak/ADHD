@@ -69,6 +69,9 @@ object TournamentManager {
 
         lobby!!.setGameRule(GameRules.SPAWN_MOBS, false)
         lobby.setGameRule(GameRules.SPAWN_MONSTERS, false)
+        lobby.setGameRule(GameRules.FALL_DAMAGE, false)
+        lobby.setGameRule(GameRules.FIRE_DAMAGE, false)
+        lobby.setGameRule(GameRules.FREEZE_DAMAGE, false)
 
         return lobby
     }
