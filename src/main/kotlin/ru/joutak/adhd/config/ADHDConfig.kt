@@ -6,6 +6,9 @@ import java.io.File
 
 object ADHDConfig {
 
+    var maxPlayers: Int = 4
+        private set
+
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
 
@@ -14,5 +17,7 @@ object ADHDConfig {
         }
 
         val config = YamlConfiguration.loadConfiguration(file)
+
+        maxPlayers = config.getInt("default.maxPlayers", 4)
     }
 }

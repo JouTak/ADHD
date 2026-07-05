@@ -8,6 +8,7 @@ import org.bukkit.WorldCreator
 import org.bukkit.WorldType
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
 import ru.joutak.minigames.domain.MatchmakingMode
@@ -25,7 +26,7 @@ object TournamentManager {
     }
 
     fun load() {
-        MatchmakingManager.loadInstances(listOf(GameInstanceConfig("default", 4, 1, matchmakingMode = MatchmakingMode.SOLO)))
+        MatchmakingManager.loadInstances(listOf(GameInstanceConfig("default", ADHDConfig.maxPlayers, 1, matchmakingMode = MatchmakingMode.SOLO)))
     }
 
     fun createTournament(instance: GameInstance) {
