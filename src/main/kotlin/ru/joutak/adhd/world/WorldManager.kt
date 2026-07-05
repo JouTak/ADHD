@@ -37,6 +37,8 @@ object WorldManager {
             val worldName = copy()
 
             Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                Bukkit.createWorld(WorldCreator(worldName))
+
                 tournament.start(worldName)
             })
         })
