@@ -4,7 +4,9 @@ import java.util.*
 
 class Tournament(val participants: MutableList<UUID>) {
 
-    fun start(worldName: String) {
+    lateinit var worldName: String
 
+    fun start(worldName: String) {
+        this.worldName = worldName
     }
 }
