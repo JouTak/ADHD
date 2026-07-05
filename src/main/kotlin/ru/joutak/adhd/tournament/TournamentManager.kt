@@ -1,5 +1,6 @@
 package ru.joutak.adhd.tournament
 
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.GameRules
@@ -9,6 +10,7 @@ import org.bukkit.WorldType
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.world.WorldManager
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
 import ru.joutak.minigames.domain.MatchmakingMode
@@ -30,9 +32,21 @@ object TournamentManager {
     }
 
     fun createTournament(instance: GameInstance) {
-        //TODO: Implement such player count system in minigames api instead
-
         var toRemove = instance.teams.toMutableList().flatten()
+
+        if (!WorldManager.isAvailable()) {
+            ADHDPlugin.instance.logger.severe("Template world is not available. Game won't start...")
+
+            for (player in toRemove) {
+                MatchmakingManager.removePlayer(player)
+                MatchmakingManager.addPlayer(player)
+                LobbyItemsManager.ensure(player)
+            }
+
+            return
+        }
+
+        //TODO: Implement such player count system in minigames api instead
 
         toRemove = toRemove.subList(toRemove.size / 2 * 2, toRemove.size)
 
@@ -50,11 +64,15 @@ object TournamentManager {
             LobbyItemsManager.ensure(player)
         }
 
-        val list: List<String> =
-            participants
-                .mapNotNull { uuid -> Bukkit.getPlayer(uuid)?.displayName }
+        val tournament = Tournament(participants.toMutableList())
 
-        ADHDPlugin.instance.logger.info("Started with: $list")
+        for (uuid in participants) {
+            val player = Bukkit.getPlayer(uuid)!!
+
+            player.sendMessage(Component.text("Скоро начнём..."))
+        }
+
+        WorldManager.generate(tournament)
     }
 
     fun sendToLobby(player: Player) {
