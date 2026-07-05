@@ -1,28 +1,18 @@
 package ru.joutak.adhd
 
 import org.bukkit.Bukkit
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
+import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.listener.LobbyListener
 import ru.joutak.adhd.listener.PlayerSessionListener
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.minigames.MiniGamesCore
 import ru.joutak.minigames.managers.MatchmakingManager
-import java.io.File
 
 class ADHDPlugin : JavaPlugin() {
     companion object {
         @JvmStatic
         lateinit var instance: ADHDPlugin
-    }
-
-    private var customConfig = YamlConfiguration()
-
-    private fun loadConfig() {
-        val fx = File(dataFolder, "config.yml")
-        if (!fx.exists()) {
-            saveResource("config.yml", true)
-        }
     }
 
     /**
@@ -33,7 +23,7 @@ class ADHDPlugin : JavaPlugin() {
 
         MiniGamesCore.initialize(this)
 
-        loadConfig()
+        ADHDConfig.load()
 
         TournamentManager.load()
 
