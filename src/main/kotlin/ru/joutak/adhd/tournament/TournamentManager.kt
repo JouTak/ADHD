@@ -63,6 +63,6 @@ object TournamentManager {
     }
 
     fun isInLobby(player: Player): Boolean {
-        return true
+        return !MatchmakingManager.isPlayerInStartedGame(player.uniqueId)
     }
 }
