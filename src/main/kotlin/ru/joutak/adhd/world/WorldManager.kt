@@ -3,6 +3,7 @@ package ru.joutak.adhd.world
 import org.bukkit.Bukkit
 import org.bukkit.WorldCreator
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.tournament.Tournament
 import java.nio.file.Files
 import java.nio.file.Path
@@ -39,7 +40,7 @@ object WorldManager {
 
     fun generate(tournament: Tournament) {
         Bukkit.getScheduler().runTaskAsynchronously(ADHDPlugin.instance, Runnable {
-            val pair = copy()
+            val pair = copy(tournament)
 
             Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
                 Bukkit.createWorld(WorldCreator(pair.first))
@@ -49,7 +50,7 @@ object WorldManager {
         })
     }
 
-    fun copy(): Pair<String, Map<Int, List<Arena>>> {
+    fun copy(tournament: Tournament): Pair<String, Map<Int, List<Arena>>> {
         val source = Bukkit.getServer().levelDirectory
             .resolve("dimensions")
             .resolve("minecraft")
@@ -64,7 +65,29 @@ object WorldManager {
 
         copyFolderFiltered(source, target)
 
-        return Pair(worldName, emptyMap())
+        val adjustedMaps = mutableMapOf<Int, MutableList<Arena>>()
+
+        for (mapId in ADHDConfig.maps.keys) {
+            adjustedMaps[mapId] = mutableListOf()
+
+            val spawns = ADHDConfig.maps[mapId]!!
+
+            for (i in 0..<(tournament.participants.size / 2)) {
+                val adjustedSpawns = mutableListOf<SpawnPoint>()
+
+                for (spawnId in spawns.keys) {
+                    val oSpawn = spawns[spawnId]!!
+
+                    val nSpawn = SpawnPoint(512 * i + oSpawn.x, oSpawn.y, 512 * mapId + oSpawn.z, oSpawn.yaw, oSpawn.pitch)
+
+                    adjustedSpawns.add(nSpawn)
+                }
+
+                adjustedMaps[mapId]!!.add(Arena(adjustedSpawns))
+            }
+        }
+
+        return Pair(worldName, adjustedMaps)
     }
 
     fun copyFolderFiltered(source: Path, target: Path) {
