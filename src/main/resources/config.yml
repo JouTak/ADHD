@@ -1,2 +1,46 @@
 default:
   maxPlayers: 4
+
+maps:
+  0:
+    spawns:
+      0:
+        x: 1
+        y: 2
+        z: 3
+        yaw: 0
+        pitch: 0
+      1:
+        x: 4
+        y: 5
+        z: 6
+        yaw: 180
+        pitch: 0
+  1:
+    spawns:
+      0:
+        x: 7
+        y: 8
+        z: 9
+        yaw: 90
+        pitch: 0
+      1:
+        x: 10
+        y: 11
+        z: 12
+        yaw: 270
+        pitch: 0
+  2:
+    spawns:
+      0:
+        x: 15
+        y: 64
+        z: -20
+        yaw: 45
+        pitch: 0
+      1:
+        x: -15
+        y: 64
+        z: 20
+        yaw: 225
+        pitch: 0
