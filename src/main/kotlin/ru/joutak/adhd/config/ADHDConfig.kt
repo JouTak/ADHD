@@ -2,6 +2,7 @@ package ru.joutak.adhd.config
 
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.game.Mode
 import ru.joutak.adhd.world.SpawnPoint
 import java.io.File
 
@@ -11,6 +12,9 @@ object ADHDConfig {
         private set
 
     var maps = mapOf<Int, Map<Int, SpawnPoint>>()
+        private set
+
+    var modes = mapOf<Int, Mode>()
         private set
 
     fun load() {
@@ -27,6 +31,10 @@ object ADHDConfig {
         maps = loadMaps(config)
 
         ADHDPlugin.instance.logger.info("Карты: $maps")
+
+        modes = loadModes(config)
+
+        ADHDPlugin.instance.logger.info("Режимы: $modes")
     }
 
     fun loadMaps(config: YamlConfiguration): Map<Int, Map<Int, SpawnPoint>> {
@@ -53,6 +61,30 @@ object ADHDConfig {
             }
 
             result[mapIndex] = spawnMap
+        }
+
+        return result
+    }
+
+    fun loadModes(config: YamlConfiguration): Map<Int, Mode> {
+        val result = mutableMapOf<Int, Mode>()
+
+        val modes = config.getConfigurationSection("modes") ?: return emptyMap()
+
+        for (modeId in modes.getKeys(false)) {
+            val id = modeId.toInt()
+
+            val name = modes.getString("$modeId.name") ?: continue
+            val enabled = modes.getBoolean("$modeId.enabled")
+            val duration = modes.getInt("$modeId.duration")
+            val maps = modes.getIntegerList("$modeId.maps")
+
+            result[id] = Mode(
+                name = name,
+                enabled = enabled,
+                duration = duration,
+                maps = maps
+            )
         }
 
         return result

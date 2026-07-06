@@ -44,3 +44,26 @@ maps:
         z: 20
         yaw: 225
         pitch: 0
+
+modes:
+  0:
+    name: "PVP"
+    enabled: true
+    duration: 60
+    maps:
+      - 0
+      - 1
+  1:
+    name: "Capture"
+    enabled: true
+    duration: 300
+    maps:
+      - 1
+      - 2
+  2:
+    name: "Deathmatch"
+    enabled: false
+    duration: 180
+    maps:
+      - 0
+      - 2
