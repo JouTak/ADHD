@@ -1,13 +1,6 @@
 package ru.joutak.adhd.tournament
 
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.GameRules
-import org.bukkit.World
-import org.bukkit.WorldCreator
-import org.bukkit.WorldType
+import org.bukkit.*
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
@@ -66,12 +59,6 @@ object TournamentManager {
         }
 
         val tournament = Tournament(participants.toMutableList())
-
-        for (uuid in participants) {
-            val player = Bukkit.getPlayer(uuid)!!
-
-            player.sendMessage(Component.text("Скоро начнём...").color(NamedTextColor.GOLD))
-        }
 
         WorldManager.generate(tournament)
     }
