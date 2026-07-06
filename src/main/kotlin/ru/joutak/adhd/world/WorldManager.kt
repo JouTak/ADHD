@@ -87,7 +87,20 @@ object WorldManager {
             }
         }
 
+        copyRegions(tournament, worldName)
+
         return Pair(worldName, adjustedMaps)
+    }
+
+    fun copyRegions(tournament: Tournament, worldName: String) {
+        val regionsFolder = Bukkit.getServer().levelDirectory
+            .resolve("dimensions")
+            .resolve("minecraft")
+            .resolve(worldName)
+            .resolve("region")
+            .toFile()
+
+        ADHDPlugin.instance.logger.info("${regionsFolder.listFiles().mapNotNull { file -> file.name }}")
     }
 
     fun copyFolderFiltered(source: Path, target: Path) {
