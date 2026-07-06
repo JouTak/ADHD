@@ -39,12 +39,12 @@ object WorldManager {
             Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
                 Bukkit.createWorld(WorldCreator(pair.first))
 
-                tournament.start(pair)
+                tournament.start(pair.first, pair.second)
             })
         })
     }
 
-    fun copy(): Pair<String, Map<Int, List<SpawnPoint>>> {
+    fun copy(): Pair<String, Map<Int, List<Arena>>> {
         return Pair("template_test", emptyMap())
     }
 }
