@@ -1,6 +1,7 @@
 package ru.joutak.adhd.tournament
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.GameRules
@@ -69,7 +70,7 @@ object TournamentManager {
         for (uuid in participants) {
             val player = Bukkit.getPlayer(uuid)!!
 
-            player.sendMessage(Component.text("Скоро начнём..."))
+            player.sendMessage(Component.text("Скоро начнём...").color(NamedTextColor.GOLD))
         }
 
         WorldManager.generate(tournament)
