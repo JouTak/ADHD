@@ -10,6 +10,7 @@ import ru.joutak.minigames.domain.GameInstanceConfig
 import ru.joutak.minigames.domain.MatchmakingMode
 import ru.joutak.minigames.lobby.LobbyItemsManager
 import ru.joutak.minigames.managers.MatchmakingManager
+import ru.joutak.minigames.ui.LobbyScoreboardManager
 
 object TournamentManager {
 
@@ -35,6 +36,7 @@ object TournamentManager {
                 MatchmakingManager.removePlayer(player)
                 MatchmakingManager.addPlayer(player)
                 LobbyItemsManager.ensure(player)
+                LobbyScoreboardManager.ensure(player)
             }
 
             return
@@ -56,6 +58,7 @@ object TournamentManager {
             MatchmakingManager.removePlayer(player)
             MatchmakingManager.addPlayer(player)
             LobbyItemsManager.ensure(player)
+            LobbyScoreboardManager.ensure(player)
         }
 
         val tournament = Tournament(participants.toMutableList())
