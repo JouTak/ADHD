@@ -4,8 +4,13 @@ import org.bukkit.Bukkit
 import org.bukkit.WorldCreator
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.tournament.Tournament
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 object WorldManager {
+
+    var worldId = 0
 
     fun isAvailable(): Boolean {
         val worldFolder = Bukkit.getServer()
@@ -45,6 +50,41 @@ object WorldManager {
     }
 
     fun copy(): Pair<String, Map<Int, List<Arena>>> {
-        return Pair("template_test", emptyMap())
+        val source = Bukkit.getServer().levelDirectory
+            .resolve("dimensions")
+            .resolve("minecraft")
+            .resolve("template")
+
+        val worldName = "template_${worldId++}"
+
+        val target = Bukkit.getServer().levelDirectory
+            .resolve("dimensions")
+            .resolve("minecraft")
+            .resolve(worldName)
+
+        copyFolderFiltered(source, target)
+
+        return Pair(worldName, emptyMap())
+    }
+
+    fun copyFolderFiltered(source: Path, target: Path) {
+        Files.walk(source).forEach { path ->
+            val relative = source.relativize(path)
+            val destination = target.resolve(relative)
+            val fileName = path.fileName?.toString()
+
+            if (fileName == "metadata.dat") return@forEach
+
+            if (Files.isDirectory(path)) {
+                Files.createDirectories(destination)
+            } else {
+                Files.copy(
+                    path,
+                    destination,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.COPY_ATTRIBUTES
+                )
+            }
+        }
     }
 }
