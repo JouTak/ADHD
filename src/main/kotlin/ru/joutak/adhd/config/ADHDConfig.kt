@@ -87,7 +87,6 @@ object ADHDConfig {
             if (enabled) {
                 result[id] = Mode(
                     name = name,
-                    enabled = true,
                     duration = duration,
                     maps = maps
                 )
