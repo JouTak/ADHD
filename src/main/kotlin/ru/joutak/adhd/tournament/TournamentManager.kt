@@ -67,7 +67,7 @@ object TournamentManager {
     }
 
     fun sendToLobby(player: Player) {
-        val lobby = getLobbyWorld()
+        val lobby = WorldManager.getLobbyWorld()
 
         val spawn = lobby.spawnLocation
 
@@ -76,34 +76,8 @@ object TournamentManager {
         player.teleport(spawn)
     }
 
-    fun getLobbyWorld(): World {
-        var lobby = Bukkit.getWorld("lobby")
-
-        if (lobby == null) {
-            lobby = Bukkit.createWorld(WorldCreator("lobby").type(WorldType.NORMAL))
-        }
-
-        if (lobby == null) {
-            lobby = Bukkit.getWorld("overworld")
-
-            ADHDPlugin.instance.logger.warning("Couldn't load lobby. Using default world as fallback")
-        }
-
-        lobby!!.setGameRule(GameRules.SPAWN_MOBS, false)
-        lobby.setGameRule(GameRules.SPAWN_MONSTERS, false)
-        lobby.setGameRule(GameRules.FALL_DAMAGE, false)
-        lobby.setGameRule(GameRules.FIRE_DAMAGE, false)
-        lobby.setGameRule(GameRules.FREEZE_DAMAGE, false)
-
-        return lobby
-    }
-
     fun shutdown() {
-        val lobby = Bukkit.getWorld("lobby")
-
-        if (lobby != null) {
-            Bukkit.unloadWorld(lobby, false)
-        }
+        WorldManager.shutdown()
     }
 
     fun isInLobby(player: Player): Boolean {

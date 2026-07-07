@@ -1,7 +1,10 @@
 package ru.joutak.adhd.world
 
 import org.bukkit.Bukkit
+import org.bukkit.GameRules
+import org.bukkit.World
 import org.bukkit.WorldCreator
+import org.bukkit.WorldType
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.tournament.Tournament
@@ -121,6 +124,36 @@ object WorldManager {
                     StandardCopyOption.COPY_ATTRIBUTES
                 )
             }
+        }
+    }
+
+    fun getLobbyWorld(): World {
+        var lobby = Bukkit.getWorld("lobby")
+
+        if (lobby == null) {
+            lobby = Bukkit.createWorld(WorldCreator("lobby").type(WorldType.NORMAL))
+        }
+
+        if (lobby == null) {
+            lobby = Bukkit.getWorld("overworld")
+
+            ADHDPlugin.instance.logger.warning("Couldn't load lobby. Using default world as fallback")
+        }
+
+        lobby!!.setGameRule(GameRules.SPAWN_MOBS, false)
+        lobby.setGameRule(GameRules.SPAWN_MONSTERS, false)
+        lobby.setGameRule(GameRules.FALL_DAMAGE, false)
+        lobby.setGameRule(GameRules.FIRE_DAMAGE, false)
+        lobby.setGameRule(GameRules.FREEZE_DAMAGE, false)
+
+        return lobby
+    }
+
+    fun shutdown() {
+        val lobby = Bukkit.getWorld("lobby")
+
+        if (lobby != null) {
+            Bukkit.unloadWorld(lobby, false)
         }
     }
 }
