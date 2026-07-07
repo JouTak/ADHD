@@ -64,9 +64,7 @@ object TournamentManager {
             LobbyScoreboardManager.ensure(player)
         }
 
-        val tournament = Tournament(participants.toMutableList())
-
-        tournament.modesPool = createPool()
+        val tournament = Tournament(participants.toMutableList(), createPool())
 
         WorldManager.generate(tournament)
     }
