@@ -1,5 +1,6 @@
 default:
   maxPlayers: 4
+  pointsGoal: 10.0
 
 maps:
   1:

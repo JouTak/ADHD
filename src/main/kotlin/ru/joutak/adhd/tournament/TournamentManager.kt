@@ -4,6 +4,7 @@ import org.bukkit.*
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.game.Mode
 import ru.joutak.adhd.world.WorldManager
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
@@ -11,6 +12,8 @@ import ru.joutak.minigames.domain.MatchmakingMode
 import ru.joutak.minigames.lobby.LobbyItemsManager
 import ru.joutak.minigames.managers.MatchmakingManager
 import ru.joutak.minigames.ui.LobbyScoreboardManager
+import kotlin.math.ceil
+import kotlin.random.Random
 
 object TournamentManager {
 
@@ -63,7 +66,19 @@ object TournamentManager {
 
         val tournament = Tournament(participants.toMutableList())
 
+        tournament.modesPool = createPool()
+
         WorldManager.generate(tournament)
+    }
+
+    fun createPool(): List<Mode> {
+        val pool = mutableListOf<Mode>()
+
+        for (i in 0..<ceil(2 * ADHDConfig.pointsGoal - 1).toInt()) {
+            pool.add(ADHDConfig.modes.values.toList()[Random.nextInt(ADHDConfig.modes.size)].copy())
+        }
+
+        return pool
     }
 
     fun sendToLobby(player: Player) {

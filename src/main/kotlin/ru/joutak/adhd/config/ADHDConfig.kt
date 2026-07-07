@@ -17,6 +17,9 @@ object ADHDConfig {
     var modes = mapOf<Int, Mode>()
         private set
 
+    var pointsGoal: Double = 10.0
+        private set
+
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
 
@@ -27,6 +30,8 @@ object ADHDConfig {
         val config = YamlConfiguration.loadConfiguration(file)
 
         maxPlayers = config.getInt("default.maxPlayers", 4)
+
+        pointsGoal = config.getDouble("default.pointsGoal", 10.0)
 
         maps = loadMaps(config)
 
@@ -75,16 +80,18 @@ object ADHDConfig {
             val id = modeId.toInt()
 
             val name = modes.getString("$modeId.name") ?: continue
-            val enabled = modes.getBoolean("$modeId.enabled")
+            val enabled = modes.getBoolean("$modeId.enabled", true)
             val duration = modes.getInt("$modeId.duration")
             val maps = modes.getIntegerList("$modeId.maps")
 
-            result[id] = Mode(
-                name = name,
-                enabled = enabled,
-                duration = duration,
-                maps = maps
-            )
+            if (enabled) {
+                result[id] = Mode(
+                    name = name,
+                    enabled = true,
+                    duration = duration,
+                    maps = maps
+                )
+            }
         }
 
         return result
