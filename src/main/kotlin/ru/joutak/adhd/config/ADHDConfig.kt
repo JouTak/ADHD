@@ -49,6 +49,7 @@ object ADHDConfig {
 
         for (mapId in maps.getKeys(false)) {
             val mapIndex = mapId.toInt()
+
             val spawns = maps.getConfigurationSection("$mapId.spawns") ?: continue
 
             val spawnMap = mutableMapOf<Int, SpawnPoint>()
@@ -65,7 +66,9 @@ object ADHDConfig {
                 )
             }
 
-            result[mapIndex] = spawnMap
+            if (!spawnMap.isEmpty()) {
+                result[mapIndex] = spawnMap
+            }
         }
 
         return result
@@ -81,10 +84,10 @@ object ADHDConfig {
 
             val name = modes.getString("$modeId.name") ?: continue
             val enabled = modes.getBoolean("$modeId.enabled", true)
-            val duration = modes.getInt("$modeId.duration")
+            val duration = modes.getInt("$modeId.duration", 60)
             val maps = modes.getIntegerList("$modeId.maps")
 
-            if (enabled) {
+            if (enabled && !maps.isEmpty()) {
                 result[id] = Mode(
                     name = name,
                     duration = duration,
