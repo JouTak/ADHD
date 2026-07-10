@@ -11,6 +11,7 @@ import ru.joutak.adhd.tournament.Tournament
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import kotlin.random.Random
 
 object WorldManager {
 
@@ -70,14 +71,44 @@ object WorldManager {
 
         val adjustedMaps = mutableMapOf<Int, MutableList<Arena>>()
 
+        val chosenArenas = mutableListOf<Int>()
 
+        for (i in tournament.modesPool.indices) {
+            chosenArenas.add(ADHDConfig.modes[tournament.modesPool[i]]!!.maps[Random.nextInt(ADHDConfig.modes[tournament.modesPool[i]]!!.maps.size)])
+        }
 
-        copyRegions(tournament, worldName)
+        val arenaPointers = mutableMapOf<Int, Int>()
+
+        var round = 0
+
+        for (i in chosenArenas) {
+            arenaPointers.putIfAbsent(i, 0)
+
+            val arenas = mutableListOf<Arena>()
+
+            val oArena = ADHDConfig.maps[i]!!.copy()
+
+            for (j in 0..<(tournament.participants.size / 2)) {
+                val spawns = mutableListOf<SpawnPoint>()
+
+                for (oSpawn in oArena.spawnPoints) {
+                    spawns.add(SpawnPoint(oSpawn.x + arenaPointers[i]!! * 512, oSpawn.y, oSpawn.z + 512 * i, oSpawn.yaw, oSpawn.pitch))
+                }
+
+                arenaPointers[i] = arenaPointers[i]!! + 1
+
+                arenas.add(Arena(spawns.toList(), oArena.meta))
+            }
+
+            adjustedMaps[round++] = arenas
+        }
+
+        copyRegions(worldName, arenaPointers)
 
         return Pair(worldName, adjustedMaps)
     }
 
-    fun copyRegions(tournament: Tournament, worldName: String) {
+    fun copyRegions(worldName: String, arenaPointers: MutableMap<Int, Int>) {
         val regionsFolder = Bukkit.getServer().levelDirectory
             .resolve("dimensions")
             .resolve("minecraft")
