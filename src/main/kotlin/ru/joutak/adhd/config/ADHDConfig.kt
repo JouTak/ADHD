@@ -9,13 +9,18 @@ import java.io.File
 
 object ADHDConfig {
 
+    /*
+    Запишите сюда названия режимов для поиска при загрузке.
+     */
+    val registeredModes = listOf<String>("PVP")
+
     var maxPlayers: Int = 4
         private set
 
     var maps = mapOf<Int, Arena>()
         private set
 
-    var modes = mapOf<Int, Mode>()
+    var modes = mapOf<String, Mode>()
         private set
 
     var pointsGoal: Double = 10.0
@@ -38,7 +43,7 @@ object ADHDConfig {
 
         ADHDPlugin.instance.logger.info("Карты: $maps")
 
-        modes = loadModes(config)
+        modes = loadModes()
 
         ADHDPlugin.instance.logger.info("Режимы: $modes")
     }
@@ -77,25 +82,44 @@ object ADHDConfig {
         return result
     }
 
-    fun loadModes(config: YamlConfiguration): Map<Int, Mode> {
-        val result = mutableMapOf<Int, Mode>()
+    fun loadModes(): Map<String, Mode> {
+        val result = mutableMapOf<String, Mode>()
 
-        val modes = config.getConfigurationSection("modes") ?: return emptyMap()
+        for (name in registeredModes) {
+            val file = File(ADHDPlugin.instance.dataFolder, "config_$name.yml")
 
-        for (modeId in modes.getKeys(false)) {
-            val id = modeId.toInt()
+            if (!file.exists()) {
+                ADHDPlugin.instance.saveResource("config_$name.yml", true)
+            }
+        }
 
-            val name = modes.getString("$modeId.name") ?: continue
-            val enabled = modes.getBoolean("$modeId.enabled", true)
-            val duration = modes.getInt("$modeId.duration", 60)
-            val maps = modes.getIntegerList("$modeId.maps")
+        val files = ADHDPlugin.instance.dataFolder.listFiles()
 
-            if (enabled && !maps.isEmpty()) {
-                result[id] = Mode(
-                    name = name,
-                    duration = duration,
-                    maps = maps
-                )
+        val regex = Regex("""^config_([a-z0-9]+)\.yml$""", RegexOption.IGNORE_CASE)
+
+        for (file in files) {
+            val match = regex.find(file.name)
+
+            if (match != null) {
+                val modeName = match.groupValues[1]
+
+                val config = YamlConfiguration.loadConfiguration(file)
+
+                val enabled = config.getBoolean("default.enabled")
+
+                if (enabled) {
+                    val duration = config.getInt("default.duration", 60)
+
+                    val maps = config.getIntegerList("default.maps")
+
+                    if (!maps.isEmpty()) {
+                        val meta = config.getConfigurationSection("meta")?.getValues(false) ?: emptyMap<String, Any>()
+
+                        val mode = Mode(duration, maps, meta)
+
+                        result[modeName] = mode
+                    }
+                }
             }
         }
 
