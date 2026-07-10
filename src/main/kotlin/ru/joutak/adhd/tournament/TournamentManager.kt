@@ -1,10 +1,9 @@
 package ru.joutak.adhd.tournament
 
-import org.bukkit.*
+import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
-import ru.joutak.adhd.game.Mode
 import ru.joutak.adhd.world.WorldManager
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
@@ -69,11 +68,11 @@ object TournamentManager {
         WorldManager.generate(tournament)
     }
 
-    fun createPool(): List<Mode> {
-        val pool = mutableListOf<Mode>()
+    fun createPool(): List<String> {
+        val pool = mutableListOf<String>()
 
         for (i in 0..<ceil(2 * ADHDConfig.pointsGoal - 1).toInt()) {
-            pool.add(ADHDConfig.modes.values.toList()[Random.nextInt(ADHDConfig.modes.size)].copy())
+            pool.add(ADHDConfig.modes.keys.toList()[Random.nextInt(ADHDConfig.modes.size)])
         }
 
         return pool

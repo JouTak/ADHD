@@ -103,21 +103,23 @@ object ADHDConfig {
             if (match != null) {
                 val modeName = match.groupValues[1]
 
-                val config = YamlConfiguration.loadConfiguration(file)
+                if (registeredModes.contains(modeName)) {
+                    val config = YamlConfiguration.loadConfiguration(file)
 
-                val enabled = config.getBoolean("default.enabled")
+                    val enabled = config.getBoolean("default.enabled")
 
-                if (enabled) {
-                    val duration = config.getInt("default.duration", 60)
+                    if (enabled) {
+                        val duration = config.getInt("default.duration", 60)
 
-                    val maps = config.getIntegerList("default.maps")
+                        val maps = config.getIntegerList("default.maps")
 
-                    if (!maps.isEmpty()) {
-                        val meta = config.getConfigurationSection("meta")?.getValues(false) ?: emptyMap<String, Any>()
+                        if (!maps.isEmpty()) {
+                            val meta = config.getConfigurationSection("meta")?.getValues(false) ?: emptyMap<String, Any>()
 
-                        val mode = Mode(duration, maps, meta)
+                            val mode = Mode(duration, maps, meta)
 
-                        result[modeName] = mode
+                            result[modeName] = mode
+                        }
                     }
                 }
             }
