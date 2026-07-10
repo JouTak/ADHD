@@ -18,6 +18,8 @@ maps:
         yaw: 180
         pitch: 0
   2:
+    meta:
+      ventilator: true
     spawns:
       0:
         x: 192
@@ -31,27 +33,3 @@ maps:
         z: 128
         yaw: 270
         pitch: 0
-  3:
-    spawns:
-      0:
-        x: 92
-        y: 60
-        z: 92
-        yaw: 45
-        pitch: 0
-      1:
-        x: 240
-        y: 60
-        z: 240
-        yaw: 225
-        pitch: 0
-
-modes:
-  0:
-    name: "PVP"
-    enabled: true
-    duration: 60
-    maps:
-      - 1
-      - 2
-      - 3

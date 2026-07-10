@@ -3,6 +3,7 @@ package ru.joutak.adhd.config
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Mode
+import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.io.File
 
@@ -11,7 +12,7 @@ object ADHDConfig {
     var maxPlayers: Int = 4
         private set
 
-    var maps = mapOf<Int, Map<Int, SpawnPoint>>()
+    var maps = mapOf<Int, Arena>()
         private set
 
     var modes = mapOf<Int, Mode>()
@@ -42,8 +43,8 @@ object ADHDConfig {
         ADHDPlugin.instance.logger.info("Режимы: $modes")
     }
 
-    fun loadMaps(config: YamlConfiguration): Map<Int, Map<Int, SpawnPoint>> {
-        val result = mutableMapOf<Int, MutableMap<Int, SpawnPoint>>()
+    fun loadMaps(config: YamlConfiguration): Map<Int, Arena> {
+        val result = mutableMapOf<Int, Arena>()
 
         val maps = config.getConfigurationSection("maps") ?: return emptyMap()
 
@@ -67,7 +68,9 @@ object ADHDConfig {
             }
 
             if (!spawnMap.isEmpty()) {
-                result[mapIndex] = spawnMap
+                val meta = maps.getConfigurationSection("$mapId.meta")?.getValues(false) ?: emptyMap<String, Any>()
+
+                result[mapIndex] = Arena(spawnMap.values.toList(), meta)
             }
         }
 

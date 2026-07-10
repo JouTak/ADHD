@@ -1,3 +1,3 @@
 package ru.joutak.adhd.world
 
-data class Arena(val spawnPoints: List<SpawnPoint>)
+data class Arena(val spawnPoints: List<SpawnPoint>, val meta: Map<String, Any>)

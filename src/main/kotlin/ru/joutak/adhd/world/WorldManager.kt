@@ -70,25 +70,7 @@ object WorldManager {
 
         val adjustedMaps = mutableMapOf<Int, MutableList<Arena>>()
 
-        for (mapId in ADHDConfig.maps.keys) {
-            adjustedMaps[mapId] = mutableListOf()
 
-            val spawns = ADHDConfig.maps[mapId]!!
-
-            for (i in 0..<(tournament.participants.size / 2)) {
-                val adjustedSpawns = mutableListOf<SpawnPoint>()
-
-                for (spawnId in spawns.keys) {
-                    val oSpawn = spawns[spawnId]!!
-
-                    val nSpawn = SpawnPoint(512 * i + oSpawn.x, oSpawn.y, 512 * mapId + oSpawn.z, oSpawn.yaw, oSpawn.pitch)
-
-                    adjustedSpawns.add(nSpawn)
-                }
-
-                adjustedMaps[mapId]!!.add(Arena(adjustedSpawns))
-            }
-        }
 
         copyRegions(tournament, worldName)
 
