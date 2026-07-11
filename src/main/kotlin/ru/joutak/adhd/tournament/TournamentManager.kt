@@ -35,10 +35,7 @@ object TournamentManager {
             ADHDPlugin.instance.logger.severe("Template world is not available. Game won't start...")
 
             for (player in toRemove) {
-                MatchmakingManager.removePlayer(player)
-                MatchmakingManager.addPlayer(player)
-                LobbyItemsManager.ensure(player)
-                LobbyScoreboardManager.ensure(player)
+                ensure(player)
             }
 
             return
@@ -57,10 +54,7 @@ object TournamentManager {
         instance.teams.clear()
 
         for (player in toRemove) {
-            MatchmakingManager.removePlayer(player)
-            MatchmakingManager.addPlayer(player)
-            LobbyItemsManager.ensure(player)
-            LobbyScoreboardManager.ensure(player)
+            ensure(player)
         }
 
         val tournament = Tournament(participants.toMutableList(), createPool())
@@ -90,6 +84,13 @@ object TournamentManager {
 
     fun shutdown() {
         WorldManager.shutdown()
+    }
+
+    fun ensure(player: Player) {
+        MatchmakingManager.removePlayer(player)
+        MatchmakingManager.addPlayer(player)
+        LobbyItemsManager.ensure(player)
+        LobbyScoreboardManager.ensure(player)
     }
 
     fun isInLobby(player: Player): Boolean {
