@@ -8,6 +8,8 @@ project.version = version
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.shadow)
+
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
 }
 
 repositories {
@@ -26,6 +28,8 @@ dependencies {
     compileOnly(libs.paper)
 
     implementation("ru.joutak:minigamesapi:3.6.3")
+
+    paperweight.paperDevBundle("26.1.2.build.+")
 }
 
 kotlin {
