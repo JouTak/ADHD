@@ -2,6 +2,7 @@ package ru.joutak.adhd.tournament
 
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.world.Arena
 import java.util.*
 
@@ -38,10 +39,32 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         when(status) {
             TournamentStatus.START -> status = TournamentStatus.PREPARING
             TournamentStatus.PREPARING -> {
+                if (modePointer == modesPool.size) {
+                    status = TournamentStatus.FINISH
 
+                    return
+                }
+
+                val arenas = adjustedMaps[modePointer]!!
+
+                currentMode = modesPool[modePointer++]
+
+                val actualMode = ADHDConfig.modes[currentMode]!!.copy()
+
+                tick = actualMode.duration * 20L
+
+                status = TournamentStatus.RUNNING
             }
             TournamentStatus.RUNNING -> {
+                if (tick <= 0L) {
+                    status = TournamentStatus.PREPARING
 
+                    ADHDPlugin.instance.logger.info("Завершён режим $currentMode ($modePointer) в мире $worldName")
+
+                    return
+                }
+
+                tick--
             }
             TournamentStatus.FINISH -> {
 
