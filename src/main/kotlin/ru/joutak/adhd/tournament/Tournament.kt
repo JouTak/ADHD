@@ -1,5 +1,7 @@
 package ru.joutak.adhd.tournament
 
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
@@ -7,6 +9,7 @@ import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.world.Arena
 import java.util.*
+import kotlin.math.floor
 
 class Tournament(val participants: MutableList<UUID>, val modesPool: List<String>) {
 
@@ -38,7 +41,7 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         this.worldName = worldName
         this.adjustedMaps = adjustedMaps
 
-        ticker.runTaskTimer(ADHDPlugin.instance, 0L, 2L)
+        ticker.runTaskTimer(ADHDPlugin.instance, 0L, 4L)
     }
 
     fun tick() {
@@ -72,6 +75,14 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                     assignedMembers[participants[i + 1]] = arenas[arenaPointer++]
                 }
 
+                val world = Bukkit.getWorld(worldName)!!
+
+                for (arena in arenas) {
+                    for (spawn in arena.spawnPoints) {
+                        world.loadChunk(floor(spawn.x / 16).toInt(), floor(spawn.z / 16).toInt())
+                    }
+                }
+
                 currentGame = when(currentMode) {
                     "PVP" -> PVPGame()
                     else -> return
@@ -92,12 +103,16 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
                 currentGame.update()
 
-                tick--
+                tick -= 4L
             }
             TournamentStatus.FINISH -> {
                 finish()
             }
         }
+    }
+
+    fun remove(player: Player) {
+        participants.remove(player.uniqueId)
     }
 
     fun finish() {

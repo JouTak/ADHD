@@ -4,7 +4,9 @@ import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.Mode
 import ru.joutak.adhd.world.Arena
@@ -14,7 +16,7 @@ class PVPGame : Game() {
 
     lateinit var mode: Mode
 
-    lateinit var assignedMembers: Map<UUID, Arena>
+    lateinit var assignedMembers: MutableMap<UUID, Arena>
 
     lateinit var worldName: String
 
@@ -25,8 +27,10 @@ class PVPGame : Game() {
         assignedMembers: Map<UUID, Arena>,
         worldName: String
     ) {
+        ADHDPlugin.instance.logger.info("Начат режим ПВП...")
+
         this.mode = mode
-        this.assignedMembers = assignedMembers
+        this.assignedMembers = assignedMembers.toMutableMap()
         this.worldName = worldName
 
         for (uuid in assignedMembers.keys) {
@@ -38,9 +42,7 @@ class PVPGame : Game() {
         }
 
         for (arena in arenaMembers.keys) {
-            teleportArenaMembersToSpawn(arena)
-            restoreArenaMembersHealth(arena)
-            restoreArenaMembersLayout(arena)
+            restoreArenaMembers(arena)
         }
     }
 
@@ -51,17 +53,20 @@ class PVPGame : Game() {
 
         val spawnPoints = arena.spawnPoints.toMutableList()
 
-        for (uuid in members) {
+        for (uuid in members.toList()) {
             spawnPoints.shuffle()
 
             val player = Bukkit.getPlayer(uuid)
 
             if (player != null && player.isOnline) {
-                val spawnPoint = spawnPoints[0]
+                if (!player.isDead) {
+                    val spawnPoint = spawnPoints[0]
 
-                player.teleport(Location(world, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.yaw, spawnPoint.pitch))
+                    player.teleport(Location(world, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.yaw, spawnPoint.pitch))
+                }
             } else {
                 members.remove(uuid)
+                assignedMembers.remove(uuid)
             }
         }
     }
@@ -69,17 +74,20 @@ class PVPGame : Game() {
     fun restoreArenaMembersHealth(arena: Arena) {
         val members = arenaMembers[arena]!!
 
-        for (uuid in members) {
+        for (uuid in members.toList()) {
             val player = Bukkit.getPlayer(uuid)
 
             if (player != null && player.isOnline) {
-                player.health = 20.0
-                player.saturation = 20.0f
-                player.foodLevel = 20
+                if (!player.isDead) {
+                    player.health = 20.0
+                    player.saturation = 20.0f
+                    player.foodLevel = 20
 
-                player.gameMode = GameMode.SURVIVAL
+                    player.gameMode = GameMode.SURVIVAL
+                }
             } else {
                 members.remove(uuid)
+                assignedMembers.remove(uuid)
             }
         }
     }
@@ -87,17 +95,30 @@ class PVPGame : Game() {
     fun restoreArenaMembersLayout(arena: Arena) {
         val members = arenaMembers[arena]!!
 
-        for (uuid in members) {
+        for (uuid in members.toList()) {
             val player = Bukkit.getPlayer(uuid)
 
             if (player != null && player.isOnline) {
-                player.inventory.clear()
+                if (!player.isDead) {
+                    player.inventory.clear()
 
-                player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
+                    player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
+                }
             } else {
                 members.remove(uuid)
+                assignedMembers.remove(uuid)
             }
         }
+    }
+
+    fun getArena(player: Player): Arena {
+        return assignedMembers[player.uniqueId]!!
+    }
+
+    fun restoreArenaMembers(arena: Arena) {
+        teleportArenaMembersToSpawn(arena)
+        restoreArenaMembersHealth(arena)
+        restoreArenaMembersLayout(arena)
     }
 
     override fun update() {
@@ -105,6 +126,8 @@ class PVPGame : Game() {
     }
 
     override fun finish(): Map<UUID, Double> {
+        ADHDPlugin.instance.logger.info("Завершён режим ПВП...")
+
         return emptyMap()
     }
 }

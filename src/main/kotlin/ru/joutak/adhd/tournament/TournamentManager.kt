@@ -5,6 +5,7 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.world.WorldManager
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
@@ -38,6 +39,10 @@ object TournamentManager {
         for (tournament in delta) {
             tournament.finish()
         }
+
+        val tournament = playerTournaments[player.uniqueId] ?: return
+
+        tournament.remove(player)
     }
 
     fun load() {
@@ -82,6 +87,14 @@ object TournamentManager {
         }
 
         WorldManager.generate(tournament)
+    }
+
+    fun getGame(player: Player): Game? {
+        val tournament = playerTournaments[player.uniqueId] ?: return null
+
+        if (tournament.status != TournamentStatus.RUNNING) return null
+
+        return tournament.currentGame
     }
 
     fun createPool(): List<String> {

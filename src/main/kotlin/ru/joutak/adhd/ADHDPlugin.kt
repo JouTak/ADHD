@@ -30,6 +30,8 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(PlayerSessionListener(), instance)
         Bukkit.getPluginManager().registerEvents(LobbyListener(), instance)
 
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.event.pvp.RespawnListener(), instance)
+
         logger.info("Плагин ${pluginMeta.name} версии ${pluginMeta.version} включен!")
 
         Bukkit.getScheduler().runTaskTimer(instance, Runnable {
