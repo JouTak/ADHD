@@ -153,6 +153,7 @@ object WorldManager {
 
             if (tournament.status != TournamentStatus.FINISH) {
                 Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                    tournament.generated = true
                     Bukkit.createWorld(WorldCreator(worldName))
                     tournament.start(worldName, adjustedMaps)
                 })
