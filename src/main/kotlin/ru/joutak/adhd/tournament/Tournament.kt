@@ -31,12 +31,21 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         this.worldName = worldName
         this.adjustedMaps = adjustedMaps
 
-        status = TournamentStatus.PREPARING
-
         ticker.runTaskTimer(ADHDPlugin.instance, 0L, 2L)
     }
 
     fun tick() {
+        when(status) {
+            TournamentStatus.START -> status = TournamentStatus.PREPARING
+            TournamentStatus.PREPARING -> {
 
+            }
+            TournamentStatus.RUNNING -> {
+
+            }
+            TournamentStatus.FINISH -> {
+
+            }
+        }
     }
 }
