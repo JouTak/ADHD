@@ -13,6 +13,7 @@ import org.bukkit.WorldType
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.tournament.Tournament
+import ru.joutak.adhd.tournament.TournamentStatus
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -150,10 +151,15 @@ object WorldManager {
         CompletableFuture.allOf(*futures.toTypedArray()).thenRun {
             tournamentWorlds[tournament] = worldName
 
-            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
-            Bukkit.createWorld(WorldCreator(worldName))
-            tournament.start(worldName, adjustedMaps)
-        }) }
+            if (tournament.status != TournamentStatus.FINISH) {
+                Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                    Bukkit.createWorld(WorldCreator(worldName))
+                    tournament.start(worldName, adjustedMaps)
+                })
+            } else {
+                clear(tournament)
+            }
+        }
     }
 
     fun copySingleRegion(

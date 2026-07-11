@@ -1,5 +1,6 @@
 package ru.joutak.adhd.tournament
 
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import ru.joutak.adhd.ADHDPlugin
@@ -11,10 +12,17 @@ import ru.joutak.minigames.domain.MatchmakingMode
 import ru.joutak.minigames.lobby.LobbyItemsManager
 import ru.joutak.minigames.managers.MatchmakingManager
 import ru.joutak.minigames.ui.LobbyScoreboardManager
+import java.util.UUID
 import kotlin.math.ceil
 import kotlin.random.Random
 
 object TournamentManager {
+
+    val playerTournaments = mutableMapOf<UUID, Tournament>()
+
+    val activeTournaments = mutableSetOf<Tournament>()
+
+    var shutdownFlag = false
 
     fun handleJoin(player: Player) {
         sendToLobby(player)
@@ -22,6 +30,14 @@ object TournamentManager {
 
     fun handleQuit(player: Player) {
         sendToLobby(player)
+
+        playerTournaments.remove(player.uniqueId)
+
+        val delta = activeTournaments.toSet() - playerTournaments.values.toSet()
+
+        for (tournament in delta) {
+            tournament.finish()
+        }
     }
 
     fun load() {
@@ -35,7 +51,7 @@ object TournamentManager {
             ADHDPlugin.instance.logger.severe("Template world is not available. Game won't start...")
 
             for (player in toRemove) {
-                ensure(player)
+                ensureRetry(player)
             }
 
             return
@@ -54,10 +70,16 @@ object TournamentManager {
         instance.teams.clear()
 
         for (player in toRemove) {
-            ensure(player)
+            ensureRetry(player)
         }
 
         val tournament = Tournament(participants.toMutableList(), createPool())
+
+        activeTournaments.add(tournament)
+
+        for (uuid in participants) {
+            playerTournaments[uuid] = tournament
+        }
 
         WorldManager.generate(tournament)
     }
@@ -83,14 +105,42 @@ object TournamentManager {
     }
 
     fun shutdown() {
+        shutdownFlag = true
+
+        for (tournament in activeTournaments) {
+            tournament.finish()
+        }
+
         WorldManager.shutdown()
     }
 
-    fun ensure(player: Player) {
+    fun ensureRetry(player: Player) {
         MatchmakingManager.removePlayer(player)
         MatchmakingManager.addPlayer(player)
         LobbyItemsManager.ensure(player)
         LobbyScoreboardManager.ensure(player)
+    }
+
+    fun finish(tournament: Tournament) {
+        activeTournaments.remove(tournament)
+
+        for (uuid in tournament.participants) {
+            if (playerTournaments.contains(uuid)) {
+                val player = Bukkit.getPlayer(uuid)
+
+                if (player != null && player.isOnline) {
+                    sendToLobby(player)
+
+                    if (!shutdownFlag) {
+                        MatchmakingManager.removePlayer(player)
+                    }
+                }
+            }
+
+            playerTournaments.remove(uuid)
+        }
+
+        if (tournament.generated) WorldManager.clear(tournament)
     }
 
     fun isInLobby(player: Player): Boolean {

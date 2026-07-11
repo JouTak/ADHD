@@ -22,6 +22,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         }
     }
 
+    var generated = false
+
     lateinit var currentGame: Game
 
     var status = TournamentStatus.START
@@ -31,7 +33,7 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
     lateinit var adjustedMaps: Map<Int, List<Arena>>
 
     fun start(worldName: String, adjustedMaps: Map<Int, List<Arena>>) {
-        ADHDPlugin.instance.logger.info("Начата игра в мире $worldName, кол-во игроков ${participants.size}, размер пула режимов ${modesPool.size}")
+        ADHDPlugin.instance.logger.info("Начат турнир $this")
 
         this.worldName = worldName
         this.adjustedMaps = adjustedMaps
@@ -93,8 +95,20 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                 tick--
             }
             TournamentStatus.FINISH -> {
-
+                finish()
             }
         }
+    }
+
+    fun finish() {
+        status = TournamentStatus.FINISH
+
+        ADHDPlugin.instance.logger.info("Завершён турнир $this")
+
+        try {
+            ticker.cancel()
+        } catch (_: IllegalStateException) {}
+
+        TournamentManager.finish(this)
     }
 }
