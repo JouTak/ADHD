@@ -29,6 +29,8 @@ object WorldManager {
 
     val executor: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors().coerceAtMost(6))
 
+    val tournamentWorlds = mutableMapOf<Tournament, String>()
+
     fun isAvailable(): Boolean {
         val worldFolder = Bukkit.getServer()
             .levelDirectory
@@ -145,9 +147,11 @@ object WorldManager {
             }
         }
 
-        CompletableFuture.allOf(*futures.toTypedArray()).thenRun { Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
-            Bukkit.createWorld(WorldCreator(worldName))
+        CompletableFuture.allOf(*futures.toTypedArray()).thenRun {
+            tournamentWorlds[tournament] = worldName
 
+            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+            Bukkit.createWorld(WorldCreator(worldName))
             tournament.start(worldName, adjustedMaps)
         }) }
     }
@@ -272,10 +276,36 @@ object WorldManager {
     }
 
     fun shutdown() {
+        clearAll()
+
         val lobby = Bukkit.getWorld("lobby")
 
         if (lobby != null) {
             Bukkit.unloadWorld(lobby, false)
+        }
+    }
+
+    fun clear(tournament: Tournament) {
+        val worldName = tournamentWorlds[tournament] ?: return
+
+        val world = Bukkit.getWorld(worldName)
+
+        if (world != null) {
+            Bukkit.unloadWorld(world, false)
+        }
+
+        val worldFolder = Bukkit.getServer().levelDirectory
+            .resolve("dimensions")
+            .resolve("minecraft")
+            .resolve(worldName)
+            .toFile()
+
+        worldFolder.deleteRecursively()
+    }
+
+    fun clearAll() {
+        for (tournament in tournamentWorlds.keys) {
+            clear(tournament)
         }
     }
 }
