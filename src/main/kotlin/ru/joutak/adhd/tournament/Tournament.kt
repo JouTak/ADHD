@@ -3,6 +3,8 @@ package ru.joutak.adhd.tournament
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.game.Game
+import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.world.Arena
 import java.util.*
 
@@ -19,6 +21,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
             tick()
         }
     }
+
+    lateinit var currentGame: Game
 
     var status = TournamentStatus.START
 
@@ -53,16 +57,38 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
                 tick = actualMode.duration * 20L
 
+                var arenaPointer = 0
+
+                //TODO: Make random more random
+
+                participants.shuffle()
+
+                val assignedMembers = mutableMapOf<UUID, Arena>()
+
+                for (i in participants.indices step 2) {
+                    assignedMembers[participants[i]] = arenas[arenaPointer]
+                    assignedMembers[participants[i + 1]] = arenas[arenaPointer++]
+                }
+
+                currentGame = when(currentMode) {
+                    "PVP" -> PVPGame()
+                    else -> return
+                }
+
+                currentGame.start(actualMode, assignedMembers, worldName)
+
                 status = TournamentStatus.RUNNING
             }
             TournamentStatus.RUNNING -> {
                 if (tick <= 0L) {
                     status = TournamentStatus.PREPARING
 
-                    ADHDPlugin.instance.logger.info("Завершён режим $currentMode ($modePointer) в мире $worldName")
+                    val gameResults = currentGame.finish()
 
                     return
                 }
+
+                currentGame.update()
 
                 tick--
             }
