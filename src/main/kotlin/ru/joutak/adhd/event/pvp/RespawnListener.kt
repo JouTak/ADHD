@@ -16,6 +16,8 @@ class RespawnListener : Listener {
             val arena = game.getArena(event.player)
 
             game.restoreArenaMembers(arena)
+
+            game.calculatePoint(event.player)
         }
     }
 }

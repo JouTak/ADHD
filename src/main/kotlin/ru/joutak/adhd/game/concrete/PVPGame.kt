@@ -22,6 +22,8 @@ class PVPGame : Game() {
 
     val arenaMembers = mutableMapOf<Arena, MutableList<UUID>>()
 
+    val results = mutableMapOf<UUID, Double>()
+
     override fun start(
         mode: Mode,
         assignedMembers: Map<UUID, Arena>,
@@ -114,9 +116,37 @@ class PVPGame : Game() {
         arenaMembers[arena]!!.remove(uuid)
     }
 
+    fun calculatePoint(player: Player) {
+        val arena = getArena(player)
+
+        for (uuid in arenaMembers[arena].orEmpty()) {
+            if (uuid == player.uniqueId) continue
+
+            results[uuid] = results.getOrDefault(uuid, 0.0) + 1.0
+        }
+    }
+
     override fun finish(): Map<UUID, Double> {
         ADHDPlugin.instance.logger.info("Завершён режим ПВП...")
 
-        return emptyMap()
+        return calculateResults()
+    }
+
+    fun calculateResults(): MutableMap<UUID, Double> {
+        val finalResults = mutableMapOf<UUID, Double>()
+
+        for ((_, members) in arenaMembers) {
+            val maxScore = members.maxOfOrNull { results.getOrDefault(it, 0.0) } ?: continue
+
+            for (uuid in members) {
+                if (results.getOrDefault(uuid, 0.0) == maxScore) {
+                    finalResults[uuid] = 1.0
+                } else {
+                    finalResults[uuid] = 0.0
+                }
+            }
+        }
+
+        return finalResults
     }
 }
