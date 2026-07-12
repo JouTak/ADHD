@@ -53,19 +53,13 @@ class PVPGame : Game() {
 
         val spawnPoints = arena.spawnPoints.toMutableList()
 
-        for (uuid in members.toList()) {
-            spawnPoints.shuffle()
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid)!!
 
-            val player = Bukkit.getPlayer(uuid)
+            if (!player.isDead) {
+                val spawnPoint = spawnPoints.random()
 
-            if (player != null && player.isOnline) {
-                if (!player.isDead) {
-                    val spawnPoint = spawnPoints[0]
-
-                    player.teleport(Location(world, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.yaw, spawnPoint.pitch))
-                }
-            } else {
-                remove(uuid)
+                player.teleport(Location(world, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.yaw, spawnPoint.pitch))
             }
         }
     }
@@ -73,19 +67,15 @@ class PVPGame : Game() {
     fun restoreArenaMembersHealth(arena: Arena) {
         val members = arenaMembers[arena]!!
 
-        for (uuid in members.toList()) {
-            val player = Bukkit.getPlayer(uuid)
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid)!!
 
-            if (player != null && player.isOnline) {
-                if (!player.isDead) {
-                    player.health = 20.0
-                    player.saturation = 20.0f
-                    player.foodLevel = 20
+            if (!player.isDead) {
+                player.health = 20.0
+                player.saturation = 20.0f
+                player.foodLevel = 20
 
-                    player.gameMode = GameMode.SURVIVAL
-                }
-            } else {
-                remove(uuid)
+                player.gameMode = GameMode.SURVIVAL
             }
         }
     }
@@ -93,17 +83,13 @@ class PVPGame : Game() {
     fun restoreArenaMembersLayout(arena: Arena) {
         val members = arenaMembers[arena]!!
 
-        for (uuid in members.toList()) {
-            val player = Bukkit.getPlayer(uuid)
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid)!!
 
-            if (player != null && player.isOnline) {
-                if (!player.isDead) {
-                    player.inventory.clear()
+            if (!player.isDead) {
+                player.inventory.clear()
 
-                    player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
-                }
-            } else {
-                remove(uuid)
+                player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
             }
         }
     }
