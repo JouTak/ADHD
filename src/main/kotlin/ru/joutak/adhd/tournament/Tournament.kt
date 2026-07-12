@@ -14,7 +14,7 @@ import kotlin.math.floor
 
 class Tournament(val participants: MutableList<UUID>, val modesPool: List<String>) {
 
-    var tick = 0L
+    var currentTick = 0L
 
     var currentMode = ""
 
@@ -37,6 +37,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
     lateinit var adjustedMaps: Map<Int, List<Arena>>
 
     val tournamentResults = mutableMapOf<UUID, Double>()
+
+    val timeBossBar = TimeBossBar()
 
     fun start(worldName: String, adjustedMaps: Map<Int, List<Arena>>) {
         ADHDPlugin.instance.logger.info("Начат турнир $this")
@@ -63,7 +65,7 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
                 val actualMode = ADHDConfig.modes[currentMode]!!.copy()
 
-                tick = actualMode.duration * 20L
+                currentTick = 0
 
                 var arenaPointer = 0
 
@@ -81,8 +83,6 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                 }
 
                 val toIgnore = participants.toSet() - assignedMembers.keys
-
-                ADHDPlugin.instance.logger.info("${assignedMembers.keys} $participants")
 
                 for (uuid in toIgnore) {
                     val player = Bukkit.getPlayer(uuid)!!
@@ -103,13 +103,17 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                     else -> return
                 }
 
+                timeBossBar.create(this)
+
                 currentGame.start(actualMode, assignedMembers, worldName)
 
                 status = TournamentStatus.RUNNING
             }
             TournamentStatus.RUNNING -> {
-                if (tick <= 0L) {
+                if (currentTick >= ADHDConfig.modes[currentMode]!!.duration * 20L) {
                     status = TournamentStatus.PREPARING
+
+                    timeBossBar.update()
 
                     val gameResults = currentGame.finish()
 
@@ -126,7 +130,9 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
                 currentGame.update()
 
-                tick -= 4L
+                timeBossBar.update()
+
+                currentTick += 4L
             }
             TournamentStatus.FINISH -> {
                 finish()
@@ -138,10 +144,14 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         participants.remove(player.uniqueId)
 
         currentGame.remove(player.uniqueId)
+
+        timeBossBar.remove(player)
     }
 
     fun finish() {
         status = TournamentStatus.FINISH
+
+        timeBossBar.clear()
 
         ADHDPlugin.instance.logger.info("Завершён турнир $this")
 
