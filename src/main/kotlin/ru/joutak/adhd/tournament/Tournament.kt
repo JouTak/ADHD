@@ -36,6 +36,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
     lateinit var adjustedMaps: Map<Int, List<Arena>>
 
+    val tournamentResults = mutableMapOf<UUID, Double>()
+
     fun start(worldName: String, adjustedMaps: Map<Int, List<Arena>>) {
         ADHDPlugin.instance.logger.info("Начат турнир $this")
 
@@ -110,6 +112,14 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                     status = TournamentStatus.PREPARING
 
                     val gameResults = currentGame.finish()
+
+                    for (uuid in gameResults.keys) {
+                        tournamentResults.putIfAbsent(uuid, 0.0)
+
+                        val result = gameResults[uuid]!!
+
+                        tournamentResults[uuid] = tournamentResults[uuid]!! + result
+                    }
 
                     return
                 }
