@@ -114,6 +114,8 @@ object TournamentManager {
 
         player.gameMode = GameMode.ADVENTURE
 
+        player.inventory.clear()
+
         player.teleport(spawn)
     }
 
