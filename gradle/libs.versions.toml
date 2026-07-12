@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.4.0"
-jdk = "26"
+jdk = "25"
 paper = "26.1.2.build.+"
 shadow = "9.1.0"
 
