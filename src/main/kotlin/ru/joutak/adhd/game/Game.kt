@@ -9,4 +9,6 @@ abstract class Game {
     abstract fun update()
 
     abstract fun finish(): Map<UUID, Double>
+
+    abstract fun remove(uuid: UUID)
 }

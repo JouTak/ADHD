@@ -65,8 +65,7 @@ class PVPGame : Game() {
                     player.teleport(Location(world, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.yaw, spawnPoint.pitch))
                 }
             } else {
-                members.remove(uuid)
-                assignedMembers.remove(uuid)
+                remove(uuid)
             }
         }
     }
@@ -86,8 +85,7 @@ class PVPGame : Game() {
                     player.gameMode = GameMode.SURVIVAL
                 }
             } else {
-                members.remove(uuid)
-                assignedMembers.remove(uuid)
+                remove(uuid)
             }
         }
     }
@@ -105,8 +103,7 @@ class PVPGame : Game() {
                     player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
                 }
             } else {
-                members.remove(uuid)
-                assignedMembers.remove(uuid)
+                remove(uuid)
             }
         }
     }
@@ -123,6 +120,12 @@ class PVPGame : Game() {
 
     override fun update() {
 
+    }
+
+    override fun remove(uuid: UUID) {
+        val arena = assignedMembers.remove(uuid) ?: return
+
+        arenaMembers[arena]!!.remove(uuid)
     }
 
     override fun finish(): Map<UUID, Double> {

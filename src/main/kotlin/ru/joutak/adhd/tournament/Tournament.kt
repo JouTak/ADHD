@@ -1,5 +1,6 @@
 package ru.joutak.adhd.tournament
 
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
@@ -70,9 +71,21 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
                 val assignedMembers = mutableMapOf<UUID, Arena>()
 
-                for (i in participants.indices step 2) {
-                    assignedMembers[participants[i]] = arenas[arenaPointer]
-                    assignedMembers[participants[i + 1]] = arenas[arenaPointer++]
+                for (i in 0 until participants.size - 1 step 2) {
+                    val arena = arenas[arenaPointer++]
+
+                    assignedMembers[participants[i]] = arena
+                    assignedMembers[participants[i + 1]] = arena
+                }
+
+                val toIgnore = participants.toSet() - assignedMembers.keys
+
+                ADHDPlugin.instance.logger.info("${assignedMembers.keys} $participants")
+
+                for (uuid in toIgnore) {
+                    val player = Bukkit.getPlayer(uuid)!!
+
+                    player.sendMessage(Component.text("Вы не учавствуете в текущей игре..."))
                 }
 
                 val world = Bukkit.getWorld(worldName)!!
@@ -113,6 +126,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
     fun remove(player: Player) {
         participants.remove(player.uniqueId)
+
+        currentGame.remove(player.uniqueId)
     }
 
     fun finish() {

@@ -32,7 +32,7 @@ object TournamentManager {
     fun handleQuit(player: Player) {
         sendToLobby(player)
 
-        playerTournaments.remove(player.uniqueId)
+        val playerTournament = playerTournaments.remove(player.uniqueId)
 
         val delta = activeTournaments.toSet() - playerTournaments.values.toSet()
 
@@ -40,9 +40,9 @@ object TournamentManager {
             tournament.finish()
         }
 
-        val tournament = playerTournaments[player.uniqueId] ?: return
+        if (playerTournament == null) return
 
-        tournament.remove(player)
+        playerTournament.remove(player)
     }
 
     fun load() {
