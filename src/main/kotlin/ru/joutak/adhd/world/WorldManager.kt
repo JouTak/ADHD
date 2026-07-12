@@ -37,21 +37,21 @@ object WorldManager {
             .levelDirectory
             .resolve("dimensions")
             .resolve("minecraft")
-            .resolve("template")
+            .resolve(ADHDConfig.templateWorldName)
             .toFile()
 
         val existedBefore = worldFolder.exists()
 
         if (!existedBefore) return false
 
-        val template = Bukkit.createWorld(WorldCreator("template"))
+        val template = Bukkit.createWorld(WorldCreator(ADHDConfig.templateWorldName))
 
         var available = false
 
         if (template != null) {
             available = true
 
-            Bukkit.unloadWorld("template", false)
+            Bukkit.unloadWorld(template, false)
         }
 
         return available
@@ -67,9 +67,9 @@ object WorldManager {
         val source = Bukkit.getServer().levelDirectory
             .resolve("dimensions")
             .resolve("minecraft")
-            .resolve("template")
+            .resolve(ADHDConfig.templateWorldName)
 
-        val worldName = "template_${worldId++}"
+        val worldName = "${ADHDConfig.templateWorldName}_${worldId++}"
 
         val target = Bukkit.getServer().levelDirectory
             .resolve("dimensions")

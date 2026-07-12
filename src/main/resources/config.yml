@@ -1,6 +1,7 @@
 default:
   maxPlayers: 4
   pointsGoal: 10.0
+  templateWorldName: template
 
 maps:
   1:

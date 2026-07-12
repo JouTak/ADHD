@@ -26,6 +26,9 @@ object ADHDConfig {
     var pointsGoal: Double = 10.0
         private set
 
+    var templateWorldName: String = "template"
+        private set
+
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
 
@@ -38,6 +41,8 @@ object ADHDConfig {
         maxPlayers = config.getInt("default.maxPlayers", 4)
 
         pointsGoal = config.getDouble("default.pointsGoal", 10.0)
+
+        templateWorldName = config.getString("default.templateWorldName", "template") ?: "template"
 
         maps = loadMaps(config)
 
