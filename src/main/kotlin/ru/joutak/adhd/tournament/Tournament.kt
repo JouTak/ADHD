@@ -26,6 +26,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         }
     }
 
+    var winners = emptySet<UUID>()
+
     var generated = false
 
     lateinit var currentGame: Game
@@ -125,6 +127,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                         tournamentResults[uuid] = tournamentResults[uuid]!! + result
                     }
 
+                    checkWin()
+
                     return
                 }
 
@@ -137,6 +141,16 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
             TournamentStatus.FINISH -> {
                 finish()
             }
+        }
+    }
+
+    fun checkWin() {
+        winners = tournamentResults
+            .filterValues { it >= 10.0 }
+            .keys
+
+        if (!winners.isEmpty()) {
+            status = TournamentStatus.FINISH
         }
     }
 

@@ -1,5 +1,7 @@
 package ru.joutak.adhd.tournament
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
@@ -84,6 +86,10 @@ object TournamentManager {
 
         for (uuid in participants) {
             playerTournaments[uuid] = tournament
+
+            val player = Bukkit.getPlayer(uuid)!!
+
+            player.sendMessage(Component.text("Скоро начнём...").color(NamedTextColor.GOLD))
         }
 
         WorldManager.generate(tournament)
@@ -148,6 +154,15 @@ object TournamentManager {
 
                     if (!shutdownFlag) {
                         MatchmakingManager.removePlayer(player)
+                    }
+
+                    if (!tournament.winners.isEmpty()) {
+                        val names = tournament.winners.joinToString(", ") { uuid ->
+                            Bukkit.getPlayer(uuid)?.displayName ?: "Unknown"
+                        }
+
+                        player.sendMessage(Component.text("Игра окончена! Победители: ").color(NamedTextColor.GOLD).append(
+                            Component.text(names).color(NamedTextColor.GREEN)))
                     }
                 }
             }
