@@ -261,10 +261,10 @@ object WorldManager {
     }
 
     fun getLobbyWorld(): World {
-        var lobby = Bukkit.getWorld("lobby")
+        var lobby = Bukkit.getWorld(ADHDConfig.lobbyWorld)
 
         if (lobby == null) {
-            lobby = Bukkit.createWorld(WorldCreator("lobby").type(WorldType.NORMAL))
+            lobby = Bukkit.createWorld(WorldCreator(ADHDConfig.lobbyWorld).type(WorldType.NORMAL))
         }
 
         if (lobby == null) {
@@ -285,7 +285,7 @@ object WorldManager {
     fun shutdown() {
         clearAll()
 
-        val lobby = Bukkit.getWorld("lobby")
+        val lobby = Bukkit.getWorld(ADHDConfig.lobbyWorld)
 
         if (lobby != null) {
             Bukkit.unloadWorld(lobby, false)

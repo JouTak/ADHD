@@ -29,6 +29,9 @@ object ADHDConfig {
     var templateWorldName: String = "template"
         private set
 
+    var lobbyWorld: String = "lobby"
+        private set
+
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
 
@@ -43,6 +46,8 @@ object ADHDConfig {
         pointsGoal = config.getDouble("default.pointsGoal", 10.0)
 
         templateWorldName = config.getString("default.templateWorldName", "template") ?: "template"
+
+        lobbyWorld = config.getString("default.lobbyWorld", "lobby") ?: "lobby"
 
         maps = loadMaps(config)
 

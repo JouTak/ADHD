@@ -2,6 +2,7 @@ default:
   maxPlayers: 4
   pointsGoal: 10.0
   templateWorldName: template
+  lobbyWorld: lobby
 
 maps:
   1:
