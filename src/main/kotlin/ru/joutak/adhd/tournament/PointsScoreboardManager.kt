@@ -6,8 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.scoreboard.Criteria
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
-import java.util.UUID
-import kotlin.math.ceil
+import java.util.*
 import kotlin.math.floor
 
 class PointsScoreboardManager {
@@ -48,6 +47,10 @@ class PointsScoreboardManager {
 
     fun update(points: Double, scoreboard: Scoreboard) {
         val objective = scoreboard.getObjective(DisplaySlot.SIDEBAR)!!
+
+        scoreboard.entries.forEach { entry ->
+            scoreboard.resetScores(entry)
+        }
 
         objective.getScore(" ".repeat(16)).score = 1
 
