@@ -1,8 +1,10 @@
 package ru.joutak.adhd.event.pvp
 
+import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerRespawnEvent
+import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.tournament.TournamentManager
 
@@ -15,7 +17,7 @@ class RespawnListener : Listener {
         if (game != null && game is PVPGame) {
             val arena = game.getArena(event.player)
 
-            game.restoreArenaMembers(arena)
+            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {game.restoreArenaMembers(arena)})
 
             game.calculatePoint(event.player)
         }
