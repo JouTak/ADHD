@@ -1,15 +1,15 @@
 package ru.joutak.adhd.event.pvp
 
-import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerRespawnEvent
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.tournament.TournamentManager
 
 class RespawnListener : Listener {
 
     @EventHandler
-    fun onRespawn(event: PlayerPostRespawnEvent) {
+    fun onRespawn(event: PlayerRespawnEvent) {
         val game = TournamentManager.getGame(event.player)
 
         if (game != null && game is PVPGame) {

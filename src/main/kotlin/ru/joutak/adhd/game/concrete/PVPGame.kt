@@ -2,6 +2,7 @@ package ru.joutak.adhd.game.concrete
 
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -10,7 +11,7 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.Mode
 import ru.joutak.adhd.world.Arena
-import java.util.UUID
+import java.util.*
 
 class PVPGame : Game() {
 
@@ -34,6 +35,10 @@ class PVPGame : Game() {
         this.mode = mode
         this.assignedMembers = assignedMembers.toMutableMap()
         this.worldName = worldName
+
+        val world = Bukkit.getWorld(worldName)
+
+        world!!.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
 
         for (uuid in assignedMembers.keys) {
             val arena = assignedMembers[uuid]!!
@@ -128,6 +133,10 @@ class PVPGame : Game() {
 
     override fun finish(): Map<UUID, Double> {
         ADHDPlugin.instance.logger.info("Завершён режим ПВП...")
+
+        val world = Bukkit.getWorld(worldName)
+
+        world!!.setGameRule(GameRules.IMMEDIATE_RESPAWN, false)
 
         return calculateResults()
     }
