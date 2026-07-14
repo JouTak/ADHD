@@ -42,11 +42,15 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
     val timeBossBar = TimeBossBar()
 
+    val pointsScoreboardManager = PointsScoreboardManager()
+
     fun start(worldName: String, adjustedMaps: Map<Int, List<Arena>>) {
         ADHDPlugin.instance.logger.info("Начат турнир $this")
 
         this.worldName = worldName
         this.adjustedMaps = adjustedMaps
+
+        pointsScoreboardManager.create(this)
 
         ticker.runTaskTimer(ADHDPlugin.instance, 0L, 4L)
     }
@@ -127,6 +131,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
                         tournamentResults[uuid] = tournamentResults[uuid]!! + result
                     }
 
+                    pointsScoreboardManager.updateAll()
+
                     checkWin()
 
                     return
@@ -160,6 +166,8 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         currentGame.remove(player.uniqueId)
 
         timeBossBar.remove(player)
+
+        player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
     }
 
     fun finish() {

@@ -122,6 +122,8 @@ object TournamentManager {
 
         player.inventory.clear()
 
+        player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+
         player.teleport(spawn)
     }
 
