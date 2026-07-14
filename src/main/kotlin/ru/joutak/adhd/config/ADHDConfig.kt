@@ -6,6 +6,7 @@ import ru.joutak.adhd.game.Mode
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.io.File
+import kotlin.math.floor
 
 object ADHDConfig {
 
@@ -73,10 +74,14 @@ object ADHDConfig {
             for (spawnId in spawns.getKeys(false)) {
                 val spawnIndex = spawnId.toInt()
 
+                var z = spawns.getDouble("$spawnId.z")
+
+                z -= floor(z / 512) * 512
+
                 spawnMap[spawnIndex] = SpawnPoint(
                     x = spawns.getDouble("$spawnId.x"),
                     y = spawns.getDouble("$spawnId.y"),
-                    z = spawns.getDouble("$spawnId.z"),
+                    z = z,
                     yaw = spawns.getDouble("$spawnId.yaw").toFloat(),
                     pitch = spawns.getDouble("$spawnId.pitch").toFloat()
                 )
