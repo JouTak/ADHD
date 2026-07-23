@@ -31,6 +31,7 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(LobbyListener(), instance)
 
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.event.pvp.RespawnListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.event.pillars.RespawnListener(), instance)
 
         logger.info("Плагин ${pluginMeta.name} версии ${pluginMeta.version} включен!")
 

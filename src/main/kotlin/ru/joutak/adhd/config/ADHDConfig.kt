@@ -13,7 +13,7 @@ object ADHDConfig {
     /*
     Запишите сюда названия режимов для поиска при загрузке.
      */
-    val registeredModes = listOf<String>("PVP")
+    val registeredModes = listOf<String>("PVP", "PILLARS")
 
     var maxPlayers: Int = 4
         private set

@@ -7,6 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
+import ru.joutak.adhd.game.concrete.PILLARSGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.world.Arena
 import java.util.*
@@ -106,6 +107,7 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
                 currentGame = when(currentMode) {
                     "PVP" -> PVPGame()
+                    "PILLARS" -> PILLARSGame()
                     else -> return
                 }
 
