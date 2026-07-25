@@ -153,8 +153,6 @@ object WorldManager {
 
             if (tournament.status != TournamentStatus.FINISH) {
                 Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
-                    tournament.generated = true
-
                     val creator = WorldCreator(worldName)
                     creator.generator(VoidGenerator())
 

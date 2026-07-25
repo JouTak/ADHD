@@ -28,8 +28,6 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
 
     var winners = emptySet<UUID>()
 
-    var generated = false
-
     lateinit var currentGame: Game
 
     var status = TournamentStatus.START
@@ -155,7 +153,7 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
             .filterValues { it >= 10.0 }
             .keys
 
-        if (!winners.isEmpty()) {
+        if (winners.isNotEmpty()) {
             status = TournamentStatus.FINISH
         }
     }

@@ -34,17 +34,11 @@ object TournamentManager {
     fun handleQuit(player: Player) {
         sendToLobby(player)
 
-        val playerTournament = playerTournaments.remove(player.uniqueId)
-
-        val delta = activeTournaments.toSet() - playerTournaments.values.toSet()
-
-        for (tournament in delta) {
-            tournament.finish()
-        }
-
-        if (playerTournament == null) return
+        val playerTournament = playerTournaments.remove(player.uniqueId) ?: return
 
         playerTournament.remove(player)
+
+        if (playerTournament.participants.size < 2) playerTournament.finish()
     }
 
     fun load() {
@@ -56,6 +50,14 @@ object TournamentManager {
 
         if (!WorldManager.isAvailable()) {
             ADHDPlugin.instance.logger.severe("Template world is not available. Game won't start...")
+
+            for (player in toRemove) {
+                ensureRetry(player)
+            }
+
+            return
+        } else if (ADHDConfig.modes.isEmpty()) {
+            ADHDPlugin.instance.logger.severe("No modes available. Game won't start...")
 
             for (player in toRemove) {
                 ensureRetry(player)
@@ -148,31 +150,12 @@ object TournamentManager {
         activeTournaments.remove(tournament)
 
         for (uuid in tournament.participants) {
-            if (playerTournaments.contains(uuid)) {
-                val player = Bukkit.getPlayer(uuid)
-
-                if (player != null && player.isOnline) {
-                    sendToLobby(player)
-
-                    if (!shutdownFlag) {
-                        MatchmakingManager.removePlayer(player)
-                    }
-
-                    if (!tournament.winners.isEmpty()) {
-                        val names = tournament.winners.joinToString(", ") { uuid ->
-                            Bukkit.getPlayer(uuid)?.displayName ?: "Unknown"
-                        }
-
-                        player.sendMessage(Component.text("Игра окончена! Победители: ").color(NamedTextColor.GOLD).append(
-                            Component.text(names).color(NamedTextColor.GREEN)))
-                    }
-                }
-            }
-
             playerTournaments.remove(uuid)
         }
 
-        if (tournament.generated) WorldManager.clear(tournament)
+        //TODO: Start ceremony for arena members
+
+        WorldManager.clear(tournament)
     }
 
     fun isInLobby(player: Player): Boolean {

@@ -67,6 +67,8 @@ object ADHDConfig {
         for (mapId in maps.getKeys(false)) {
             val mapIndex = mapId.toInt()
 
+            if (mapIndex == 0) continue
+
             val spawns = maps.getConfigurationSection("$mapId.spawns") ?: continue
 
             val spawnMap = mutableMapOf<Int, SpawnPoint>()
@@ -128,10 +130,12 @@ object ADHDConfig {
 
                         val maps = config.getIntegerList("default.maps")
 
-                        if (!maps.isEmpty()) {
+                        val existingMaps = maps.toSet().intersect(ADHDConfig.maps.keys)
+
+                        if (existingMaps.isNotEmpty()) {
                             val meta = config.getConfigurationSection("meta")?.getValues(false) ?: emptyMap<String, Any>()
 
-                            val mode = Mode(duration, maps, meta)
+                            val mode = Mode(duration, existingMaps.toList(), meta)
 
                             result[modeName] = mode
                         }
