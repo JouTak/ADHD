@@ -1,24 +1,49 @@
 package ru.joutak.adhd.tournament
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
+import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.PVPGame
+import ru.joutak.adhd.ui.GameScoreboardManager
+import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
 import java.util.*
-import kotlin.math.floor
 
-class Tournament(val participants: MutableList<UUID>, val modesPool: List<String>) {
+class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
+
+    lateinit var worldName: String
+
+    lateinit var arenas: Map<Int, List<Arena>>
+
+    var status = TournamentStatus.GENERATE
 
     var currentTick = 0L
 
-    var currentMode = ""
+    var round = 0
 
-    var modePointer = 0
+    var generated = false
+
+    val games = mutableSetOf<Game>()
+
+    val playerGames = mutableMapOf<UUID, Game>()
+
+    val results = mutableMapOf<UUID, Double>()
+
+    val announced = mutableListOf<Game>()
+
+    val timeBossBar = TimeBossBar()
+
+    val gameScoreboardManager = GameScoreboardManager(this)
 
     val ticker = object : BukkitRunnable() {
         override fun run() {
@@ -26,121 +51,125 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         }
     }
 
-    var winners = emptySet<UUID>()
-
-    lateinit var currentGame: Game
-
-    var status = TournamentStatus.START
-
-    lateinit var worldName: String
-
-    lateinit var adjustedMaps: Map<Int, List<Arena>>
-
-    val tournamentResults = mutableMapOf<UUID, Double>()
-
-    val timeBossBar = TimeBossBar()
-
-    val pointsScoreboardManager = PointsScoreboardManager()
-
-    fun start(worldName: String, adjustedMaps: Map<Int, List<Arena>>) {
-        ADHDPlugin.instance.logger.info("Начат турнир $this")
-
+    fun start(worldName: String, arenas: Map<Int, List<Arena>>) {
         this.worldName = worldName
-        this.adjustedMaps = adjustedMaps
+        this.arenas = arenas
 
-        pointsScoreboardManager.create(this)
+        status = TournamentStatus.START
 
-        ticker.runTaskTimer(ADHDPlugin.instance, 0L, 4L)
+        timeBossBar.load(this)
+
+        for (uuid in participants) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            timeBossBar.add(player)
+
+            gameScoreboardManager.add(player)
+        }
+
+        ticker.runTaskTimer(ADHDPlugin.instance, 2L, 2L)
+
+        ADHDPlugin.instance.logger.info("Начат турнир $this")
     }
 
     fun tick() {
-        when(status) {
-            TournamentStatus.START -> status = TournamentStatus.PREPARING
-            TournamentStatus.PREPARING -> {
-                if (modePointer == modesPool.size) {
-                    status = TournamentStatus.FINISH
+        when (status) {
+            TournamentStatus.GENERATE -> status = TournamentStatus.START
+            TournamentStatus.START -> status = TournamentStatus.PREPARE
+            TournamentStatus.PREPARE -> {
+                if (round == pool.size) {
+                    prepareCeremony()
 
                     return
                 }
 
-                val arenas = adjustedMaps[modePointer]!!
+                games.clear()
 
-                currentMode = modesPool[modePointer++]
+                playerGames.clear()
 
-                val actualMode = ADHDConfig.modes[currentMode]!!.copy()
+                announced.clear()
 
-                currentTick = 0
+                currentTick = 0L
 
-                var arenaPointer = 0
+                val modeName = pool[round]
+
+                val gArenas = arenas[round]!!
+
+                val assignedMembers = mutableMapOf<MutableSet<UUID>, Arena>()
 
                 //TODO: Make random more random
 
                 participants.shuffle()
 
-                val assignedMembers = mutableMapOf<UUID, Arena>()
-
                 for (i in 0 until participants.size - 1 step 2) {
-                    val arena = arenas[arenaPointer++]
+                    val arena = gArenas[i / 2]
 
-                    assignedMembers[participants[i]] = arena
-                    assignedMembers[participants[i + 1]] = arena
+                    assignedMembers[mutableSetOf(participants[i], participants[i + 1])] = arena
                 }
 
-                val toIgnore = participants.toSet() - assignedMembers.keys
+                if (participants.size % 2 != 0) Bukkit.getPlayer(participants[participants.size - 1])?.sendMessage(
+                    Component.text("Игроков не хватает. Вы пропускаете эту игру...").color(NamedTextColor.YELLOW))
 
-                for (uuid in toIgnore) {
-                    val player = Bukkit.getPlayer(uuid)!!
-
-                    player.sendMessage(Component.text("Вы не учавствуете в текущей игре..."))
-                }
-
-                val world = Bukkit.getWorld(worldName)!!
-
-                for (arena in arenas) {
-                    for (spawn in arena.spawnPoints) {
-                        world.loadChunk(floor(spawn.x / 16).toInt(), floor(spawn.z / 16).toInt())
+                for (mS in assignedMembers.keys) {
+                    val game = when (modeName) {
+                        "PVP" -> PVPGame()
+                        else -> error("No such mode...")
                     }
+
+                    games.add(game)
+
+                    mS.forEach { uUID -> playerGames[uUID] = game }
+
+                    for (uuid in mS) {
+                        val player = Bukkit.getPlayer(uuid) ?: continue
+
+                        val title = Title.title(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
+
+                        player.showTitle(title)
+
+                        player.sendMessage(ADHDConfig.modes[modeName]!!.description)
+
+                        Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
+                    }
+
+                    game.start(worldName, assignedMembers[mS]!!, mS, ADHDConfig.modes[pool[round]]!!.meta)
                 }
 
-                currentGame = when(currentMode) {
-                    "PVP" -> PVPGame()
-                    else -> return
-                }
+                timeBossBar.update()
 
-                timeBossBar.create(this)
-
-                currentGame.start(actualMode, assignedMembers, worldName)
-
-                status = TournamentStatus.RUNNING
+                status = TournamentStatus.RUN
             }
-            TournamentStatus.RUNNING -> {
-                if (currentTick >= ADHDConfig.modes[currentMode]!!.duration * 20L) {
-                    status = TournamentStatus.PREPARING
+            TournamentStatus.RUN -> {
+                tryAnnounce()
 
-                    timeBossBar.update()
+                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (games.all { game -> game.getGameState() == GameState.FINISH })) {
+                    status = TournamentStatus.PREPARE
 
-                    val gameResults = currentGame.finish()
+                    round++
 
-                    for (uuid in gameResults.keys) {
-                        tournamentResults.putIfAbsent(uuid, 0.0)
+                    calculate()
 
-                        val result = gameResults[uuid]!!
-
-                        tournamentResults[uuid] = tournamentResults[uuid]!! + result
-                    }
-
-                    pointsScoreboardManager.updateAll()
-
-                    checkWin()
+                    if (checkWin()) prepareCeremony()
 
                     return
                 }
 
-                currentGame.update()
+                games.filter { game -> game.getGameState() == GameState.RUN }.forEach { game -> game.update() }
 
                 timeBossBar.update()
 
-                currentTick += 4L
+                if (currentTick % 10L == 0L) gameScoreboardManager.updateAll()
+
+                currentTick += 2L
+            }
+            TournamentStatus.CEREMONY -> {
+                if (currentTick >= ADHDConfig.ceremonyDuration * 20L) {
+                    status = TournamentStatus.FINISH
+
+                    return
+                }
+
+                currentTick += 2L
             }
             TournamentStatus.FINISH -> {
                 finish()
@@ -148,36 +177,139 @@ class Tournament(val participants: MutableList<UUID>, val modesPool: List<String
         }
     }
 
-    fun checkWin() {
-        winners = tournamentResults
-            .filterValues { it >= 10.0 }
-            .keys
+    fun tryAnnounce() {
+        games.filter { game -> !announced.contains(game) && game.getGameState() == GameState.FINISH }.forEach { game -> run {
+            announced.add(game)
 
-        if (winners.isNotEmpty()) {
+            val members = playerGames.filter { it.value == game }.keys
+
+            val winners = game.summarize().keys
+
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.gameMode = GameMode.SPECTATOR
+
+                if (winners.contains(uuid)) {
+                    player.sendMessage(Component.text("Вы выиграли в этом раунде!").color(NamedTextColor.GREEN))
+                } else {
+                    player.sendMessage(Component.text("Вы проиграли в этом раунде...").color(NamedTextColor.YELLOW))
+                }
+            }
+        } }
+    }
+
+    fun calculate() {
+        games.forEach { game -> game.summarize().forEach { (uUID, p) -> run {
+            results.putIfAbsent(uUID, 0.0)
+
+            results[uUID] = results[uUID]!! + p
+        } } }
+    }
+
+    fun checkWin(): Boolean {
+        return results.any { it.value >= ADHDConfig.pointsGoal }
+    }
+
+    fun prepareCeremony() {
+        if (!ADHDConfig.ceremonyEnabled) {
             status = TournamentStatus.FINISH
+
+            return
+        }
+
+        status = TournamentStatus.CEREMONY
+
+        timeBossBar.removeAll()
+
+        gameScoreboardManager.removeAll()
+
+        val winners = calculateWinners()
+
+        val message = Component.text("Турнир окончен! Победители: ")
+                .color(NamedTextColor.GOLD)
+            .append(Component.text(winners.joinToString(", ") {uUID -> Bukkit.getPlayer(uUID)?.displayName ?: "?"})
+                .color(NamedTextColor.GREEN))
+
+        currentTick = 0L
+
+        val world = Bukkit.getWorld(worldName)!!
+
+        val spawn = Location(world, ADHDConfig.ceremonySpawnPoint.x, ADHDConfig.ceremonySpawnPoint.y, ADHDConfig.ceremonySpawnPoint.z, ADHDConfig.ceremonySpawnPoint.yaw, ADHDConfig.ceremonySpawnPoint.pitch)
+
+        for (uuid in participants) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            if (winners.contains(player.uniqueId)) {
+                player.isGlowing = true
+
+                player.sendMessage(Component.text("Турнир окончен! Вы выиграли ★").color(NamedTextColor.GOLD))
+            } else {
+                player.sendMessage(message)
+            }
+
+            player.gameMode = GameMode.ADVENTURE
+
+            player.teleport(spawn)
         }
     }
 
-    fun remove(player: Player) {
-        participants.remove(player.uniqueId)
+    fun calculateWinners(): Set<UUID> {
+        val maxScore = results.values.maxOrNull()
 
-        currentGame.remove(player.uniqueId)
+        val winners = results.filterValues { it == maxScore }.keys
+
+        return winners
+    }
+
+    fun getGame(player: Player): Game? {
+        if (status != TournamentStatus.RUN) return null
+
+        return playerGames[player.uniqueId]
+    }
+
+    fun remove(player: Player) {
+        val game = playerGames.remove(player.uniqueId)
+
+        if (game != null && status == TournamentStatus.RUN) {
+            game.finish()
+
+            playerGames.filter { it.value == game }.keys.forEach { uUID -> run {
+                results.putIfAbsent(uUID, 0.0)
+
+                results[uUID] = results[uUID]!! + 1.0
+            } }
+        }
+
+        participants.remove(player.uniqueId)
 
         timeBossBar.remove(player)
 
-        player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        gameScoreboardManager.remove(player)
+
+        if (participants.isEmpty()) {
+            finish()
+        } else if (participants.size == 1) {
+            if (generated) {
+                prepareCeremony()
+            } else {
+                finish()
+            }
+        }
     }
 
     fun finish() {
+        ADHDPlugin.instance.logger.info("Завершён турнир $this")
+
         status = TournamentStatus.FINISH
 
-        timeBossBar.clear()
+        timeBossBar.removeAll()
 
-        ADHDPlugin.instance.logger.info("Завершён турнир $this")
+        gameScoreboardManager.removeAll()
 
         try {
             ticker.cancel()
-        } catch (_: IllegalStateException) {}
+        } catch (_: Exception) {}
 
         TournamentManager.finish(this)
     }

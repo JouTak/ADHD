@@ -1,6 +1,16 @@
 default:
   enabled: true
   duration: 120
+  displayName: ПВП
+  description: Раскромсайте своего противника!
   maps:
     - 1
     - 2
+
+meta:
+  inventories:
+    1:
+      - IRON_SWORD
+      - COOKED_BEEF
+      - GOLDEN_APPLE
+      - ARROW

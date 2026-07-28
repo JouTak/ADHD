@@ -8,7 +8,7 @@
 
 1. Придумайте название режима (далее — **`<mode>`**).
 
-2. В файле `src/main/kotlin/ru/joutak/adhd/config/ADHDConfig` добавьте название режима в список `registeredModes`, чтобы он автоматически обнаруживался при загрузке.
+2. В файле `src/main/kotlin/ru/joutak/adhd/config/ADHDConfig.kt` добавьте название режима в `registeredModes`, чтобы он автоматически обнаруживался при загрузке.
 
 3. В файле `src/main/resources/config.yml` укажите карты, которые будут использоваться в новом режиме, по аналогии с уже существующими.
 
@@ -16,17 +16,10 @@
 
 > **Примечание**
 >
-> Если режим или карта требуют хранения дополнительных данных, используйте секцию `meta` в конфигурации. По умолчанию она загружается как `Map<String, Any>`.
->
-> Если необходима строгая типизация, рекомендуется реализовать отдельный загрузчик, преобразующий содержимое `meta` в соответствующий data-класс.
+> Если режим или карта требуют хранения дополнительных данных, используйте секцию `meta` в конфигурации и реализуйте `ModeMeta`/`ModeMetaLoader` (или `MapMeta`/`MapMetaLoader` для карты) по аналогии с `PVPModeMeta`/`PVPModeMetaLoader`.
 
-5. Создайте пакет `src/main/kotlin/ru/joutak/adhd/game/concrete/<mode>`.
+5. Создайте класс игрового режима в `src/main/kotlin/ru/joutak/adhd/game/concrete/`, наследующийся от `Game`, и реализуйте все его методы (`start`, `update`, `getGameState`, `finish`, `summarize`) — см. `PVPGame` как пример.
 
-6. Создайте класс игрового режима, наследующийся от `Game`:
-   `src/main/kotlin/ru/joutak/adhd/game/Game`
+6. Зарегистрируйте создание вашей игры в `Tournament.kt`, в блоке `when (modeName) { ... }`.
 
-7. Реализуйте все необходимые методы базового класса `Game`.
-
-8. Создайте пакет `src/main/kotlin/ru/joutak/adhd/event/<mode>` для обработчиков событий режима.
-
-9. Реализуйте необходимые слушатели событий по примеру существующих и зарегистрируйте их в `src/main/kotlin/ru/joutak/adhd/ADHDPlugin`.
+7. При необходимости создайте слушатели событий в `src/main/kotlin/ru/joutak/adhd/listener/mode/<mode>/` и зарегистрируйте их в `ADHDPlugin.kt`.

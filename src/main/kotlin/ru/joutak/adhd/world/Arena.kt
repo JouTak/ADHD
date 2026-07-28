@@ -1,3 +1,5 @@
 package ru.joutak.adhd.world
 
-data class Arena(val spawnPoints: List<SpawnPoint>, val meta: Map<String, Any>)
+import ru.joutak.adhd.config.map.meta.MapMeta
+
+data class Arena(val spawnPoints: List<SpawnPoint>, val metas: Map<String, MapMeta>)

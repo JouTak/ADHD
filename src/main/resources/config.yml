@@ -4,6 +4,16 @@ default:
   templateWorldName: template
   lobbyWorld: lobby
 
+ceremony:
+  enabled: true
+  duration: 16
+  center:
+    x: 160
+    y: 60
+    z: 160
+    yaw: 0
+    pitch: 0
+
 maps:
   1:
     spawns:
@@ -19,9 +29,16 @@ maps:
         z: 64
         yaw: 180
         pitch: 0
+
   2:
     meta:
-      ventilator: true
+      pvp:
+        loots:
+          1:
+            - IRON_SWORD
+            - COOKED_BEEF
+            - GOLDEN_APPLE
+            - ARROW
     spawns:
       0:
         x: 192

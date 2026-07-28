@@ -1,10 +1,11 @@
-package ru.joutak.adhd.event.pvp
+package ru.joutak.adhd.listener.mode.pvp
 
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerRespawnEvent
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.tournament.TournamentManager
 
@@ -14,12 +15,12 @@ class RespawnListener : Listener {
     fun onRespawn(event: PlayerRespawnEvent) {
         val game = TournamentManager.getGame(event.player)
 
-        if (game != null && game is PVPGame) {
-            val arena = game.getArena(event.player)
+        if (game != null && game.getGameState() == GameState.RUN && game is PVPGame) {
+            game.calculateResult(event.player)
 
-            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {game.restoreArenaMembers(arena)})
+            game.finish()
 
-            game.calculatePoint(event.player)
+            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {game.teleportToSpawn(event.player)})
         }
     }
 }

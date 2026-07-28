@@ -7,155 +7,106 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
-import ru.joutak.adhd.game.Mode
+import ru.joutak.adhd.game.GameState
+import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.Arena
-import java.util.*
+import ru.joutak.adhd.world.SpawnPoint
+import java.util.UUID
 
 class PVPGame : Game() {
 
-    lateinit var mode: Mode
-
-    lateinit var assignedMembers: MutableMap<UUID, Arena>
-
     lateinit var worldName: String
 
-    val arenaMembers = mutableMapOf<Arena, MutableList<UUID>>()
+    lateinit var arena: Arena
 
-    val results = mutableMapOf<UUID, Double>()
+    lateinit var members: Set<UUID>
+
+    var result = mutableMapOf<UUID, Double>()
+
+    var state = GameState.START
+
+    var lSpawn: SpawnPoint? = null
 
     override fun start(
-        mode: Mode,
-        assignedMembers: Map<UUID, Arena>,
-        worldName: String
+        worldName: String,
+        arena: Arena,
+        members: Set<UUID>,
+        modeMeta: ModeMeta?
     ) {
-        ADHDPlugin.instance.logger.info("Начат режим ПВП...")
-
-        this.mode = mode
-        this.assignedMembers = assignedMembers.toMutableMap()
         this.worldName = worldName
+        this.arena = arena
+        this.members = members
 
-        val world = Bukkit.getWorld(worldName)
+        val world = Bukkit.getWorld(worldName)!!
 
-        world!!.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
-
-        for (uuid in assignedMembers.keys) {
-            val arena = assignedMembers[uuid]!!
-
-            arenaMembers.putIfAbsent(arena, mutableListOf())
-
-            arenaMembers[arena]!!.add(uuid)
-        }
-
-        for (arena in arenaMembers.keys) {
-            restoreArenaMembers(arena)
-        }
-    }
-
-    fun teleportArenaMembersToSpawn(arena: Arena) {
-        val world = Bukkit.getWorld(worldName)
-
-        val members = arenaMembers[arena]!!
-
-        val spawnPoints = arena.spawnPoints.toMutableList()
+        world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
 
         for (uuid in members) {
-            val player = Bukkit.getPlayer(uuid)!!
+            val player = Bukkit.getPlayer(uuid) ?: continue
 
-            if (!player.isDead) {
-                val spawnPoint = spawnPoints.random()
+            teleportToSpawn(player)
 
-                player.teleport(Location(world, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.yaw, spawnPoint.pitch))
-            }
+            restoreStats(player)
+
+            giveLayout(player)
         }
+
+        state = GameState.RUN
     }
 
-    fun restoreArenaMembersHealth(arena: Arena) {
-        val members = arenaMembers[arena]!!
+    fun teleportToSpawn(player: Player) {
+        val world = Bukkit.getWorld(worldName)!!
 
-        for (uuid in members) {
-            val player = Bukkit.getPlayer(uuid)!!
+        val spawns = arena.spawnPoints.toMutableSet()
 
-            if (!player.isDead) {
-                player.health = 20.0
-                player.saturation = 20.0f
-                player.foodLevel = 20
-
-                player.gameMode = GameMode.SURVIVAL
-            }
+        if (lSpawn != null) {
+            spawns -= mutableSetOf(lSpawn!!)
         }
-    }
 
-    fun restoreArenaMembersLayout(arena: Arena) {
-        val members = arenaMembers[arena]!!
-
-        for (uuid in members) {
-            val player = Bukkit.getPlayer(uuid)!!
-
-            if (!player.isDead) {
-                player.inventory.clear()
-
-                player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
-            }
+        val chosen: SpawnPoint = if (spawns.isEmpty()) {
+            lSpawn!!
+        } else {
+            spawns.random()
         }
+
+        lSpawn = chosen
+
+        player.teleport(Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch))
     }
 
-    fun getArena(player: Player): Arena {
-        return assignedMembers[player.uniqueId]!!
+    fun restoreStats(player: Player) {
+        player.gameMode = GameMode.ADVENTURE
+        player.health = 20.0
+        player.saturation = 20.0f
+        player.foodLevel = 20
     }
 
-    fun restoreArenaMembers(arena: Arena) {
-        teleportArenaMembersToSpawn(arena)
-        restoreArenaMembersHealth(arena)
-        restoreArenaMembersLayout(arena)
+    fun giveLayout(player: Player) {
+        player.inventory.clear()
+
+        player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
+
+        player.inventory.heldItemSlot = 0
+    }
+
+    fun calculateResult(player: Player) {
+        members.filter { uUID -> uUID != player.uniqueId }.forEach { uUID -> result[uUID] = 1.0 }
     }
 
     override fun update() {
 
     }
 
-    override fun remove(uuid: UUID) {
-        val arena = assignedMembers.remove(uuid) ?: return
-
-        arenaMembers[arena]!!.remove(uuid)
+    override fun getGameState(): GameState {
+        return state
     }
 
-    fun calculatePoint(player: Player) {
-        val arena = getArena(player)
-
-        for (uuid in arenaMembers[arena].orEmpty()) {
-            if (uuid == player.uniqueId) continue
-
-            results[uuid] = results.getOrDefault(uuid, 0.0) + 1.0
-        }
+    override fun finish() {
+        state = GameState.FINISH
     }
 
-    override fun finish(): Map<UUID, Double> {
-        ADHDPlugin.instance.logger.info("Завершён режим ПВП...")
-
-        val world = Bukkit.getWorld(worldName)
-
-        world!!.setGameRule(GameRules.IMMEDIATE_RESPAWN, false)
-
-        return calculateResults()
-    }
-
-    fun calculateResults(): MutableMap<UUID, Double> {
-        val finalResults = mutableMapOf<UUID, Double>()
-
-        for ((_, members) in arenaMembers) {
-            val maxScore = members.maxOfOrNull { results.getOrDefault(it, 0.0) } ?: continue
-
-            for (uuid in members) {
-                if (results.getOrDefault(uuid, 0.0) == maxScore) {
-                    finalResults[uuid] = 1.0
-                } else {
-                    finalResults[uuid] = 0.0
-                }
-            }
-        }
-
-        return finalResults
+    override fun summarize(): Map<UUID, Double> {
+        return result
     }
 }

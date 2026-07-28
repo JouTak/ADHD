@@ -2,36 +2,46 @@ package ru.joutak.adhd.config
 
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
-import ru.joutak.adhd.game.Mode
-import ru.joutak.adhd.world.Arena
+import ru.joutak.adhd.config.map.loader.MapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
+import ru.joutak.adhd.config.map.meta.MapMeta
+import ru.joutak.adhd.game.mode.Mode
+import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
+import ru.joutak.adhd.game.mode.meta.ModeMeta
+import ru.joutak.adhd.world.ConfigMap
 import ru.joutak.adhd.world.SpawnPoint
 import java.io.File
 import kotlin.math.floor
 
 object ADHDConfig {
 
-    /*
-    Запишите сюда названия режимов для поиска при загрузке.
-     */
-    val registeredModes = listOf<String>("PVP")
+    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()))
 
-    var maxPlayers: Int = 4
+    var maxPlayers = 4
         private set
 
-    var maps = mapOf<Int, Arena>()
+    var pointsGoal = 10.0
         private set
 
-    var modes = mapOf<String, Mode>()
+    var templateWorldName = "template"
         private set
 
-    var pointsGoal: Double = 10.0
+    var lobbyWorld = "lobby"
         private set
 
-    var templateWorldName: String = "template"
+    var ceremonyEnabled = false
         private set
 
-    var lobbyWorld: String = "lobby"
+    var ceremonyDuration = 16
         private set
+
+    var ceremonySpawnPoint: SpawnPoint = SpawnPoint(0.0, 0.0, 0.0, 0.0f, 0.0f)
+
+    val configMaps = mutableMapOf<Int, ConfigMap>()
+
+    val modes = mutableMapOf<String, Mode>()
+
+    private val mapMetaLoaders = mutableMapOf<String, MapMetaLoader>()
 
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
@@ -46,104 +56,119 @@ object ADHDConfig {
 
         pointsGoal = config.getDouble("default.pointsGoal", 10.0)
 
-        templateWorldName = config.getString("default.templateWorldName", "template") ?: "template"
+        templateWorldName = config.getString("default.templateWorldName") ?: "template"
 
-        lobbyWorld = config.getString("default.lobbyWorld", "lobby") ?: "lobby"
+        lobbyWorld = config.getString("default.lobbyWorld") ?: "lobby"
 
-        maps = loadMaps(config)
+        ceremonyEnabled = config.getBoolean("ceremony.enabled")
 
-        ADHDPlugin.instance.logger.info("Карты: $maps")
+        ceremonyDuration = config.getInt("ceremony.duration", 16)
 
-        modes = loadModes()
+        val ceremonySpawnSection = config.getConfigurationSection("ceremony.center")
+
+        if (ceremonySpawnSection != null) {
+            val x = ceremonySpawnSection.getDouble("x")
+            val y = ceremonySpawnSection.getDouble("y")
+            val z = ceremonySpawnSection.getDouble("z")
+            val yaw = ceremonySpawnSection.getDouble("yaw").toFloat()
+            val pitch = ceremonySpawnSection.getDouble("pitch").toFloat()
+
+            ceremonySpawnPoint = SpawnPoint(x, y, z, yaw, pitch)
+        }
+
+        loadConfigMaps(config)
+
+        ADHDPlugin.instance.logger.info("Карты: $configMaps")
+
+        loadModes()
 
         ADHDPlugin.instance.logger.info("Режимы: $modes")
     }
 
-    fun loadMaps(config: YamlConfiguration): Map<Int, Arena> {
-        val result = mutableMapOf<Int, Arena>()
+    fun loadConfigMaps(config: YamlConfiguration) {
+        registerMapMetaLoaders()
 
-        val maps = config.getConfigurationSection("maps") ?: return emptyMap()
+        val mapsSection = config.getConfigurationSection("maps") ?: return
 
-        for (mapId in maps.getKeys(false)) {
-            val mapIndex = mapId.toInt()
+        for (mapId in mapsSection.getKeys(false)) {
+            val mapSection = mapsSection.getConfigurationSection(mapId) ?: continue
 
-            if (mapIndex == 0) continue
+            val spawnsSection = mapSection.getConfigurationSection("spawns")
 
-            val spawns = maps.getConfigurationSection("$mapId.spawns") ?: continue
+            val spawns = mutableListOf<SpawnPoint>()
 
-            val spawnMap = mutableMapOf<Int, SpawnPoint>()
+            spawnsSection?.let {
+                for (spawnId in it.getKeys(false)) {
+                    val spawnSection = it.getConfigurationSection(spawnId) ?: continue
 
-            for (spawnId in spawns.getKeys(false)) {
-                val spawnIndex = spawnId.toInt()
+                    val x = spawnSection.getDouble("x")
+                    val y = spawnSection.getDouble("y")
+                    var z = spawnSection.getDouble("z")
+                    z -= floor(z / 512) * 512
+                    val yaw = spawnSection.getDouble("yaw").toFloat()
+                    val pitch = spawnSection.getDouble("pitch").toFloat()
 
-                var z = spawns.getDouble("$spawnId.z")
-
-                z -= floor(z / 512) * 512
-
-                spawnMap[spawnIndex] = SpawnPoint(
-                    x = spawns.getDouble("$spawnId.x"),
-                    y = spawns.getDouble("$spawnId.y"),
-                    z = z,
-                    yaw = spawns.getDouble("$spawnId.yaw").toFloat(),
-                    pitch = spawns.getDouble("$spawnId.pitch").toFloat()
-                )
-            }
-
-            if (!spawnMap.isEmpty()) {
-                val meta = maps.getConfigurationSection("$mapId.meta")?.getValues(false) ?: emptyMap<String, Any>()
-
-                result[mapIndex] = Arena(spawnMap.values.toList(), meta)
-            }
-        }
-
-        return result
-    }
-
-    fun loadModes(): Map<String, Mode> {
-        val result = mutableMapOf<String, Mode>()
-
-        for (name in registeredModes) {
-            val file = File(ADHDPlugin.instance.dataFolder, "config_$name.yml")
-
-            if (!file.exists()) {
-                ADHDPlugin.instance.saveResource("config_$name.yml", true)
-            }
-        }
-
-        val files = ADHDPlugin.instance.dataFolder.listFiles()
-
-        val regex = Regex("""^config_([a-z0-9]+)\.yml$""", RegexOption.IGNORE_CASE)
-
-        for (file in files) {
-            val match = regex.find(file.name)
-
-            if (match != null) {
-                val modeName = match.groupValues[1]
-
-                if (registeredModes.contains(modeName)) {
-                    val config = YamlConfiguration.loadConfiguration(file)
-
-                    val enabled = config.getBoolean("default.enabled")
-
-                    if (enabled) {
-                        val duration = config.getInt("default.duration", 60)
-
-                        val maps = config.getIntegerList("default.maps")
-
-                        val existingMaps = maps.toSet().intersect(ADHDConfig.maps.keys)
-
-                        if (existingMaps.isNotEmpty()) {
-                            val meta = config.getConfigurationSection("meta")?.getValues(false) ?: emptyMap<String, Any>()
-
-                            val mode = Mode(duration, existingMaps.toList(), meta)
-
-                            result[modeName] = mode
-                        }
-                    }
+                    spawns.add(SpawnPoint(x, y, z, yaw, pitch))
                 }
             }
-        }
 
-        return result
+            if (spawns.isEmpty()) continue
+
+            val metaSection = mapSection.getConfigurationSection("meta")
+
+            val metas = mutableMapOf<String, MapMeta>()
+
+            metaSection?.let {
+                for (metaType in it.getKeys(false)) {
+                    val metaSection = it.getConfigurationSection(metaType) ?: continue
+
+                    val loader = mapMetaLoaders[metaType] ?: continue
+
+                    metas[metaType] = loader.load(metaSection)
+                }
+            }
+
+            configMaps[mapId.toInt()] = ConfigMap(spawns, metas)
+        }
+    }
+
+    fun registerMapMetaLoaders() {
+        mapMetaLoaders["pvp"] = PVPMapMetaLoader()
+    }
+
+    fun loadModes() {
+        for (modeName in registeredModes.keys) {
+            val file = File(ADHDPlugin.instance.dataFolder, "config_$modeName.yml")
+
+            if (!file.exists()) {
+                ADHDPlugin.instance.saveResource("config_$modeName.yml", true)
+            }
+
+            val config = YamlConfiguration.loadConfiguration(file)
+
+            val enabled = config.getBoolean("default.enabled")
+
+            if (!enabled) continue
+
+            val duration = config.getInt("default.duration", 30)
+
+            val maps = config.getIntegerList("default.maps").toSet().intersect(configMaps.keys)
+
+            if (maps.isEmpty()) continue
+
+            val metaSection = config.getConfigurationSection("meta")
+
+            var meta: ModeMeta? = null
+
+            if (metaSection != null) {
+                meta = registeredModes[modeName]?.load(metaSection)
+            }
+
+            val displayName = config.getString("default.displayName") ?: "Режим"
+
+            val description = config.getString("default.description") ?: "Описание режима"
+
+            modes[modeName] = Mode(duration, maps.toList(), meta, displayName, description)
+        }
     }
 }
