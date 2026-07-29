@@ -6,10 +6,8 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.chunk.storage.RegionFile
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo
 import org.bukkit.Bukkit
-import org.bukkit.GameRules
 import org.bukkit.World
 import org.bukkit.WorldCreator
-import org.bukkit.WorldType
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.tournament.Tournament
@@ -22,15 +20,14 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.jvm.optionals.getOrNull
-import kotlin.random.Random
 
 object WorldManager {
 
+    val worldNameByTournaments = mutableMapOf<Tournament, String>()
+
+    val executor: ExecutorService = Executors.newFixedThreadPool(4)
+
     var worldId = 0
-
-    val executor: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors().coerceAtMost(6))
-
-    val tournamentWorlds = mutableMapOf<Tournament, String>()
 
     fun isAvailable(): Boolean {
         val worldFolder = Bukkit.getServer()
@@ -78,48 +75,46 @@ object WorldManager {
 
         copyFolderFiltered(source, target)
 
-        val adjustedMaps = mutableMapOf<Int, MutableList<Arena>>()
+        val arenaIds = mutableListOf<Int>()
 
-        val chosenArenas = mutableListOf<Int>()
+        tournament.pool.forEach { name -> arenaIds.add(ADHDConfig.modes[name]!!.maps.random()) }
 
-        for (i in tournament.modesPool.indices) {
-            chosenArenas.add(ADHDConfig.modes[tournament.modesPool[i]]!!.maps[Random.nextInt(ADHDConfig.modes[tournament.modesPool[i]]!!.maps.size)])
-        }
+        val arenas = mutableMapOf<Int, List<Arena>>()
 
         val arenaPointers = mutableMapOf<Int, Int>()
 
         var round = 0
 
-        for (i in chosenArenas) {
+        for (i in arenaIds) {
             arenaPointers.putIfAbsent(i, 0)
 
-            val arenas = mutableListOf<Arena>()
+            val adjustedArenas = mutableListOf<Arena>()
 
-            val oArena = ADHDConfig.maps[i]!!.copy()
+            val configMap = ADHDConfig.configMaps[i]!!.copy()
 
             for (j in 0..<(tournament.participants.size / 2)) {
                 val spawns = mutableListOf<SpawnPoint>()
 
-                for (oSpawn in oArena.spawnPoints) {
-                    spawns.add(SpawnPoint(oSpawn.x + arenaPointers[i]!! * 512, oSpawn.y, oSpawn.z + 512 * i, oSpawn.yaw, oSpawn.pitch))
+                for (spawn in configMap.spawnPoints) {
+                    spawns.add(SpawnPoint(spawn.x + arenaPointers[i]!! * 512, spawn.y, spawn.z + 512 * i, spawn.yaw, spawn.pitch))
                 }
 
                 arenaPointers[i] = arenaPointers[i]!! + 1
 
-                arenas.add(Arena(spawns.toList(), oArena.meta))
+                adjustedArenas.add(Arena(spawns.toList(), configMap.metas))
             }
 
-            adjustedMaps[round++] = arenas
+            arenas[round++] = adjustedArenas
         }
 
-        copyRegions(worldName, arenaPointers, tournament, adjustedMaps)
+        copyRegions(worldName, arenaPointers, tournament, arenas)
     }
 
     fun copyRegions(
         worldName: String,
         arenaPointers: MutableMap<Int, Int>,
         tournament: Tournament,
-        adjustedMaps: MutableMap<Int, MutableList<Arena>>
+        arenas: MutableMap<Int, List<Arena>>
     ) {
         val regionsFolder = Bukkit.getServer().levelDirectory
             .resolve("dimensions")
@@ -149,16 +144,22 @@ object WorldManager {
         }
 
         CompletableFuture.allOf(*futures.toTypedArray()).thenRun {
-            tournamentWorlds[tournament] = worldName
+            worldNameByTournaments[tournament] = worldName
 
-            if (tournament.status != TournamentStatus.FINISH) {
-                Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
-                    tournament.generated = true
-                    Bukkit.createWorld(WorldCreator(worldName))
-                    tournament.start(worldName, adjustedMaps)
-                })
-            } else {
-                clear(tournament)
+            if (tournament.status == TournamentStatus.GENERATE) {
+                try {
+                    Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                        val creator = WorldCreator(worldName)
+
+                        creator.generator(VoidGenerator())
+
+                        Bukkit.createWorld(creator)
+
+                        tournament.generated = true
+
+                        tournament.start(worldName, arenas)
+                    })
+                } catch (_: Exception) {}
             }
         }
     }
@@ -261,39 +262,27 @@ object WorldManager {
     }
 
     fun getLobbyWorld(): World {
-        var lobby = Bukkit.getWorld(ADHDConfig.lobbyWorld)
+        val folder = Bukkit.getServer().levelDirectory
+            .resolve("dimensions")
+            .resolve("minecraft")
+            .resolve(ADHDConfig.lobbyWorld)
+            .toFile()
 
-        if (lobby == null) {
-            lobby = Bukkit.createWorld(WorldCreator(ADHDConfig.lobbyWorld).type(WorldType.NORMAL))
+        var lobby: World? = null
+
+        if (folder.exists()) {
+            lobby = Bukkit.createWorld(WorldCreator(ADHDConfig.lobbyWorld))
         }
 
         if (lobby == null) {
             lobby = Bukkit.getWorld("overworld")
-
-            ADHDPlugin.instance.logger.warning("Couldn't load lobby. Using default world as fallback")
         }
 
-        lobby!!.setGameRule(GameRules.SPAWN_MOBS, false)
-        lobby.setGameRule(GameRules.SPAWN_MONSTERS, false)
-        lobby.setGameRule(GameRules.FALL_DAMAGE, false)
-        lobby.setGameRule(GameRules.FIRE_DAMAGE, false)
-        lobby.setGameRule(GameRules.FREEZE_DAMAGE, false)
-
-        return lobby
-    }
-
-    fun shutdown() {
-        clearAll()
-
-        val lobby = Bukkit.getWorld(ADHDConfig.lobbyWorld)
-
-        if (lobby != null) {
-            Bukkit.unloadWorld(lobby, false)
-        }
+        return lobby!!
     }
 
     fun clear(tournament: Tournament) {
-        val worldName = tournamentWorlds[tournament] ?: return
+        val worldName = worldNameByTournaments.remove(tournament) ?: return
 
         val world = Bukkit.getWorld(worldName)
 
@@ -310,9 +299,14 @@ object WorldManager {
         worldFolder.deleteRecursively()
     }
 
-    fun clearAll() {
-        for (tournament in tournamentWorlds.keys) {
-            clear(tournament)
-        }
+    fun clearOnStartUp() {
+        val regex = Regex("${ADHDConfig.templateWorldName}_\\d+")
+
+        val worldsFolder = Bukkit.getServer().levelDirectory
+            .resolve("dimensions")
+            .resolve("minecraft")
+            .toFile()
+
+        worldsFolder.listFiles().filter { f -> regex.matches(f.name) }.forEach { file -> file.deleteRecursively() }
     }
 }

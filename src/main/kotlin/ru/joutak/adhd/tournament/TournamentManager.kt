@@ -9,15 +9,13 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.world.WorldManager
+import ru.joutak.minigames.command.ready.ReadyCommand
 import ru.joutak.minigames.domain.GameInstance
 import ru.joutak.minigames.domain.GameInstanceConfig
 import ru.joutak.minigames.domain.MatchmakingMode
-import ru.joutak.minigames.lobby.LobbyItemsManager
 import ru.joutak.minigames.managers.MatchmakingManager
-import ru.joutak.minigames.ui.LobbyScoreboardManager
 import java.util.UUID
 import kotlin.math.ceil
-import kotlin.random.Random
 
 object TournamentManager {
 
@@ -34,80 +32,74 @@ object TournamentManager {
     fun handleQuit(player: Player) {
         sendToLobby(player)
 
-        val playerTournament = playerTournaments.remove(player.uniqueId)
+        val tournament = playerTournaments.remove(player.uniqueId) ?: return
 
-        val delta = activeTournaments.toSet() - playerTournaments.values.toSet()
-
-        for (tournament in delta) {
-            tournament.finish()
-        }
-
-        if (playerTournament == null) return
-
-        playerTournament.remove(player)
+        tournament.remove(player)
     }
 
     fun load() {
         MatchmakingManager.loadInstances(listOf(GameInstanceConfig("default", ADHDConfig.maxPlayers, 1, matchmakingMode = MatchmakingMode.SOLO)))
+
+        WorldManager.clearOnStartUp()
     }
 
     fun createTournament(instance: GameInstance) {
-        var toRemove = instance.teams.toMutableList().flatten()
+        val everyone = instance.teams.flatten()
 
         if (!WorldManager.isAvailable()) {
-            ADHDPlugin.instance.logger.severe("Template world is not available. Game won't start...")
+            ADHDPlugin.instance.logger.severe("World template can't load. Game won't start...")
 
-            for (player in toRemove) {
-                ensureRetry(player)
+            for (player in everyone) {
+                retry(player)
             }
+        } else if (ADHDConfig.modes.isEmpty()) {
+            ADHDPlugin.instance.logger.severe("No modes were loaded. Game won't start...")
 
-            return
+            for (player in everyone) {
+                retry(player)
+            }
         }
 
-        //TODO: Implement such player count system in minigames api instead
-
-        toRemove = toRemove.subList(toRemove.size / 2 * 2, toRemove.size)
+        val toRemove = everyone.subList(everyone.size / 2 * 2, everyone.size)
 
         for (player in toRemove) {
-            instance.removePlayer(player)
+            retry(player)
         }
 
-        val participants = instance.startMatchAndSnapshotPlayers()
+        instance.teams.forEach { l -> l.clear() }
 
-        instance.teams.clear()
+        val participants = instance.getActivePlayerIds().toMutableList()
 
-        for (player in toRemove) {
-            ensureRetry(player)
-        }
+        val pool = createPool()
 
-        val tournament = Tournament(participants.toMutableList(), createPool())
+        val tournament = Tournament(participants, pool)
 
         activeTournaments.add(tournament)
 
-        for (uuid in participants) {
-            playerTournaments[uuid] = tournament
+        participants.forEach { uUID -> playerTournaments[uUID] = tournament }
 
-            val player = Bukkit.getPlayer(uuid)!!
-
-            player.sendMessage(Component.text("Скоро начнём...").color(NamedTextColor.GOLD))
-        }
+        participants.forEach { uUID -> Bukkit.getPlayer(uUID)?.sendMessage(Component.text("Скоро начнём...").color(NamedTextColor.GOLD)) }
 
         WorldManager.generate(tournament)
     }
 
-    fun getGame(player: Player): Game? {
-        val tournament = playerTournaments[player.uniqueId] ?: return null
+    fun retry(player: Player) {
+        MatchmakingManager.removePlayer(player)
 
-        if (tournament.status != TournamentStatus.RUNNING) return null
-
-        return tournament.currentGame
+        Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+            if (player.isOnline) {
+                ReadyCommand.performReady(player)
+            }
+        })
     }
 
     fun createPool(): List<String> {
         val pool = mutableListOf<String>()
 
+        val names = ADHDConfig.modes.keys.toList()
+
         for (i in 0..<ceil(2 * ADHDConfig.pointsGoal - 1).toInt()) {
-            pool.add(ADHDConfig.modes.keys.toList()[Random.nextInt(ADHDConfig.modes.size)])
+            pool.add(names.random())
         }
 
         return pool
@@ -116,66 +108,46 @@ object TournamentManager {
     fun sendToLobby(player: Player) {
         val lobby = WorldManager.getLobbyWorld()
 
-        val spawn = lobby.spawnLocation
-
         player.gameMode = GameMode.ADVENTURE
+        player.health = 20.0
+        player.saturation = 20.0f
+        player.foodLevel = 20
+        player.isGlowing = false
 
         player.inventory.clear()
 
-        player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
-
-        player.teleport(spawn)
+        player.teleport(lobby.spawnLocation)
     }
 
-    fun shutdown() {
-        shutdownFlag = true
+    fun getGame(player: Player): Game? {
+        val tournament = playerTournaments[player.uniqueId] ?: return null
 
-        for (tournament in activeTournaments) {
-            tournament.finish()
-        }
-
-        WorldManager.shutdown()
-    }
-
-    fun ensureRetry(player: Player) {
-        MatchmakingManager.removePlayer(player)
-        MatchmakingManager.addPlayer(player)
-        LobbyItemsManager.ensure(player)
-        LobbyScoreboardManager.ensure(player)
+        return tournament.getGame(player)
     }
 
     fun finish(tournament: Tournament) {
         activeTournaments.remove(tournament)
 
         for (uuid in tournament.participants) {
-            if (playerTournaments.contains(uuid)) {
-                val player = Bukkit.getPlayer(uuid)
-
-                if (player != null && player.isOnline) {
-                    sendToLobby(player)
-
-                    if (!shutdownFlag) {
-                        MatchmakingManager.removePlayer(player)
-                    }
-
-                    if (!tournament.winners.isEmpty()) {
-                        val names = tournament.winners.joinToString(", ") { uuid ->
-                            Bukkit.getPlayer(uuid)?.displayName ?: "Unknown"
-                        }
-
-                        player.sendMessage(Component.text("Игра окончена! Победители: ").color(NamedTextColor.GOLD).append(
-                            Component.text(names).color(NamedTextColor.GREEN)))
-                    }
-                }
-            }
-
             playerTournaments.remove(uuid)
+
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            sendToLobby(player)
+
+            if (!shutdownFlag) {
+                MatchmakingManager.removePlayer(player)
+            }
         }
 
-        if (tournament.generated) WorldManager.clear(tournament)
+        WorldManager.clear(tournament)
     }
 
-    fun isInLobby(player: Player): Boolean {
-        return !MatchmakingManager.isPlayerInStartedGame(player.uniqueId)
+    fun shutdown() {
+        shutdownFlag = true
+
+        activeTournaments.forEach { tournament -> tournament.finish() }
     }
+
+    fun isInLobby(player: Player) = !MatchmakingManager.isPlayerInStartedGame(player.uniqueId)
 }

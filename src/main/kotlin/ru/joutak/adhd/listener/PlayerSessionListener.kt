@@ -10,11 +10,15 @@ class PlayerSessionListener : Listener {
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
-        TournamentManager.handleJoin(event.player)
+        if (TournamentManager.isInLobby(event.player)) {
+            TournamentManager.handleJoin(event.player)
+        }
     }
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
-        TournamentManager.handleQuit(event.player)
+        if (TournamentManager.isInLobby(event.player)) {
+            TournamentManager.handleQuit(event.player)
+        }
     }
 }
