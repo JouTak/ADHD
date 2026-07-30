@@ -12,9 +12,9 @@ import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
-import ru.joutak.adhd.game.concrete.PILLARSGame
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.PVPGame
+import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
@@ -114,6 +114,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 for (mS in assignedMembers.keys) {
                     val game = when (modeName) {
                         "PVP" -> PVPGame()
+                        "Pillars" -> PillarsGame()
                         else -> error("No such mode...")
                     }
 

@@ -1,5 +1,0 @@
-default:
-  enabled: true
-  duration: 120
-  maps:
-    - 3
