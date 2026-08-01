@@ -8,15 +8,19 @@ import org.bukkit.GameMode
 import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.block.data.BlockData
+import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.FireworkMeta
+import ru.joutak.adhd.config.map.meta.concrete.VentilatorMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
+import kotlin.math.floor
 
 class SnipersGame : Game() {
 
@@ -31,6 +35,16 @@ class SnipersGame : Game() {
     var state = GameState.START
 
     var result = mutableMapOf<UUID, Double>()
+
+    lateinit var ventilatorFrames: List<Map<BlockDisplay, BlockData>>
+
+    lateinit var ventilatorUsed: Set<BlockDisplay>
+
+    var ventilator = false
+
+    var ventilatorFrame = 0
+
+    var ventilatorFrameTick = 10L
 
     override fun start(
         worldName: String,
@@ -54,6 +68,63 @@ class SnipersGame : Game() {
             giveLayout(player)
 
             restoreStats(player)
+        }
+
+        val ventilatorMapMeta = arena.metas["ventilator"] as? VentilatorMapMeta
+
+        if (ventilatorMapMeta != null) {
+            val offsetX = floor(arena.spawnPoints[0].x / 512) * 512
+
+            val offsetZ = floor(arena.spawnPoints[0].z / 512) * 512
+
+            val displays = mutableListOf(mutableMapOf<BlockDisplay, BlockData>())
+
+            val usedDisplays = mutableMapOf<String, BlockDisplay>()
+
+            val placement = ventilatorMapMeta.placement
+
+            for (center in ventilatorMapMeta.frames) {
+                for (y in -3..3) {
+                    for (z in -18..18) {
+                        for (x in -18..18) {
+                            val block = world.getBlockAt(Location(world, center.x + offsetX + x, center.y + y, center.z + offsetZ + z))
+
+                            if (block.type == Material.AIR) continue
+
+                            val aX = placement.x + offsetX + x
+                            val aY = placement.y + y
+                            val aZ = placement.z + offsetZ + z
+
+                            val token = "${aX.toInt()} ${aY.toInt()} ${aZ.toInt()}"
+
+                            val targetLocation = Location(world, aX, aY, aZ)
+
+                            val display = usedDisplays[token] ?: world.spawn(targetLocation, BlockDisplay::class.java)
+
+                            display.interpolationDuration = 0
+                            display.interpolationDelay = 0
+
+                            usedDisplays[token] = display
+
+                            displays[displays.size - 1][display] = block.blockData
+
+                            if (displays.size == 1) {
+                                display.block = block.blockData
+                            }
+                        }
+                    }
+                }
+
+                displays.add(mutableMapOf())
+            }
+
+            displays.removeLast()
+
+            ventilatorFrames = displays
+
+            ventilatorUsed = usedDisplays.values.toSet()
+
+            ventilator = true
         }
 
         state = GameState.RUN
@@ -129,7 +200,27 @@ class SnipersGame : Game() {
     }
 
     override fun update() {
+        if (ventilator) {
+            updateVentilator()
+        }
+    }
 
+    fun updateVentilator() {
+        if (ventilatorFrameTick <= 0) {
+            for (it in ventilatorFrames[ventilatorFrame]) {
+                it.key.block = it.value
+            }
+
+            for (display in ventilatorUsed.subtract(ventilatorFrames[ventilatorFrame++].keys)) {
+                display.block = Material.AIR.createBlockData()
+            }
+
+            ventilatorFrameTick = 10L
+        }
+
+        if (ventilatorFrame == ventilatorFrames.size) ventilatorFrame = 0
+
+        ventilatorFrameTick -= 2L
     }
 
     override fun getGameState(): GameState {
@@ -138,6 +229,10 @@ class SnipersGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
+
+        if (ventilator) {
+            ventilatorUsed.forEach { display -> display.remove() }
+        }
     }
 
     override fun summarize(): Map<UUID, Double> {
