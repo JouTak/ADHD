@@ -124,6 +124,10 @@ class SnipersGame : Game() {
         return firework
     }
 
+    fun calculateResult(player: Player) {
+        members.filter { uUID -> uUID != player.uniqueId }.forEach { uUID -> result[uUID] = 1.0 }
+    }
+
     override fun update() {
 
     }
