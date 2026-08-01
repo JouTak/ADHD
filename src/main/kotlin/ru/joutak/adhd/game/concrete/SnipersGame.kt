@@ -2,6 +2,8 @@ package ru.joutak.adhd.game.concrete
 
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ChargedProjectiles
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.FireworkEffect
 import org.bukkit.GameMode
@@ -13,6 +15,8 @@ import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.FireworkMeta
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import ru.joutak.adhd.config.map.meta.concrete.VentilatorMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
@@ -21,6 +25,7 @@ import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
 import kotlin.math.floor
+import kotlin.random.Random
 
 class SnipersGame : Game() {
 
@@ -45,6 +50,10 @@ class SnipersGame : Game() {
     var ventilatorFrame = 0
 
     var ventilatorFrameTick = 10L
+
+    var gravityChangeTick = 160L
+
+    var gravityDirection = "DOWN"
 
     override fun start(
         worldName: String,
@@ -125,6 +134,8 @@ class SnipersGame : Game() {
             ventilatorUsed = usedDisplays.values.toSet()
 
             ventilator = true
+
+            changeGravity()
         }
 
         state = GameState.RUN
@@ -200,8 +211,58 @@ class SnipersGame : Game() {
     }
 
     override fun update() {
+        if (gravityChangeTick <= 0L) {
+            changeGravity()
+
+            gravityChangeTick = Random.nextLong(80L, 160L)
+        }
+
+        gravityChangeTick -= 2L
+
         if (ventilator) {
             updateVentilator()
+        }
+    }
+
+    fun changeGravity() {
+        if (gravityDirection == "UP") {
+            gravityDirection = "DOWN"
+
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.removePotionEffect(PotionEffectType.JUMP_BOOST)
+
+                player.removePotionEffect(PotionEffectType.SLOW_FALLING)
+            }
+        } else {
+            gravityDirection = "UP"
+
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.JUMP_BOOST,
+                        -1,
+                        2,
+                        false,
+                        false,
+                        true
+                    )
+                )
+
+                player.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.SLOW_FALLING,
+                        -1,
+                        2,
+                        false,
+                        false,
+                        true
+                    )
+                )
+            }
         }
     }
 
@@ -216,6 +277,20 @@ class SnipersGame : Game() {
             }
 
             ventilatorFrameTick = 10L
+        }
+
+        if (gravityChangeTick % 5L == 0L) {
+            val message = if (gravityDirection == "UP") {
+                Component.text("Вентилятор ▲").color(NamedTextColor.BLUE)
+            } else {
+                Component.text("Вентилятор ▼").color(NamedTextColor.GOLD)
+            }
+
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.sendActionBar(message)
+            }
         }
 
         if (ventilatorFrame == ventilatorFrames.size) ventilatorFrame = 0
