@@ -55,6 +55,8 @@ class SnipersGame : Game() {
 
             restoreStats(player)
         }
+
+        state = GameState.RUN
     }
 
     fun teleportToSpawn(player: Player) {
