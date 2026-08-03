@@ -53,7 +53,7 @@ class SnipersGame : Game() {
 
     var ventilatorFrame = 0
 
-    var ventilatorFrameTick = 10L
+    var ventilatorFrameTick = 4L
 
     var gravityChangeTick = 160L
 
@@ -290,11 +290,21 @@ class SnipersGame : Game() {
                 it.key.block = it.value
             }
 
-            for (display in ventilatorUsed.subtract(ventilatorFrames[ventilatorFrame++].keys)) {
+            for (display in ventilatorUsed.subtract(ventilatorFrames[ventilatorFrame].keys)) {
                 display.block = Material.AIR.createBlockData()
             }
 
-            ventilatorFrameTick = 10L
+            if (gravityDirection == "UP") {
+                ventilatorFrame++
+
+                if (ventilatorFrame == ventilatorFrames.size) ventilatorFrame = 0
+            } else {
+                ventilatorFrame--
+
+                if (ventilatorFrame == -1) ventilatorFrame = ventilatorFrames.size - 1
+            }
+
+            ventilatorFrameTick = 4L
         }
 
         if (gravityChangeTick % 5L == 0L) {
@@ -310,8 +320,6 @@ class SnipersGame : Game() {
                 player.sendActionBar(message)
             }
         }
-
-        if (ventilatorFrame == ventilatorFrames.size) ventilatorFrame = 0
 
         ventilatorFrameTick -= 2L
     }
