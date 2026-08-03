@@ -10,6 +10,9 @@ import org.bukkit.GameMode
 import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.attribute.Attribute
+import org.bukkit.attribute.AttributeModifier
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Player
@@ -17,6 +20,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.FireworkMeta
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.meta.concrete.VentilatorMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
@@ -54,6 +58,8 @@ class SnipersGame : Game() {
     var gravityChangeTick = 160L
 
     var gravityDirection = "DOWN"
+
+    val FAN_GRAVITY = NamespacedKey(ADHDPlugin.instance, "fan_gravity")
 
     override fun start(
         worldName: String,
@@ -234,6 +240,16 @@ class SnipersGame : Game() {
                 player.removePotionEffect(PotionEffectType.JUMP_BOOST)
 
                 player.removePotionEffect(PotionEffectType.SLOW_FALLING)
+
+                val gravity = player.getAttribute(Attribute.GRAVITY)
+
+                gravity?.addModifier(
+                    AttributeModifier(
+                        FAN_GRAVITY,
+                        0.08,
+                        AttributeModifier.Operation.ADD_NUMBER
+                    )
+                )
             }
         } else {
             gravityDirection = "UP"
@@ -262,6 +278,8 @@ class SnipersGame : Game() {
                         true
                     )
                 )
+
+                player.getAttribute(Attribute.GRAVITY)?.removeModifier(FAN_GRAVITY)
             }
         }
     }
@@ -307,6 +325,12 @@ class SnipersGame : Game() {
 
         if (ventilator) {
             ventilatorUsed.forEach { display -> display.remove() }
+        }
+
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            player.getAttribute(Attribute.GRAVITY)?.removeModifier(FAN_GRAVITY)
         }
     }
 
