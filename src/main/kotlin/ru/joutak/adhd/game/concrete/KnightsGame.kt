@@ -66,6 +66,8 @@ class KnightsGame : Game() {
 
             giveLayout(player)
         }
+
+        state = GameState.RUN
     }
 
     override fun update() {
@@ -124,6 +126,10 @@ class KnightsGame : Game() {
         }
 
         player.inventory.heldItemSlot = 0
+    }
+
+    fun calculateResult(player: Player) {
+        members.filter { uUID -> uUID != player.uniqueId }.forEach { uUID -> result[uUID] = 1.0 }
     }
 
     override fun getGameState(): GameState {
