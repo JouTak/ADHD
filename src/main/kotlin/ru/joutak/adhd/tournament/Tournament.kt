@@ -147,6 +147,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                     round++
 
+                    games.filter { it.getGameState() != GameState.FINISH }.forEach { it.finish() }
+
                     calculate()
 
                     if (checkWin()) prepareCeremony()
@@ -302,6 +304,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
         ADHDPlugin.instance.logger.info("Завершён турнир $this")
 
         status = TournamentStatus.FINISH
+
+        games.filter { it.getGameState() != GameState.FINISH }.forEach { it.finish() }
 
         timeBossBar.removeAll()
 
