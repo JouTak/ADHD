@@ -5,3 +5,11 @@ default:
   description: Убейте своего противника!
   maps:
     - 3
+
+meta:
+  horse:
+    speed: 0.16875
+  weapons:
+    - DIAMOND_SPEAR
+    - CROSSBOW
+    - BOW

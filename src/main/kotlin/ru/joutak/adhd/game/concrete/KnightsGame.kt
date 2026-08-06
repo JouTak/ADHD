@@ -5,12 +5,14 @@ import org.bukkit.GameMode
 import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Horse
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
+import ru.joutak.adhd.game.mode.meta.concrete.KnightsModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
@@ -31,6 +33,8 @@ class KnightsGame : Game() {
 
     var wMaterial = Material.DIAMOND_SPEAR
 
+    var horseSpeed = 0.16875
+
     override fun start(
         worldName: String,
         arena: Arena,
@@ -40,6 +44,14 @@ class KnightsGame : Game() {
         this.worldName = worldName
         this.arena = arena
         this.members = members
+
+        val meta = modeMeta as? KnightsModeMeta
+
+        if (meta != null) {
+            horseSpeed = meta.horseSpeed
+
+            wMaterial = meta.weapons.random()
+        }
 
         val world = Bukkit.getWorld(worldName)!!
 
@@ -90,6 +102,8 @@ class KnightsGame : Game() {
         horse.owner = player
         horse.inventory.saddle = ItemStack(Material.SADDLE)
 
+        horse.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = horseSpeed
+
         horse.addPassenger(player)
     }
 
@@ -104,6 +118,10 @@ class KnightsGame : Game() {
         player.inventory.clear()
 
         player.inventory.setItem(0, ItemStack(wMaterial, 1))
+
+        if (wMaterial == Material.CROSSBOW || wMaterial == Material.BOW) {
+            player.inventory.setItem(8, ItemStack(Material.ARROW, 64))
+        }
 
         player.inventory.heldItemSlot = 0
     }

@@ -6,6 +6,7 @@ import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.mode.Mode
+import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.ConfigMap
@@ -15,7 +16,7 @@ import kotlin.math.floor
 
 object ADHDConfig {
 
-    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", null))
+    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", KnightsModeMetaLoader()))
 
     var maxPlayers = 4
         private set
