@@ -16,17 +16,44 @@ ceremony:
 
 maps:
   1:
+    meta:
+      ventilator:
+        placement:
+          x: 256
+          y: 60
+          z: 735
+        frames:
+          1:
+            center:
+              x: 256
+              y: 67
+              z: 796
+          2:
+            center:
+              x: 218
+              y: 67
+              z: 796
+          3:
+            center:
+              x: 180
+              y: 67
+              z: 795
+          4:
+            center:
+              x: 142
+              y: 67
+              z: 795
     spawns:
       0:
         x: 256
-        y: 60
-        z: 256
+        y: 65.5
+        z: 725
         yaw: 0
         pitch: 0
       1:
-        x: 64
-        y: 60
-        z: 64
+        x: 256
+        y: 65.5
+        z: 745
         yaw: 180
         pitch: 0
   2:

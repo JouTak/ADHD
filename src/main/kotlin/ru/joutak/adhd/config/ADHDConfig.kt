@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
@@ -16,7 +17,7 @@ import kotlin.math.floor
 
 object ADHDConfig {
 
-    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", KnightsModeMetaLoader()))
+    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", KnightsModeMetaLoader()), Pair("Snipers", null))
 
     var maxPlayers = 4
         private set
@@ -135,6 +136,7 @@ object ADHDConfig {
 
     fun registerMapMetaLoaders() {
         mapMetaLoaders["pvp"] = PVPMapMetaLoader()
+        mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
     }
 
     fun loadModes() {

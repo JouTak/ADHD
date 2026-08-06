@@ -15,6 +15,7 @@ import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.PVPGame
+import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
@@ -115,6 +116,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                     val game = when (modeName) {
                         "PVP" -> PVPGame()
                         "Knights" -> KnightsGame()
+                        "Snipers" -> SnipersGame()
                         else -> error("No such mode...")
                     }
 
