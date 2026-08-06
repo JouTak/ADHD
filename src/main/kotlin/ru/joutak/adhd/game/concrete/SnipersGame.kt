@@ -338,6 +338,8 @@ class SnipersGame : Game() {
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
 
+            player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
+
             player.getAttribute(Attribute.GRAVITY)?.removeModifier(FAN_GRAVITY)
         }
     }

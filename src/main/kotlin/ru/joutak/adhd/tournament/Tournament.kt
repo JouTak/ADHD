@@ -67,6 +67,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
             timeBossBar.add(player)
 
             gameScoreboardManager.add(player)
+
+            results[uuid] = 0.0
         }
 
         ticker.runTaskTimer(ADHDPlugin.instance, 2L, 2L)
@@ -152,6 +154,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                     round++
 
                     games.filter { it.getGameState() != GameState.FINISH }.forEach { it.finish() }
+
+                    tryAnnounce()
 
                     calculate()
 
@@ -256,14 +260,16 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
             player.gameMode = GameMode.ADVENTURE
 
+            player.inventory.clear()
+
             player.teleport(spawn)
         }
     }
 
     fun calculateWinners(): Set<UUID> {
-        val maxScore = results.values.maxOrNull()
+        val maxScore = results.filter { participants.contains(it.key) }.values.maxOrNull()
 
-        val winners = results.filterValues { it == maxScore }.keys
+        val winners = results.filter { participants.contains(it.key) }.filterValues { it == maxScore }.keys
 
         return winners
     }
