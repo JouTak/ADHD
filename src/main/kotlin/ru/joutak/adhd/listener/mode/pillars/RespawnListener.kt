@@ -15,10 +15,8 @@ class RespawnListener: Listener {
     fun onRespawn(event: PlayerRespawnEvent) {
         val game = TournamentManager.getGame(event.player)
 
-        ADHDPlugin.instance.logger.info("Player ${event.player.name} respawned, game: $game, state: ${game?.getGameState()}")
 
         if (game != null && game.getGameState() == GameState.RUN && game is PillarsGame) {
-            ADHDPlugin.instance.logger.info("Processing Pillars death for ${event.player.name}")
             game.calculateResult(event.player)
 
             game.finish()

@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.config.map.meta.concrete.PillarsMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.Mode
@@ -35,7 +36,10 @@ class PillarsGame : Game() {
     var state = GameState.START
 
     private var interval = 2
-    private var itemRunnable: BukkitRunnable? = null
+    private var tickCounter = 0
+    private var intervalTicks = 0
+
+
 
     private var isFinished = false
 
@@ -54,14 +58,15 @@ class PillarsGame : Game() {
             val player = Bukkit.getPlayer(uuid) ?: continue
 
             teleportToSpawn(player)
-
+            player.inventory.clear()
             restoreStats(player)
         }
 
         state = GameState.RUN
-        startItemDistribution()
-    }
 
+        intervalTicks = (interval * 20L).coerceAtLeast(20L).toInt()
+        tickCounter = 0
+    }
 
     fun teleportToSpawn(player: Player) {
         val world = Bukkit.getWorld(worldName)!!
@@ -94,7 +99,16 @@ class PillarsGame : Game() {
         members.filter {uUID -> uUID != player.uniqueId}.forEach { uUID -> result[uUID] = 1.0 }
     }
 
-    override fun update() {}
+    override fun update() {
+        if (isFinished || state != GameState.RUN) return
+
+        tickCounter++
+
+        if (tickCounter >= intervalTicks) {
+            tickCounter = 0
+            giveRandomItem()
+        }
+    }
 
     private fun getRandomItem(): ItemStack? {
         if (meta.items.isEmpty()) return null
@@ -118,29 +132,6 @@ class PillarsGame : Game() {
         }
     }
 
-    private fun startItemDistribution() {
-        val interval = (interval * 20L).coerceAtLeast(20L)
-        ADHDPlugin.instance.logger.info("Started items distribution with interval: $interval seconds")
-
-        val runnable = object : BukkitRunnable() {
-            override fun run() {
-                if (isFinished) {
-                    this.cancel()
-                    itemRunnable = null
-                    return
-                }
-                try {
-                    giveRandomItem()
-                } catch (e : Exception) {
-                    ADHDPlugin.instance.logger.warning(e.message)
-                }
-            }
-        }
-
-        runnable.runTaskTimer(ADHDPlugin.instance, interval, interval)
-        itemRunnable = runnable
-    }
-
     override fun getGameState(): GameState { return state }
 
     override fun summarize(): Map<UUID, Double> {
@@ -149,10 +140,7 @@ class PillarsGame : Game() {
     }
 
     override fun finish() {
-        ADHDPlugin.instance.logger.info("PillarsGame finishing for members: $members")
         isFinished = true
-        itemRunnable?.cancel()
-        itemRunnable = null
 
         state = GameState.FINISH
     }

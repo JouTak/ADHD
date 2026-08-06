@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
@@ -135,6 +136,7 @@ object ADHDConfig {
 
     fun registerMapMetaLoaders() {
         mapMetaLoaders["pvp"] = PVPMapMetaLoader()
+        mapMetaLoaders["pillars"] = PillarsMapMetaLoader()
     }
 
     fun loadModes() {
