@@ -29,7 +29,6 @@ maps:
         z: 64
         yaw: 180
         pitch: 0
-
   2:
     meta:
       pvp:
@@ -51,4 +50,18 @@ maps:
         y: 60
         z: 128
         yaw: 270
+        pitch: 0
+  3:
+    spawns:
+      0:
+        x: 258
+        y: 70
+        z: 1797
+        yaw: 270
+        pitch: 0
+      1:
+        x: 284
+        y: 70
+        z: 1793
+        yaw: 90
         pitch: 0

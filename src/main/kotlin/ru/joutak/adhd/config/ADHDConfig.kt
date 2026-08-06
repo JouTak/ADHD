@@ -15,7 +15,7 @@ import kotlin.math.floor
 
 object ADHDConfig {
 
-    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()))
+    val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", null))
 
     var maxPlayers = 4
         private set
