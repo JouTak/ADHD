@@ -116,6 +116,8 @@ object TournamentManager {
 
         player.inventory.clear()
 
+        player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
+
         player.teleport(lobby.spawnLocation)
     }
 

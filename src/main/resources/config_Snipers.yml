@@ -1,0 +1,7 @@
+default:
+  enabled: true
+  duration: 120
+  displayName: Перелётные снайперы
+  description: Застрелите своего противника!
+  maps:
+    - 1

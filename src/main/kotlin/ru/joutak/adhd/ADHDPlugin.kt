@@ -26,6 +26,8 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(PlayerSessionListener(), instance)
 
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.pvp.RespawnListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.snipers.FireListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.snipers.RespawnListener(), instance)
 
         Bukkit.getScheduler().runTaskTimer(instance, Runnable {
             val gInstance = MatchmakingManager.pollReady()
