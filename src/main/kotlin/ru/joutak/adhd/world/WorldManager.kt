@@ -110,7 +110,7 @@ object WorldManager {
 
                     Bukkit.createWorld(creator)
 
-                    ADHDPlugin.instance.logger.info("Мир для $tournament сгенерирован за ${(System.currentTimeMillis() - startTime) / 1000.0}")
+                    ADHDPlugin.instance.logger.info("Мир для $tournament сгенерирован за ${(System.currentTimeMillis() - startTime) / 1000.0} сек.")
 
                     tournament.generated = true
 

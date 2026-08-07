@@ -47,6 +47,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     val gameScoreboardManager = GameScoreboardManager(this)
 
+    val fakeAnnounced = mutableMapOf<UUID, Boolean>()
+
     val ticker = object : BukkitRunnable() {
         override fun run() {
             tick()
@@ -200,8 +202,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                 player.gameMode = GameMode.SPECTATOR
 
-                if (winners.contains(uuid)) {
+                if (winners.contains(uuid) || (fakeAnnounced[uuid] ?: false)) {
                     player.sendMessage(Component.text("Вы выиграли в этом раунде!").color(NamedTextColor.GREEN))
+
+                    fakeAnnounced[uuid] = false
                 } else {
                     player.sendMessage(Component.text("Вы проиграли в этом раунде...").color(NamedTextColor.YELLOW))
                 }
@@ -290,6 +294,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 results.putIfAbsent(uUID, 0.0)
 
                 results[uUID] = results[uUID]!! + 1.0
+
+                fakeAnnounced[uUID] = true
             } }
         }
 
@@ -302,6 +308,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
         if (participants.isEmpty()) {
             finish()
         } else if (participants.size == 1) {
+            tryAnnounce()
+
             if (generated) {
                 prepareCeremony()
             } else {

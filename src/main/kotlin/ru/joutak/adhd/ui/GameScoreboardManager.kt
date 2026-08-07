@@ -43,7 +43,7 @@ class GameScoreboardManager(val tournament: Tournament) {
     fun updateAll() {
         val leaderboard = mutableListOf<String>()
 
-        tournament.results.entries
+        tournament.results.filter { tournament.participants.contains(it.key) }.entries
             .sortedByDescending { it.value }
             .take(3)
             .forEachIndexed { index, (uuid, points) -> leaderboard.add("§7${index + 1}. §r${Bukkit.getPlayer(uuid)?.displayName} §7(§r${floor(points).toInt()} §6★§7)") }
