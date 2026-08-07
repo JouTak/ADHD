@@ -52,12 +52,16 @@ object TournamentManager {
             for (player in everyone) {
                 retry(player)
             }
+
+            return
         } else if (ADHDConfig.modes.isEmpty()) {
             ADHDPlugin.instance.logger.severe("No modes were loaded. Game won't start...")
 
             for (player in everyone) {
                 retry(player)
             }
+
+            return
         }
 
         val toRemove = everyone.subList(everyone.size / 2 * 2, everyone.size)

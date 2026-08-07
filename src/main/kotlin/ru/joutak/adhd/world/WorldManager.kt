@@ -275,7 +275,7 @@ object WorldManager {
         }
 
         if (lobby == null) {
-            lobby = Bukkit.getWorld("overworld")
+            lobby = Bukkit.getWorlds()[0]
         }
 
         return lobby!!
