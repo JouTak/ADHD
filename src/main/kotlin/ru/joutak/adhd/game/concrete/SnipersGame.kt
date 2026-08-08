@@ -25,6 +25,7 @@ import ru.joutak.adhd.config.map.meta.concrete.VentilatorMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
+import ru.joutak.adhd.game.mode.meta.concrete.SnipersModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
@@ -59,6 +60,10 @@ class SnipersGame : Game() {
 
     var gravityDirection = "DOWN"
 
+    var jumpBoost = 8
+
+    var fallBoost = 3
+
     val FAN_GRAVITY = NamespacedKey(ADHDPlugin.instance, "fan_gravity")
 
     override fun start(
@@ -75,6 +80,13 @@ class SnipersGame : Game() {
 
         world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
         world.setGameRule(GameRules.FALL_DAMAGE, false)
+
+        val meta = modeMeta as? SnipersModeMeta
+
+        if (meta != null) {
+            jumpBoost = meta.jumpBoost
+            fallBoost = meta.fallBoost
+        }
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
@@ -262,7 +274,7 @@ class SnipersGame : Game() {
                     PotionEffect(
                         PotionEffectType.JUMP_BOOST,
                         -1,
-                        2,
+                        jumpBoost,
                         false,
                         false,
                         true
@@ -273,7 +285,7 @@ class SnipersGame : Game() {
                     PotionEffect(
                         PotionEffectType.SLOW_FALLING,
                         -1,
-                        2,
+                        fallBoost,
                         false,
                         false,
                         true

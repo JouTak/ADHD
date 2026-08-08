@@ -5,3 +5,9 @@ default:
   description: Застрелите своего противника!
   maps:
     - 1
+
+meta:
+  gravity:
+    up:
+      jumpBoost: 8
+      fallBoost: 3
