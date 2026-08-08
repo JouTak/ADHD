@@ -116,6 +116,11 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 if (participants.size % 2 != 0) Bukkit.getPlayer(participants[participants.size - 1])?.sendMessage(
                     Component.text("Игроков не хватает. Вы пропускаете эту игру...").color(NamedTextColor.YELLOW))
 
+                val description = Component.text("[").color(NamedTextColor.GRAY)
+                    .append(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD))
+                    .append(Component.text("] ").color(NamedTextColor.GRAY))
+                    .append(Component.text(ADHDConfig.modes[modeName]!!.description).color(NamedTextColor.WHITE))
+
                 for (mS in assignedMembers.keys) {
                     val game = when (modeName) {
                         "PVP" -> PVPGame()
@@ -135,7 +140,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                         player.showTitle(title)
 
-                        player.sendMessage(ADHDConfig.modes[modeName]!!.description)
+                        player.sendMessage(description)
 
                         Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
                     }

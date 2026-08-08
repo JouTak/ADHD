@@ -16,7 +16,7 @@ import kotlin.jvm.optionals.getOrNull
 
 object RegionManager {
 
-    val executor: ExecutorService = Executors.newFixedThreadPool((Runtime.getRuntime().availableProcessors() - 2).coerceIn(1, 8))
+    val executor: ExecutorService = Executors.newFixedThreadPool((Runtime.getRuntime().availableProcessors() - 2).coerceAtLeast(1))
 
     var cachedMain: Map<Int, Map<ChunkPos, CompoundTag>> = emptyMap()
 
