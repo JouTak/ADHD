@@ -18,6 +18,7 @@ import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.PVPGame
+import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
@@ -131,6 +132,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 for (mS in assignedMembers.keys) {
                     val game = when (modeName) {
                         "PVP" -> PVPGame()
+                        "Pillars" -> PillarsGame()
                         "Knights" -> KnightsGame()
                         "Snipers" -> SnipersGame()
                         else -> error("No such mode...")
@@ -156,6 +158,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 }
 
                 timeBossBar.update()
+
 
                 status = TournamentStatus.RUN
             }
