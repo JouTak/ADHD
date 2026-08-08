@@ -5,8 +5,11 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.GameRule
 import org.bukkit.Location
+import org.bukkit.Registry
 import org.bukkit.Sound
+import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
@@ -98,6 +101,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 announced.clear()
 
                 currentTick = 0L
+
+                resetGameRules()
 
                 val modeName = pool[round]
 
@@ -230,6 +235,18 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     fun checkWin(): Boolean {
         return results.any { it.value >= ADHDConfig.pointsGoal }
+    }
+
+    fun <T> resetGameRule(world: World, rule: GameRule<T>) {
+        world.setGameRule(rule, rule.defaultValue)
+    }
+
+    fun resetGameRules() {
+        val world = Bukkit.getWorld(worldName)!!
+
+        for (rule in Registry.GAME_RULE) {
+            resetGameRule(world, rule)
+        }
     }
 
     fun prepareCeremony() {
