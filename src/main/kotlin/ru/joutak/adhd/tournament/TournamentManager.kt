@@ -2,9 +2,11 @@ package ru.joutak.adhd.tournament
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
+import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
@@ -24,6 +26,8 @@ object TournamentManager {
     val activeTournaments = mutableSetOf<Tournament>()
 
     var shutdownFlag = false
+
+    val prepareAnnounceTasks = mutableMapOf<Tournament, BukkitRunnable>()
 
     fun handleJoin(player: Player) {
         sendToLobby(player)
@@ -82,9 +86,27 @@ object TournamentManager {
 
         participants.forEach { uUID -> playerTournaments[uUID] = tournament }
 
-        participants.forEach { uUID -> Bukkit.getPlayer(uUID)?.sendMessage(Component.text("Скоро начнём...").color(NamedTextColor.GOLD)) }
+        prepareAnnounceTasks[tournament] = object : BukkitRunnable() {
+            override fun run() {
+                announce(tournament)
+            }
+        }
+
+        prepareAnnounceTasks[tournament]!!.runTaskTimer(ADHDPlugin.instance, 0L, 10L)
 
         WorldManager.generate(tournament)
+    }
+
+    fun removePrepareAnnounce(tournament: Tournament) {
+        val task = prepareAnnounceTasks.remove(tournament) ?: return
+
+        task.cancel()
+
+        for (uuid in tournament.participants) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            player.clearTitle()
+        }
     }
 
     fun retry(player: Player) {
@@ -95,6 +117,18 @@ object TournamentManager {
                 ReadyCommand.performReady(player)
             }
         })
+    }
+
+    private fun announce(tournament: Tournament) {
+        val title = Title.title(Component.text("Подготовка к игре").color(NamedTextColor.GOLD),
+            Component.text("Пожалуйста подождите").color(NamedTextColor.GRAY),
+            0, 16, 0)
+
+        for (uuid in tournament.participants) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            player.showTitle(title)
+        }
     }
 
     fun createPool(): List<String> {
@@ -133,6 +167,8 @@ object TournamentManager {
 
     fun finish(tournament: Tournament) {
         activeTournaments.remove(tournament)
+
+        removePrepareAnnounce(tournament)
 
         for (uuid in tournament.participants) {
             playerTournaments.remove(uuid)

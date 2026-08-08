@@ -61,6 +61,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
         status = TournamentStatus.START
 
+        TournamentManager.removePrepareAnnounce(this)
+
         timeBossBar.load(this)
 
         for (uuid in participants) {
