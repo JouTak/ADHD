@@ -74,6 +74,7 @@ class SnipersGame : Game() {
         val world = Bukkit.getWorld(worldName)!!
 
         world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
+        world.setGameRule(GameRules.FALL_DAMAGE, false)
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue

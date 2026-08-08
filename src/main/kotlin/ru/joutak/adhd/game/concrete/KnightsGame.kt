@@ -104,6 +104,8 @@ class KnightsGame : Game() {
         horse.owner = player
         horse.inventory.saddle = ItemStack(Material.SADDLE)
 
+        horse.jumpStrength = 0.7
+
         horse.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = horseSpeed
 
         horse.addPassenger(player)
