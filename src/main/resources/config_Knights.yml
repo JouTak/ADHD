@@ -1,14 +1,15 @@
 default:
   enabled: true
   duration: 120
-  displayName: ПВП
+  displayName: Рыцари
   description: Убейте своего противника!
   maps:
-    - 1
+    - 3
 
 meta:
-  inventories:
-    1:
-      - IRON_SWORD
-      - COOKED_BEEF
-      - GOLDEN_APPLE
+  horse:
+    speed: 0.16875
+  weapons:
+    - DIAMOND_SPEAR
+    - CROSSBOW
+    - BOW

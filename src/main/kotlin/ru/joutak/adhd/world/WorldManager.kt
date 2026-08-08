@@ -1,10 +1,5 @@
 package ru.joutak.adhd.world
 
-import net.minecraft.nbt.NbtIo
-import net.minecraft.world.level.ChunkPos
-import net.minecraft.world.level.Level
-import net.minecraft.world.level.chunk.storage.RegionFile
-import net.minecraft.world.level.chunk.storage.RegionStorageInfo
 import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.WorldCreator
@@ -12,20 +7,13 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.tournament.Tournament
 import ru.joutak.adhd.tournament.TournamentStatus
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import kotlin.jvm.optionals.getOrNull
 
 object WorldManager {
 
     val worldNameByTournaments = mutableMapOf<Tournament, String>()
-
-    val executor: ExecutorService = Executors.newFixedThreadPool(4)
 
     var worldId = 0
 
@@ -61,6 +49,8 @@ object WorldManager {
     }
 
     fun copy(tournament: Tournament) {
+        val startTime = System.currentTimeMillis()
+
         val source = Bukkit.getServer().levelDirectory
             .resolve("dimensions")
             .resolve("minecraft")
@@ -107,136 +97,26 @@ object WorldManager {
             arenas[round++] = adjustedArenas
         }
 
-        copyRegions(worldName, arenaPointers, tournament, arenas)
-    }
+        RegionManager.copy(worldName, arenaPointers)
 
-    fun copyRegions(
-        worldName: String,
-        arenaPointers: MutableMap<Int, Int>,
-        tournament: Tournament,
-        arenas: MutableMap<Int, List<Arena>>
-    ) {
-        val regionsFolder = Bukkit.getServer().levelDirectory
-            .resolve("dimensions")
-            .resolve("minecraft")
-            .resolve(worldName)
-            .resolve("region")
-            .toFile()
+        worldNameByTournaments[tournament] = worldName
 
-        val regex = Regex("""r\.0\.(\d+)\.mca""")
+        if (tournament.status == TournamentStatus.GENERATE) {
+            try {
+                Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                    val creator = WorldCreator(worldName)
 
-        val futures = mutableListOf<CompletableFuture<Void>>()
+                    creator.generator(VoidGenerator())
 
-        for (file in regionsFolder.listFiles()) {
-            val match = regex.find(file.name)
+                    Bukkit.createWorld(creator)
 
-            if (match != null) {
-                val regionZ = match.groupValues[1].toInt()
+                    ADHDPlugin.instance.logger.info("Мир для $tournament сгенерирован за ${(System.currentTimeMillis() - startTime) / 1000.0} сек.")
 
-                val amount = arenaPointers[regionZ] ?: continue
+                    tournament.generated = true
 
-                for (regionX in 1..<amount) {
-                    val targetFile = File(regionsFolder, "r.$regionX.$regionZ.mca")
-
-                    futures += CompletableFuture.runAsync({copySingleRegion(file, targetFile, 0, regionZ, 32 * regionX, worldName)}, executor)
-                }
-            }
-        }
-
-        CompletableFuture.allOf(*futures.toTypedArray()).thenRun {
-            worldNameByTournaments[tournament] = worldName
-
-            if (tournament.status == TournamentStatus.GENERATE) {
-                try {
-                    Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
-                        val creator = WorldCreator(worldName)
-
-                        creator.generator(VoidGenerator())
-
-                        Bukkit.createWorld(creator)
-
-                        tournament.generated = true
-
-                        tournament.start(worldName, arenas)
-                    })
-                } catch (_: Exception) {}
-            }
-        }
-    }
-
-    fun copySingleRegion(
-        sourceFile: File,
-        targetFile: File,
-        sourceRegionX: Int,
-        sourceRegionZ: Int,
-        shiftChunksX: Int,
-        worldName: String
-    ) {
-        RegionFile(
-            RegionStorageInfo(worldName, Level.OVERWORLD, "region"),
-            sourceFile.toPath(),
-            sourceFile.parentFile.toPath(),
-            true
-        ).use { source ->
-
-            RegionFile(
-                RegionStorageInfo(worldName, Level.OVERWORLD, "region"),
-                targetFile.toPath(),
-                targetFile.parentFile.toPath(),
-                true
-            ).use { target ->
-
-                for (z in 0 until 32) {
-                    for (x in 0 until 32) {
-
-                        val oldPos = ChunkPos(
-                            sourceRegionX * 32 + x,
-                            sourceRegionZ * 32 + z
-                        )
-
-                        val input =
-                            source.getChunkDataInputStream(oldPos)
-                                ?: continue
-
-                        val tag = NbtIo.read(input)
-
-                        input.close()
-
-                        tag.remove("structures")
-
-                        tag.putInt(
-                            "xPos",
-                            tag.getInt("xPos").getOrNull()!! + shiftChunksX
-                        )
-
-                        tag.getList("block_entities")
-                            .ifPresent { list ->
-                                for (i in list.indices) {
-                                    list.getCompound(i)
-                                        .ifPresent { be ->
-                                            be.putInt(
-                                                "x",
-                                                be.getInt("x").getOrNull()!! +
-                                                        shiftChunksX * 16
-                                            )
-                                        }
-                                }
-                            }
-
-                        val newPos = ChunkPos(
-                            oldPos.x + shiftChunksX,
-                            oldPos.z
-                        )
-
-                        val output =
-                            target.getChunkDataOutputStream(newPos)
-
-                        NbtIo.write(tag, output)
-
-                        output.close()
-                    }
-                }
-            }
+                    tournament.start(worldName, arenas)
+                })
+            } catch (_: Exception) {}
         }
     }
 
@@ -275,7 +155,7 @@ object WorldManager {
         }
 
         if (lobby == null) {
-            lobby = Bukkit.getWorld("overworld")
+            lobby = Bukkit.getWorlds()[0]
         }
 
         return lobby!!

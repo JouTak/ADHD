@@ -39,7 +39,7 @@ class TimeBossBar {
     }
 
     fun formatTitle(remaining: Long): String {
-        return "§7[§6${tournament.pool[tournament.round]}§7] Осталось: ${formatTime(remaining)}"
+        return "§7[§6${ADHDConfig.modes[tournament.pool[tournament.round]]!!.displayName}§7] Осталось: ${formatTime(remaining)}"
     }
 
     private fun formatTime(ticks: Long): String {
