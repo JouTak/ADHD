@@ -47,5 +47,6 @@ class ADHDPlugin : JavaPlugin() {
 
     override fun onDisable() {
         TournamentManager.shutdown()
+        MiniGamesCore.shutdown()
     }
 }
