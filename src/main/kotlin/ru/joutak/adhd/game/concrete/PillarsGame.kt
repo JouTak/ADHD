@@ -43,7 +43,13 @@ class PillarsGame : Game() {
 
     private var isFinished = false
 
-    override fun start(worldName: String, arena: Arena, members: Set<UUID>, modeMeta: ModeMeta?) {
+    override fun start(
+        worldName: String,
+        arena: Arena,
+        members: Set<UUID>,
+        modeMeta: ModeMeta?,
+        variantParameters: Map<String, String>,
+    ) {
         this.worldName = worldName
         this.arena = arena
         this.members = members

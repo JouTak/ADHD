@@ -70,7 +70,8 @@ class SnipersGame : Game() {
         worldName: String,
         arena: Arena,
         members: Set<UUID>,
-        modeMeta: ModeMeta?
+        modeMeta: ModeMeta?,
+        variantParameters: Map<String, String>,
     ) {
         this.worldName = worldName
         this.arena = arena

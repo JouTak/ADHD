@@ -29,7 +29,8 @@ class TimeBossBar {
     }
 
     fun update() {
-        val configDuration = ADHDConfig.modes[tournament.pool[tournament.round]]!!.duration * 20
+        val variant = tournament.gameSequence[tournament.round]
+        val configDuration = variant.durationSeconds * 20
 
         val remaining = (configDuration - tournament.currentTick).coerceAtLeast(0)
 
@@ -39,7 +40,8 @@ class TimeBossBar {
     }
 
     fun formatTitle(remaining: Long): String {
-        return "§7[§6${ADHDConfig.modes[tournament.pool[tournament.round]]!!.displayName}§7] Осталось: ${formatTime(remaining)}"
+        val modeName = tournament.gameSequence[tournament.round].modeName
+        return "§7[§6${ADHDConfig.modes[modeName]!!.displayName}§7] Осталось: ${formatTime(remaining)}"
     }
 
     private fun formatTime(ticks: Long): String {

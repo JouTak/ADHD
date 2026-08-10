@@ -65,17 +65,14 @@ object WorldManager {
 
         copyFolderFiltered(source, target)
 
-        val arenaIds = mutableListOf<Int>()
-
-        tournament.pool.forEach { name -> arenaIds.add(ADHDConfig.modes[name]!!.maps.random()) }
-
         val arenas = mutableMapOf<Int, List<Arena>>()
 
         val arenaPointers = mutableMapOf<Int, Int>()
 
         var round = 0
 
-        for (i in arenaIds) {
+        for (stage in tournament.gameSequence) {
+            val i = stage.mapId
             arenaPointers.putIfAbsent(i, 0)
 
             val adjustedArenas = mutableListOf<Arena>()

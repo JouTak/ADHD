@@ -23,9 +23,14 @@ import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
+import ru.joutak.adhd.tournament.schedule.GameVariant
+import ru.joutak.adhd.tournament.schedule.TournamentSchedulePlanner
 import java.util.*
 
-class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
+class Tournament(
+    val participants: MutableList<UUID>,
+    val gameSequence: List<GameVariant>,
+) {
 
     lateinit var worldName: String
 
@@ -52,6 +57,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
     val gameScoreboardManager = GameScoreboardManager(this)
 
     val fakeAnnounced = mutableMapOf<UUID, Boolean>()
+
+    private var previousPairs = emptySet<Set<UUID>>()
 
     val ticker = object : BukkitRunnable() {
         override fun run() {
@@ -89,7 +96,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
             TournamentStatus.GENERATE -> status = TournamentStatus.START
             TournamentStatus.START -> status = TournamentStatus.PREPARE
             TournamentStatus.PREPARE -> {
-                if (round == pool.size) {
+                if (round == gameSequence.size) {
                     prepareCeremony()
 
                     return
@@ -105,31 +112,32 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                 resetGameRules()
 
-                val modeName = pool[round]
+                val variant = gameSequence[round]
+                val modeName = variant.modeName
 
                 val gArenas = arenas[round]!!
 
-                val assignedMembers = mutableMapOf<MutableSet<UUID>, Arena>()
+                val stagePlan = TournamentSchedulePlanner.createStage(
+                    variant = variant,
+                    participants = participants,
+                    previousPairs = previousPairs,
+                )
+                previousPairs = stagePlan.matches.map { it.participants }.toSet()
 
-                //TODO: Make random more random
-
-                participants.shuffle()
-
-                for (i in 0 until participants.size - 1 step 2) {
-                    val arena = gArenas[i / 2]
-
-                    assignedMembers[mutableSetOf(participants[i], participants[i + 1])] = arena
+                val assignedMembers = stagePlan.matches.mapIndexed { index, match ->
+                    match.participants to gArenas[index]
                 }
 
-                if (participants.size % 2 != 0) Bukkit.getPlayer(participants[participants.size - 1])?.sendMessage(
+                stagePlan.bye?.let { Bukkit.getPlayer(it)?.sendMessage(
                     Component.text("Игроков не хватает. Вы пропускаете эту игру...").color(NamedTextColor.YELLOW))
+                }
 
                 val description = Component.text("[").color(NamedTextColor.GRAY)
                     .append(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD))
                     .append(Component.text("] ").color(NamedTextColor.GRAY))
                     .append(Component.text(ADHDConfig.modes[modeName]!!.description).color(NamedTextColor.WHITE))
 
-                for (mS in assignedMembers.keys) {
+                for ((members, arena) in assignedMembers) {
                     val game = when (modeName) {
                         "PVP" -> PVPGame()
                         "Pillars" -> PillarsGame()
@@ -140,10 +148,12 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                     games.add(game)
 
-                    mS.forEach { uUID -> playerGames[uUID] = game }
+                    members.forEach { uUID -> playerGames[uUID] = game }
 
-                    for (uuid in mS) {
+                    for (uuid in members) {
                         val player = Bukkit.getPlayer(uuid) ?: continue
+
+                        player.spectatorTarget = null
 
                         val title = Title.title(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
 
@@ -154,7 +164,13 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                         Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
                     }
 
-                    game.start(worldName, assignedMembers[mS]!!, mS, ADHDConfig.modes[pool[round]]!!.meta)
+                    game.start(
+                        worldName = worldName,
+                        arena = arena,
+                        members = members,
+                        modeMeta = ADHDConfig.modes[modeName]!!.meta,
+                        variantParameters = variant.parameters,
+                    )
                 }
 
                 timeBossBar.update()
@@ -165,7 +181,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
             TournamentStatus.RUN -> {
                 tryAnnounce()
 
-                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (games.all { game -> game.getGameState() == GameState.FINISH })) {
+                val variant = gameSequence[round]
+                if ((currentTick >= variant.durationSeconds * 20L) ||
+                    games.all { game -> game.getGameState() == GameState.FINISH }
+                ) {
                     status = TournamentStatus.PREPARE
 
                     round++
@@ -226,6 +245,35 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                 }
             }
         } }
+
+        moveFinishedPlayersToActiveMatches()
+    }
+
+    private fun moveFinishedPlayersToActiveMatches() {
+        val activeMatches = games
+            .filter { it.getGameState() == GameState.RUN }
+            .map { game ->
+                playerGames
+                    .filterValues { it == game }
+                    .keys
+                    .filter { Bukkit.getPlayer(it)?.isOnline == true }
+                    .toSet()
+            }
+            .filter { it.isNotEmpty() }
+
+        val finishedParticipants = announced
+            .flatMap { game -> playerGames.filterValues { it == game }.keys }
+            .toSet()
+
+        val targets = activeMatches.flatten()
+        if (targets.isEmpty()) return
+
+        finishedParticipants.forEachIndexed { index, finished ->
+            val player = Bukkit.getPlayer(finished) ?: return@forEachIndexed
+            val targetPlayer = Bukkit.getPlayer(targets[index % targets.size]) ?: return@forEachIndexed
+            player.gameMode = GameMode.SPECTATOR
+            player.spectatorTarget = targetPlayer
+        }
     }
 
     fun calculate() {

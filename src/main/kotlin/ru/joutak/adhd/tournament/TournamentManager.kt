@@ -10,6 +10,9 @@ import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
+import ru.joutak.adhd.game.mode.meta.concrete.KnightsModeMeta
+import ru.joutak.adhd.tournament.schedule.GameVariant
+import ru.joutak.adhd.tournament.schedule.TournamentSchedulePlanner
 import ru.joutak.adhd.world.WorldManager
 import ru.joutak.minigames.command.ready.ReadyCommand
 import ru.joutak.minigames.domain.GameInstance
@@ -78,9 +81,12 @@ object TournamentManager {
 
         val participants = instance.getActivePlayerIds().toMutableList()
 
-        val pool = createPool()
+        val gameSequence = createGameSequence()
 
-        val tournament = Tournament(participants, pool)
+        val tournament = Tournament(
+            participants = participants,
+            gameSequence = gameSequence,
+        )
 
         activeTournaments.add(tournament)
 
@@ -131,16 +137,29 @@ object TournamentManager {
         }
     }
 
-    fun createPool(): List<String> {
-        val pool = mutableListOf<String>()
+    fun createGameSequence(): List<GameVariant> {
+        val variants = ADHDConfig.modes.flatMap { (modeName, mode) ->
+            val parameters = when (val meta = mode.meta) {
+                is KnightsModeMeta -> meta.weapons.map { mapOf("weapon" to it.name) }
+                else -> listOf(emptyMap())
+            }
 
-        val names = ADHDConfig.modes.keys.toList()
-
-        for (i in 0..<ceil(2 * ADHDConfig.pointsGoal - 1).toInt()) {
-            pool.add(names.random())
+            mode.maps.flatMap { mapId ->
+                parameters.map { variantParameters ->
+                    GameVariant(
+                        modeName = modeName,
+                        mapId = mapId,
+                        durationSeconds = mode.duration,
+                        parameters = variantParameters,
+                    )
+                }
+            }
         }
 
-        return pool
+        return TournamentSchedulePlanner.createGameSequence(
+            roundCount = ceil(2 * ADHDConfig.pointsGoal - 1).toInt().coerceAtLeast(0),
+            variants = variants,
+        )
     }
 
     fun sendToLobby(player: Player) {

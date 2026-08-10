@@ -39,7 +39,8 @@ class KnightsGame : Game() {
         worldName: String,
         arena: Arena,
         members: Set<UUID>,
-        modeMeta: ModeMeta?
+        modeMeta: ModeMeta?,
+        variantParameters: Map<String, String>,
     ) {
         this.worldName = worldName
         this.arena = arena
@@ -50,7 +51,10 @@ class KnightsGame : Game() {
         if (meta != null) {
             horseSpeed = meta.horseSpeed
 
-            wMaterial = meta.weapons.random()
+            wMaterial = variantParameters["weapon"]
+                ?.let(Material::matchMaterial)
+                ?.takeIf { it in meta.weapons }
+                ?: meta.weapons.random()
         }
 
         val world = Bukkit.getWorld(worldName)!!
