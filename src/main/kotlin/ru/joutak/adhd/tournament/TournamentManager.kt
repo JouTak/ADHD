@@ -82,6 +82,8 @@ object TournamentManager {
 
         val tournament = Tournament(participants, pool)
 
+        ADHDPlugin.instance.logger.info("Выбраны режимы для турнира $tournament - $pool")
+
         activeTournaments.add(tournament)
 
         participants.forEach { uUID -> playerTournaments[uUID] = tournament }
@@ -134,10 +136,18 @@ object TournamentManager {
     fun createPool(): List<String> {
         val pool = mutableListOf<String>()
 
-        val names = ADHDConfig.modes.keys.toList()
+        val names = ADHDConfig.modes.keys.toMutableSet()
+
+        var used = mutableSetOf<String>()
 
         for (i in 0..<ceil(2 * ADHDConfig.pointsGoal - 1).toInt()) {
-            pool.add(names.random())
+            val name = (names - used).randomOrNull() ?: (names - mutableSetOf(pool[pool.size - 1])).random()
+
+            if (names.size == used.size) used = mutableSetOf(name)
+
+            used.add(name)
+
+            pool.add(name)
         }
 
         return pool
