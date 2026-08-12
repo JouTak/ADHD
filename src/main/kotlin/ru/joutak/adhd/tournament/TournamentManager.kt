@@ -68,12 +68,6 @@ object TournamentManager {
             return
         }
 
-        val toRemove = everyone.subList(everyone.size / 2 * 2, everyone.size)
-
-        for (player in toRemove) {
-            retry(player)
-        }
-
         instance.teams.forEach { l -> l.clear() }
 
         val participants = instance.getActivePlayerIds().toMutableList()
