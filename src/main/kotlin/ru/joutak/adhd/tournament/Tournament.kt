@@ -3,13 +3,7 @@ package ru.joutak.adhd.tournament
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.GameRule
-import org.bukkit.Location
-import org.bukkit.Registry
-import org.bukkit.Sound
-import org.bukkit.World
+import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
@@ -19,8 +13,8 @@ import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
+import ru.joutak.adhd.game.concrete.RPSGame
 import ru.joutak.adhd.game.concrete.SnipersGame
-import ru.joutak.adhd.game.single.concrete.RPSSingleGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
@@ -131,9 +125,15 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                     val arena = singleArenas[name]!!.random()
 
                     val sGame = when (name) {
-                        "RPS" -> RPSSingleGame()
+                        "RPS" -> RPSGame()
                         else -> error("No such single mode...")
                     }
+
+                    games.add(sGame)
+
+                    playerGames[member] = sGame
+
+                    sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
                 }
 
                 val description = Component.text("[").color(NamedTextColor.GRAY)

@@ -130,7 +130,7 @@ object TournamentManager {
     fun createPool(): List<String> {
         val pool = mutableListOf<String>()
 
-        val names = ADHDConfig.modes.keys.toMutableSet()
+        val names = ADHDConfig.modes.keys.toMutableSet() - ADHDConfig.singleModeNames
 
         var used = mutableSetOf<String>()
 

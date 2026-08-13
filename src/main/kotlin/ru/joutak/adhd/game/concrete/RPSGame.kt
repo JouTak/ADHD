@@ -1,24 +1,34 @@
-package ru.joutak.adhd.game.single.concrete
+package ru.joutak.adhd.game.concrete
 
+import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
-import ru.joutak.adhd.game.single.SingleGame
 import ru.joutak.adhd.world.Arena
 import java.util.UUID
 
-class RPSSingleGame : SingleGame() {
+class RPSGame : Game() {
+
+    lateinit var worldName: String
+
+    lateinit var arena: Arena
+
+    lateinit var members: Set<UUID>
 
     var state = GameState.START
 
-    var result = false
+    val result = mutableMapOf<UUID, Double>()
 
     override fun start(
         worldName: String,
         arena: Arena,
-        member: UUID,
+        members: Set<UUID>,
         modeMeta: ModeMeta?
     ) {
+        this.worldName = worldName
+        this.arena = arena
+        this.members = members
 
+        state = GameState.RUN
     }
 
     override fun update() {
@@ -33,7 +43,7 @@ class RPSSingleGame : SingleGame() {
         state = GameState.FINISH
     }
 
-    override fun summarize(): Boolean {
+    override fun summarize(): Map<UUID, Double> {
         return result
     }
 }
