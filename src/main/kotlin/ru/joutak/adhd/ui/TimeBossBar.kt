@@ -10,6 +10,8 @@ import ru.joutak.adhd.tournament.Tournament
 class TimeBossBar {
     val bossBar = Bukkit.createBossBar("Загрузка...", BarColor.BLUE, BarStyle.SOLID)
 
+    val bossBarSingle = Bukkit.createBossBar("Загрузка...", BarColor.BLUE, BarStyle.SOLID)
+
     lateinit var tournament: Tournament
 
     fun load(tournament: Tournament) {
@@ -21,11 +23,26 @@ class TimeBossBar {
     }
 
     fun remove(player: Player) {
+        switchSingle(player, false)
+
         bossBar.removePlayer(player)
     }
 
     fun removeAll() {
         bossBar.removeAll()
+        bossBarSingle.removeAll()
+    }
+
+    fun switchSingle(player: Player, state: Boolean) {
+        if (state) {
+            remove(player)
+
+            bossBarSingle.addPlayer(player)
+        } else {
+            bossBarSingle.removePlayer(player)
+
+            add(player)
+        }
     }
 
     fun update() {
@@ -33,13 +50,19 @@ class TimeBossBar {
 
         val remaining = (configDuration - tournament.currentTick).coerceAtLeast(0)
 
-        bossBar.setTitle(formatTitle(remaining))
+        bossBar.setTitle(formatTitle(remaining, ADHDConfig.modes[tournament.pool[tournament.round]]!!.displayName))
 
-        bossBar.progress = (remaining.toDouble() / configDuration).coerceIn(0.0, 1.0)
+        bossBarSingle.setTitle(formatTitle(remaining, ADHDConfig.modes[tournament.single.second]!!.displayName))
+
+        val progress = (remaining.toDouble() / configDuration).coerceIn(0.0, 1.0)
+
+        bossBar.progress = progress
+
+        bossBarSingle.progress = progress
     }
 
-    fun formatTitle(remaining: Long): String {
-        return "§7[§6${ADHDConfig.modes[tournament.pool[tournament.round]]!!.displayName}§7] Осталось: ${formatTime(remaining)}"
+    fun formatTitle(remaining: Long, name: String): String {
+        return "§7[§6${name}§7] Осталось: ${formatTime(remaining)}"
     }
 
     private fun formatTime(ticks: Long): String {

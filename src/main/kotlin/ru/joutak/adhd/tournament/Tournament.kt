@@ -50,6 +50,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     val fakeAnnounced = mutableMapOf<UUID, Boolean>()
 
+    var single = Pair(UUID.randomUUID(), "")
+
     val ticker = object : BukkitRunnable() {
         override fun run() {
             tick()
@@ -103,6 +105,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                 resetGameRules()
 
+                val singlePlayer = Bukkit.getPlayer(single.first)
+
+                singlePlayer?.let { timeBossBar.switchSingle(it, false) }
+
                 val modeName = pool[round]
 
                 val gArenas = arenas[round]!!
@@ -132,6 +138,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                     games.add(sGame)
 
                     playerGames[member] = sGame
+
+                    single = Pair(member, name)
+
+                    timeBossBar.switchSingle(Bukkit.getPlayer(member)!!, true)
 
                     val description = Component.text("[").color(NamedTextColor.GRAY)
                         .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
