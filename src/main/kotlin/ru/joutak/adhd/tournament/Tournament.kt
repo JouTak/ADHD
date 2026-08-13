@@ -133,6 +133,23 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                     playerGames[member] = sGame
 
+                    val description = Component.text("[").color(NamedTextColor.GRAY)
+                        .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
+                        .append(Component.text("] ").color(NamedTextColor.GRAY))
+                        .append(Component.text(ADHDConfig.modes[name]!!.description).color(NamedTextColor.WHITE))
+
+                    Bukkit.getPlayer(member)?.sendMessage(description)
+
+                    val title = Title.title(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
+
+                    Bukkit.getPlayer(member)?.showTitle(title)
+
+                    Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                        val player = Bukkit.getPlayer(member) ?: return@Runnable
+
+                        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
+                    })
+
                     sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
                 }
 
