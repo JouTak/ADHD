@@ -20,6 +20,7 @@ import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.game.single.concrete.RPSSingleGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
@@ -30,6 +31,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
     lateinit var worldName: String
 
     lateinit var arenas: Map<Int, List<Arena>>
+
+    lateinit var singleArenas: Map<String, List<Arena>>
 
     var status = TournamentStatus.GENERATE
 
@@ -59,9 +62,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
         }
     }
 
-    fun start(worldName: String, arenas: Map<Int, List<Arena>>) {
+    fun start(worldName: String, arenas: Map<Int, List<Arena>>, singleArenas: Map<String, List<Arena>>) {
         this.worldName = worldName
         this.arenas = arenas
+        this.singleArenas = singleArenas
 
         status = TournamentStatus.START
 
@@ -111,8 +115,6 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                 val assignedMembers = mutableMapOf<MutableSet<UUID>, Arena>()
 
-                //TODO: Make random more random
-
                 participants.shuffle()
 
                 for (i in 0 until participants.size - 1 step 2) {
@@ -121,8 +123,18 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
                     assignedMembers[mutableSetOf(participants[i], participants[i + 1])] = arena
                 }
 
-                if (participants.size % 2 != 0) Bukkit.getPlayer(participants[participants.size - 1])?.sendMessage(
-                    Component.text("Игроков не хватает. Вы пропускаете эту игру...").color(NamedTextColor.YELLOW))
+                if (participants.size % 2 != 0) {
+                    val member = participants[participants.size - 1]
+
+                    val name = ADHDConfig.singleModeNames.random()
+
+                    val arena = singleArenas[name]!!.random()
+
+                    val sGame = when (name) {
+                        "RPS" -> RPSSingleGame()
+                        else -> error("No such single mode...")
+                    }
+                }
 
                 val description = Component.text("[").color(NamedTextColor.GRAY)
                     .append(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD))
