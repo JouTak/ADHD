@@ -22,6 +22,8 @@ class RPSGame : Game() {
 
     val result = mutableMapOf<UUID, Double>()
 
+    var choice = ""
+
     override fun start(
         worldName: String,
         arena: Arena,
