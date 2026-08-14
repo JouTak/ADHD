@@ -21,7 +21,9 @@ import kotlin.math.floor
 object ADHDConfig {
 
     val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", KnightsModeMetaLoader()), Pair("Snipers",
-        SnipersModeMetaLoader()), Pair("Pillars", PillarsModeMetaLoader()))
+        SnipersModeMetaLoader()), Pair("Pillars", PillarsModeMetaLoader()), Pair("RPS", null))
+
+    val singleModeNames = mutableSetOf<String>()
 
     var maxPlayers = 4
         private set
@@ -89,10 +91,14 @@ object ADHDConfig {
         loadModes()
 
         ADHDPlugin.instance.logger.info("Режимы: $modes")
+
+        ADHDPlugin.instance.logger.info("Одиночные режимы: $singleModeNames")
     }
 
     fun loadConfigMaps(config: YamlConfiguration) {
         registerMapMetaLoaders()
+
+        configMaps.clear()
 
         val mapsSection = config.getConfigurationSection("maps") ?: return
 
@@ -145,6 +151,10 @@ object ADHDConfig {
     }
 
     fun loadModes() {
+        modes.clear()
+
+        singleModeNames.clear()
+
         for (modeName in registeredModes.keys) {
             val file = File(ADHDPlugin.instance.dataFolder, "config_$modeName.yml")
 
@@ -157,6 +167,10 @@ object ADHDConfig {
             val enabled = config.getBoolean("default.enabled")
 
             if (!enabled) continue
+
+            val isSingle = config.getBoolean("default.single")
+
+            if (isSingle) singleModeNames.add(modeName)
 
             val duration = config.getInt("default.duration", 30)
 

@@ -10,6 +10,7 @@ import ru.joutak.adhd.tournament.TournamentStatus
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import kotlin.math.ceil
 
 object WorldManager {
 
@@ -82,7 +83,7 @@ object WorldManager {
 
             val configMap = ADHDConfig.configMaps[i]!!.copy()
 
-            for (j in 0..<(tournament.participants.size / 2)) {
+            for (j in 0..<ceil(tournament.participants.size / 2.0).toInt()) {
                 val spawns = mutableListOf<SpawnPoint>()
 
                 for (spawn in configMap.spawnPoints) {
@@ -95,6 +96,30 @@ object WorldManager {
             }
 
             arenas[round++] = adjustedArenas
+        }
+
+        val singleArenas = mutableMapOf<String, List<Arena>>()
+
+        for (name in ADHDConfig.singleModeNames) {
+            val adjustedArenas = mutableListOf<Arena>()
+
+            for (i in ADHDConfig.modes[name]!!.maps) {
+                arenaPointers.putIfAbsent(i, 0)
+
+                val configMap = ADHDConfig.configMaps[i]!!.copy()
+
+                val spawns = mutableListOf<SpawnPoint>()
+
+                for (spawn in configMap.spawnPoints) {
+                    spawns.add(SpawnPoint(spawn.x + arenaPointers[i]!! * 512, spawn.y, spawn.z + 512 * i, spawn.yaw, spawn.pitch))
+                }
+
+                arenaPointers[i] = arenaPointers[i]!! + 1
+
+                adjustedArenas.add(Arena(spawns, configMap.metas))
+            }
+
+            singleArenas[name] = adjustedArenas
         }
 
         RegionManager.copy(worldName, arenaPointers)
@@ -114,7 +139,7 @@ object WorldManager {
 
                     tournament.generated = true
 
-                    tournament.start(worldName, arenas)
+                    tournament.start(worldName, arenas, singleArenas)
                 })
             } catch (_: Exception) {}
         }

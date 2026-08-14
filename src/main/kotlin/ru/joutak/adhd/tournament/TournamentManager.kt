@@ -86,12 +86,6 @@ object TournamentManager {
             return
         }
 
-        val toRemove = everyone.subList(everyone.size / 2 * 2, everyone.size)
-
-        for (player in toRemove) {
-            retry(player)
-        }
-
         instance.teams.forEach { l -> l.clear() }
 
         val participants = instance.getActivePlayerIds().toMutableList()
@@ -104,6 +98,8 @@ object TournamentManager {
             teamIdByPlayer = teamIdByPlayer.filterKeys { it in participants },
             teamKeysByTeamId = teamKeysByTeamId,
         )
+
+        ADHDPlugin.instance.logger.info("Выбраны режимы для турнира $tournament - $pool")
 
         activeTournaments.add(tournament)
 
@@ -157,10 +153,18 @@ object TournamentManager {
     fun createPool(): List<String> {
         val pool = mutableListOf<String>()
 
-        val names = ADHDConfig.modes.keys.toList()
+        val names = ADHDConfig.modes.keys.toMutableSet() - ADHDConfig.singleModeNames
+
+        var used = mutableSetOf<String>()
 
         for (i in 0..<ceil(2 * ADHDConfig.pointsGoal - 1).toInt()) {
-            pool.add(names.random())
+            val name = (names - used).randomOrNull() ?: (names - mutableSetOf(pool[pool.size - 1])).random()
+
+            if (names.size == used.size) used = mutableSetOf(name)
+
+            used.add(name)
+
+            pool.add(name)
         }
 
         return pool
