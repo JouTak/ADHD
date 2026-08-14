@@ -52,7 +52,9 @@ class TimeBossBar {
 
         bossBar.setTitle(formatTitle(remaining, ADHDConfig.modes[tournament.pool[tournament.round]]!!.displayName))
 
-        bossBarSingle.setTitle(formatTitle(remaining, ADHDConfig.modes[tournament.single.second]!!.displayName))
+        tournament.single?.let { (_, name) ->
+            bossBarSingle.setTitle(formatTitle(remaining, ADHDConfig.modes[name]!!.displayName))
+        }
 
         val progress = (remaining.toDouble() / configDuration).coerceIn(0.0, 1.0)
 

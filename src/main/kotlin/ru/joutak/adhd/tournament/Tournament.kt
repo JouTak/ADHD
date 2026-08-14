@@ -50,7 +50,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     val fakeAnnounced = mutableMapOf<UUID, Boolean>()
 
-    var single = Pair(UUID.randomUUID(), "")
+    var single: Pair<UUID, String>? = null
 
     val ticker = object : BukkitRunnable() {
         override fun run() {
@@ -105,9 +105,13 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                 resetGameRules()
 
-                val singlePlayer = Bukkit.getPlayer(single.first)
+                val singlePlayer = single?.let{
+                    Bukkit.getPlayer(it.first)
+                }
 
-                singlePlayer?.let { timeBossBar.switchSingle(it, false) }
+                singlePlayer?.let {
+                    timeBossBar.switchSingle(it, false)
+                }
 
                 val modeName = pool[round]
 
