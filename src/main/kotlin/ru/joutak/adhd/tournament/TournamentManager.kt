@@ -193,7 +193,7 @@ object TournamentManager {
 
         removePrepareAnnounce(tournament)
 
-        for (uuid in tournament.originalParticipants) {
+        for (uuid in tournament.participants) {
             playerTournaments.remove(uuid)
 
             val player = Bukkit.getPlayer(uuid) ?: continue
