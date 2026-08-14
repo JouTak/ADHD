@@ -68,12 +68,6 @@ object TournamentManager {
             return
         }
 
-        val toRemove = everyone.subList(everyone.size / 2 * 2, everyone.size)
-
-        for (player in toRemove) {
-            retry(player)
-        }
-
         instance.teams.forEach { l -> l.clear() }
 
         val participants = instance.getActivePlayerIds().toMutableList()
@@ -136,7 +130,7 @@ object TournamentManager {
     fun createPool(): List<String> {
         val pool = mutableListOf<String>()
 
-        val names = ADHDConfig.modes.keys.toMutableSet()
+        val names = ADHDConfig.modes.keys.toMutableSet() - ADHDConfig.singleModeNames
 
         var used = mutableSetOf<String>()
 

@@ -1,0 +1,7 @@
+default:
+  enabled: true
+  single: true
+  displayName: КНБ
+  description: Предугадайте ход своего противника! Напишите в чате свой ход (камень/ножницы/бумага)
+  maps:
+    - 1
