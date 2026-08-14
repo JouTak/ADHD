@@ -3,8 +3,8 @@ version: ${VERSION}
 api-version: ${MINECRAFT_VERSION}
 main: ru.joutak.adhd.ADHDPlugin
 description: 'The ADHD minigame plugin'
-authors: ['EnderDissa', 'Stunnerer', 's4dnex', 'Ga_Mes']
-contributors: ['technosimp']
+authors: ['EnderDissa', 'Ga_Mes', 'e__lm']
+contributors: []
 website: ${WEBSITE}
 
 depend: []
