@@ -13,12 +13,24 @@ object TournamentSchedulePlanner {
         require(roundCount == 0 || variants.isNotEmpty()) { "At least one game variant is required" }
 
         val sequence = mutableListOf<GameVariant>()
+        val modeNames = variants.map { it.modeName }.toSet()
+        val usedModes = mutableSetOf<String>()
 
         repeat(roundCount) {
             val previous = sequence.lastOrNull()
-            val minimumRepetitions = variants.minOf { repetitionCount(previous, it) }
-            val candidates = variants.filter { repetitionCount(previous, it) == minimumRepetitions }
-            sequence += candidates.random(random)
+            var availableModes = modeNames - usedModes
+
+            if (availableModes.isEmpty()) {
+                availableModes = (modeNames - setOfNotNull(previous?.modeName)).ifEmpty { modeNames }
+                usedModes.clear()
+            }
+
+            val availableVariants = variants.filter { it.modeName in availableModes }
+            val minimumRepetitions = availableVariants.minOf { repetitionCount(previous, it) }
+            val candidates = availableVariants.filter { repetitionCount(previous, it) == minimumRepetitions }
+            val selected = candidates.random(random)
+            sequence += selected
+            usedModes += selected.modeName
         }
 
         return sequence

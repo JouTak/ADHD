@@ -3,13 +3,7 @@ package ru.joutak.adhd.tournament
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.GameRule
-import org.bukkit.Location
-import org.bukkit.Registry
-import org.bukkit.Sound
-import org.bukkit.World
+import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
@@ -19,6 +13,7 @@ import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
+import ru.joutak.adhd.game.concrete.RPSGame
 import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
@@ -35,6 +30,8 @@ class Tournament(
     lateinit var worldName: String
 
     lateinit var arenas: Map<Int, List<Arena>>
+
+    lateinit var singleArenas: Map<String, List<Arena>>
 
     var status = TournamentStatus.GENERATE
 
@@ -60,15 +57,18 @@ class Tournament(
 
     private var previousPairs = emptySet<Set<UUID>>()
 
+    var single: Pair<UUID, String>? = null
+
     val ticker = object : BukkitRunnable() {
         override fun run() {
             tick()
         }
     }
 
-    fun start(worldName: String, arenas: Map<Int, List<Arena>>) {
+    fun start(worldName: String, arenas: Map<Int, List<Arena>>, singleArenas: Map<String, List<Arena>>) {
         this.worldName = worldName
         this.arenas = arenas
+        this.singleArenas = singleArenas
 
         status = TournamentStatus.START
 
@@ -115,6 +115,15 @@ class Tournament(
                 val variant = gameSequence[round]
                 val modeName = variant.modeName
 
+                val singlePlayer = single?.let{
+                    Bukkit.getPlayer(it.first)
+                }
+
+                singlePlayer?.let {
+                    timeBossBar.switchSingle(it, false)
+                }
+                single = null
+
                 val gArenas = arenas[round]!!
 
                 val stagePlan = TournamentSchedulePlanner.createStage(
@@ -128,8 +137,49 @@ class Tournament(
                     match.participants to gArenas[index]
                 }
 
-                stagePlan.bye?.let { Bukkit.getPlayer(it)?.sendMessage(
-                    Component.text("Игроков не хватает. Вы пропускаете эту игру...").color(NamedTextColor.YELLOW))
+                stagePlan.bye?.let { member ->
+
+                    val name = ADHDConfig.singleModeNames.random()
+
+                    val arena = singleArenas[name]!!.random()
+
+                    val sGame = when (name) {
+                        "RPS" -> RPSGame()
+                        else -> error("No such single mode...")
+                    }
+
+                    games.add(sGame)
+
+                    playerGames[member] = sGame
+
+                    single = Pair(member, name)
+
+                    timeBossBar.switchSingle(Bukkit.getPlayer(member)!!, true)
+
+                    val description = Component.text("[").color(NamedTextColor.GRAY)
+                        .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
+                        .append(Component.text("] ").color(NamedTextColor.GRAY))
+                        .append(Component.text(ADHDConfig.modes[name]!!.description).color(NamedTextColor.WHITE))
+
+                    Bukkit.getPlayer(member)?.sendMessage(description)
+
+                    val title = Title.title(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
+
+                    Bukkit.getPlayer(member)?.showTitle(title)
+
+                    Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                        val player = Bukkit.getPlayer(member) ?: return@Runnable
+
+                        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
+                    })
+
+                    sGame.start(
+                        worldName = worldName,
+                        arena = arena,
+                        members = setOf(member),
+                        modeMeta = ADHDConfig.modes[name]!!.meta,
+                        variantParameters = emptyMap(),
+                    )
                 }
 
                 val description = Component.text("[").color(NamedTextColor.GRAY)

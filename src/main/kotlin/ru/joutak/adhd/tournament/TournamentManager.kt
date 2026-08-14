@@ -71,12 +71,6 @@ object TournamentManager {
             return
         }
 
-        val toRemove = everyone.subList(everyone.size / 2 * 2, everyone.size)
-
-        for (player in toRemove) {
-            retry(player)
-        }
-
         instance.teams.forEach { l -> l.clear() }
 
         val participants = instance.getActivePlayerIds().toMutableList()
@@ -87,6 +81,8 @@ object TournamentManager {
             participants = participants,
             gameSequence = gameSequence,
         )
+
+        ADHDPlugin.instance.logger.info("Выбраны режимы для турнира $tournament - $gameSequence")
 
         activeTournaments.add(tournament)
 
@@ -138,23 +134,25 @@ object TournamentManager {
     }
 
     fun createGameSequence(): List<GameVariant> {
-        val variants = ADHDConfig.modes.flatMap { (modeName, mode) ->
-            val parameters = when (val meta = mode.meta) {
-                is KnightsModeMeta -> meta.weapons.map { mapOf("weapon" to it.name) }
-                else -> listOf(emptyMap())
-            }
+        val variants = ADHDConfig.modes
+            .filterKeys { it !in ADHDConfig.singleModeNames }
+            .flatMap { (modeName, mode) ->
+                val parameters = when (val meta = mode.meta) {
+                    is KnightsModeMeta -> meta.weapons.map { mapOf("weapon" to it.name) }
+                    else -> listOf(emptyMap())
+                }
 
-            mode.maps.flatMap { mapId ->
-                parameters.map { variantParameters ->
-                    GameVariant(
-                        modeName = modeName,
-                        mapId = mapId,
-                        durationSeconds = mode.duration,
-                        parameters = variantParameters,
-                    )
+                mode.maps.flatMap { mapId ->
+                    parameters.map { variantParameters ->
+                        GameVariant(
+                            modeName = modeName,
+                            mapId = mapId,
+                            durationSeconds = mode.duration,
+                            parameters = variantParameters,
+                        )
+                    }
                 }
             }
-        }
 
         return TournamentSchedulePlanner.createGameSequence(
             roundCount = ceil(2 * ADHDConfig.pointsGoal - 1).toInt().coerceAtLeast(0),
