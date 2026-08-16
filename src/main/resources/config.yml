@@ -79,6 +79,9 @@ maps:
         yaw: 270
         pitch: 0
   3:
+    meta:
+      event:
+        risingLava: true
     spawns:
       0:
         x: 251

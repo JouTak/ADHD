@@ -8,10 +8,12 @@ import ru.joutak.adhd.game.mode.meta.concrete.PillarsModeMeta
 
 class PillarsModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
+        val interval = section.getDouble("interval")
+
         val items = section.getStringList("items")
 
         val materials = items.map { Material.valueOf(it) }
 
-        return PillarsModeMeta(materials)
+        return PillarsModeMeta(materials, interval)
     }
 }
