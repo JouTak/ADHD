@@ -151,6 +151,9 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                     timeBossBar.switchSingle(Bukkit.getPlayer(member)!!, true)
 
+                    Bukkit.getPlayer(member)?.sendMessage(Component.text("Игроков не хватает. Вы играете против компьютера...").color(
+                        NamedTextColor.YELLOW))
+
                     val description = Component.text("[").color(NamedTextColor.GRAY)
                         .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
                         .append(Component.text("] ").color(NamedTextColor.GRAY))
