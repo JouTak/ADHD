@@ -52,6 +52,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     var single: Pair<UUID, String>? = null
 
+    var singleGame: Game? = null
+
     val ticker = object : BukkitRunnable() {
         override fun run() {
             tick()
@@ -141,6 +143,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                     games.add(sGame)
 
+                    singleGame = sGame
+
                     playerGames[member] = sGame
 
                     single = Pair(member, name)
@@ -208,7 +212,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
             TournamentStatus.RUN -> {
                 tryAnnounce()
 
-                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (games.all { game -> game.getGameState() == GameState.FINISH })) {
+                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (games.filter { game -> game != singleGame }.all { game -> game.getGameState() == GameState.FINISH })) {
                     status = TournamentStatus.PREPARE
 
                     round++
