@@ -319,6 +319,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
         val world = Bukkit.getWorld(worldName)!!
 
+        world.setGameRule(GameRules.PVP, false)
+
         val spawn = Location(world, ADHDConfig.ceremonySpawnPoint.x, ADHDConfig.ceremonySpawnPoint.y, ADHDConfig.ceremonySpawnPoint.z, ADHDConfig.ceremonySpawnPoint.yaw, ADHDConfig.ceremonySpawnPoint.pitch)
 
         for (uuid in participants) {
