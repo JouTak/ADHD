@@ -160,6 +160,8 @@ object TournamentManager {
 
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
 
+        player.leaveVehicle()
+
         player.teleport(lobby.spawnLocation)
     }
 
