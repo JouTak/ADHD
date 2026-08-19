@@ -139,125 +139,127 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
     }
 
     fun prepare() {
-        if (round == pool.size) {
-            prepareCeremony()
+        if (status == TournamentStatus.WAIT) {
+            if (round == pool.size) {
+                prepareCeremony()
 
-            return
-        }
-
-        games.clear()
-
-        playerGames.clear()
-
-        announced.clear()
-
-        currentTick = 0L
-
-        resetGameRules()
-
-        val singlePlayer = single?.let{
-            Bukkit.getPlayer(it.first)
-        }
-
-        singlePlayer?.let {
-            timeBossBar.switchSingle(it, false)
-        }
-
-        val modeName = pool[round]
-
-        val gArenas = arenas[round]!!
-
-        val assignedMembers = mutableMapOf<MutableSet<UUID>, Arena>()
-
-        participants.shuffle()
-
-        for (i in 0 until participants.size - 1 step 2) {
-            val arena = gArenas[i / 2]
-
-            assignedMembers[mutableSetOf(participants[i], participants[i + 1])] = arena
-        }
-
-        if (participants.size % 2 != 0) {
-            val member = participants[participants.size - 1]
-
-            val name = ADHDConfig.singleModeNames.random()
-
-            val arena = singleArenas[name]!!.random()
-
-            val sGame = when (name) {
-                "RPS" -> RPSGame()
-                else -> error("No such single mode...")
+                return
             }
 
-            games.add(sGame)
+            games.clear()
 
-            singleGame = sGame
+            playerGames.clear()
 
-            playerGames[member] = sGame
+            announced.clear()
 
-            single = Pair(member, name)
+            currentTick = 0L
 
-            timeBossBar.switchSingle(Bukkit.getPlayer(member)!!, true)
+            resetGameRules()
 
-            Bukkit.getPlayer(member)?.sendMessage(Component.text("Игроков не хватает. Вы играете против компьютера...").color(
-                NamedTextColor.YELLOW))
+            val singlePlayer = single?.let{
+                Bukkit.getPlayer(it.first)
+            }
+
+            singlePlayer?.let {
+                timeBossBar.switchSingle(it, false)
+            }
+
+            val modeName = pool[round]
+
+            val gArenas = arenas[round]!!
+
+            val assignedMembers = mutableMapOf<MutableSet<UUID>, Arena>()
+
+            participants.shuffle()
+
+            for (i in 0 until participants.size - 1 step 2) {
+                val arena = gArenas[i / 2]
+
+                assignedMembers[mutableSetOf(participants[i], participants[i + 1])] = arena
+            }
+
+            if (participants.size % 2 != 0) {
+                val member = participants[participants.size - 1]
+
+                val name = ADHDConfig.singleModeNames.random()
+
+                val arena = singleArenas[name]!!.random()
+
+                val sGame = when (name) {
+                    "RPS" -> RPSGame()
+                    else -> error("No such single mode...")
+                }
+
+                games.add(sGame)
+
+                singleGame = sGame
+
+                playerGames[member] = sGame
+
+                single = Pair(member, name)
+
+                timeBossBar.switchSingle(Bukkit.getPlayer(member)!!, true)
+
+                Bukkit.getPlayer(member)?.sendMessage(Component.text("Игроков не хватает. Вы играете против компьютера...").color(
+                    NamedTextColor.YELLOW))
+
+                val description = Component.text("[").color(NamedTextColor.GRAY)
+                    .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
+                    .append(Component.text("] ").color(NamedTextColor.GRAY))
+                    .append(Component.text(ADHDConfig.modes[name]!!.description).color(NamedTextColor.WHITE))
+
+                Bukkit.getPlayer(member)?.sendMessage(description)
+
+                val title = Title.title(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
+
+                Bukkit.getPlayer(member)?.showTitle(title)
+
+                Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+                    val player = Bukkit.getPlayer(member) ?: return@Runnable
+
+                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
+                })
+
+                sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
+            }
 
             val description = Component.text("[").color(NamedTextColor.GRAY)
-                .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
+                .append(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD))
                 .append(Component.text("] ").color(NamedTextColor.GRAY))
-                .append(Component.text(ADHDConfig.modes[name]!!.description).color(NamedTextColor.WHITE))
+                .append(Component.text(ADHDConfig.modes[modeName]!!.description).color(NamedTextColor.WHITE))
 
-            Bukkit.getPlayer(member)?.sendMessage(description)
+            for (mS in assignedMembers.keys) {
+                val game = when (modeName) {
+                    "PVP" -> PVPGame()
+                    "Pillars" -> PillarsGame()
+                    "Knights" -> KnightsGame()
+                    "Snipers" -> SnipersGame()
+                    else -> error("No such mode...")
+                }
 
-            val title = Title.title(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
+                games.add(game)
 
-            Bukkit.getPlayer(member)?.showTitle(title)
+                mS.forEach { uUID -> playerGames[uUID] = game }
 
-            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
-                val player = Bukkit.getPlayer(member) ?: return@Runnable
+                for (uuid in mS) {
+                    val player = Bukkit.getPlayer(uuid) ?: continue
 
-                player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-            })
+                    val title = Title.title(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
 
-            sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
-        }
+                    player.showTitle(title)
 
-        val description = Component.text("[").color(NamedTextColor.GRAY)
-            .append(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD))
-            .append(Component.text("] ").color(NamedTextColor.GRAY))
-            .append(Component.text(ADHDConfig.modes[modeName]!!.description).color(NamedTextColor.WHITE))
+                    player.sendMessage(description)
 
-        for (mS in assignedMembers.keys) {
-            val game = when (modeName) {
-                "PVP" -> PVPGame()
-                "Pillars" -> PillarsGame()
-                "Knights" -> KnightsGame()
-                "Snipers" -> SnipersGame()
-                else -> error("No such mode...")
+                    Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
+                }
+
+                game.start(worldName, assignedMembers[mS]!!, mS, ADHDConfig.modes[pool[round]]!!.meta)
             }
 
-            games.add(game)
+            timeBossBar.update()
 
-            mS.forEach { uUID -> playerGames[uUID] = game }
-
-            for (uuid in mS) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-
-                val title = Title.title(Component.text(ADHDConfig.modes[modeName]!!.displayName).color(NamedTextColor.GOLD), Component.text(""))
-
-                player.showTitle(title)
-
-                player.sendMessage(description)
-
-                Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
-            }
-
-            game.start(worldName, assignedMembers[mS]!!, mS, ADHDConfig.modes[pool[round]]!!.meta)
+            status = TournamentStatus.RUN
         }
-
-        timeBossBar.update()
-
-        status = TournamentStatus.RUN
     }
 
     fun tryAnnounce() {

@@ -148,7 +148,15 @@ class RPSGame : Game() {
     override fun finish() {
         state = GameState.FINISH
 
-        if (!announced) calculate()
+        if (!announced) {
+            calculate()
+
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.sendMessage(Component.text("Выбор робота — $computerChoice \uD83E\uDD16").color(NamedTextColor.GRAY))
+            }
+        }
     }
 
     override fun summarize(): Map<UUID, Double> {
