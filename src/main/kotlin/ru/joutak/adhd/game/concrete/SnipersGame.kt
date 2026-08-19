@@ -217,8 +217,8 @@ class SnipersGame : Game() {
 
         fireworkMeta.addEffect(
             FireworkEffect.builder()
-                .with(FireworkEffect.Type.BURST)
-                .trail(true)
+                .with(FireworkEffect.Type.BALL)
+                .trail(false)
                 .build()
         )
 
