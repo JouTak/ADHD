@@ -3,6 +3,7 @@ package ru.joutak.adhd
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.listener.FreezeListener
 import ru.joutak.adhd.listener.PlayerSessionListener
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.minigames.MiniGamesCore
@@ -24,7 +25,7 @@ class ADHDPlugin : JavaPlugin() {
         TournamentManager.load()
 
         Bukkit.getPluginManager().registerEvents(PlayerSessionListener(), instance)
-
+        Bukkit.getPluginManager().registerEvents(FreezeListener(), instance)
 
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.pvp.RespawnListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.pillars.RespawnListener(), instance)

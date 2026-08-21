@@ -16,6 +16,7 @@ import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.game.mode.meta.concrete.PillarsModeMeta
+import ru.joutak.adhd.listener.FreezeListener
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
@@ -56,6 +57,10 @@ class PillarsGame : Game() {
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
+
+            FreezeListener.freeze[uuid] = true
+
+            Bukkit.getScheduler().runTaskLater(ADHDPlugin.instance, Runnable { FreezeListener.freeze[uuid] = false }, 20L)
 
             teleportToSpawn(player)
             player.inventory.clear()

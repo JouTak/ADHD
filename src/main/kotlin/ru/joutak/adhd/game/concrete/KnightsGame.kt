@@ -140,6 +140,12 @@ class KnightsGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
+
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            player.leaveVehicle()
+        }
     }
 
     override fun summarize(): Map<UUID, Double> {

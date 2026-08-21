@@ -3,6 +3,7 @@ package ru.joutak.adhd.game.concrete
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ChargedProjectiles
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.FireworkEffect
@@ -26,6 +27,7 @@ import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.game.mode.meta.concrete.SnipersModeMeta
+import ru.joutak.adhd.listener.mode.snipers.FireListener
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
@@ -215,8 +217,8 @@ class SnipersGame : Game() {
 
         fireworkMeta.addEffect(
             FireworkEffect.builder()
-                .with(FireworkEffect.Type.BURST)
-                .trail(true)
+                .with(FireworkEffect.Type.BALL)
+                .trail(false)
                 .build()
         )
 
@@ -241,6 +243,35 @@ class SnipersGame : Game() {
         if (ventilator) {
             updateVentilator()
         }
+
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            player.sendActionBar(buildActionBar(uuid))
+        }
+    }
+
+    fun buildActionBar(uuid: UUID): Component {
+        val parts = mutableListOf<Component>()
+
+        if (ventilator) {
+            val message = if (gravityDirection == "UP") {
+                Component.text("Вентилятор ▲").color(NamedTextColor.BLUE)
+            } else {
+                Component.text("Вентилятор ▼").color(NamedTextColor.GOLD)
+            }
+
+            parts.add(message)
+        }
+
+        if (FireListener.reload[uuid] ?: false) {
+            parts.add(Component.text("Перезарядка ⦿").color(NamedTextColor.GREEN))
+        }
+
+        return Component.join(
+            JoinConfiguration.separator(Component.space()),
+            parts
+        )
     }
 
     fun changeGravity() {
@@ -318,20 +349,6 @@ class SnipersGame : Game() {
             }
 
             ventilatorFrameTick = 4L
-        }
-
-        if (gravityChangeTick % 5L == 0L) {
-            val message = if (gravityDirection == "UP") {
-                Component.text("Вентилятор ▲").color(NamedTextColor.BLUE)
-            } else {
-                Component.text("Вентилятор ▼").color(NamedTextColor.GOLD)
-            }
-
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-
-                player.sendActionBar(message)
-            }
         }
 
         ventilatorFrameTick -= 2L

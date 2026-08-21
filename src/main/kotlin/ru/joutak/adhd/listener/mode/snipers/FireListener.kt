@@ -12,8 +12,12 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.tournament.TournamentManager
+import java.util.UUID
 
 class FireListener : Listener {
+    companion object {
+        val reload = mutableMapOf<UUID, Boolean>()
+    }
 
     @EventHandler
     fun onFire(event: EntityShootBowEvent) {
@@ -22,9 +26,13 @@ class FireListener : Listener {
         val game = TournamentManager.getGame(player)
 
         if (game != null && game.getGameState() == GameState.RUN && game is SnipersGame) {
-            val crossbow = player.inventory.itemInMainHand
+            val crossbow = event.bow!!
 
-            Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {
+            val uuid = player.uniqueId
+
+            reload[uuid] = true
+
+            Bukkit.getScheduler().runTaskLater(ADHDPlugin.instance, Runnable {
                 val firework = game.buildFirework()
 
                 crossbow.setData(
@@ -39,7 +47,9 @@ class FireListener : Listener {
                 meta.damage = 0
 
                 crossbow.itemMeta = meta
-            })
+
+                reload[uuid] = false
+            }, 10L)
         }
     }
 }
