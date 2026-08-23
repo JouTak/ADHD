@@ -30,17 +30,17 @@ class PillarsGame : Game() {
 
     lateinit var meta: PillarsModeMeta
 
+    val interval: Double
+        get() = meta.interval
+
     var result = mutableMapOf<UUID, Double>()
 
     var lSpawn : SpawnPoint? = null
 
     var state = GameState.START
 
-    private var interval = 2
     private var tickCounter = 0
     private var intervalTicks = 0
-
-
 
     private var isFinished = false
 
@@ -69,7 +69,7 @@ class PillarsGame : Game() {
 
         state = GameState.RUN
 
-        intervalTicks = (interval * 20L).coerceAtLeast(20L).toInt()
+        intervalTicks = (interval * 20).toInt()
         tickCounter = 0
     }
 
