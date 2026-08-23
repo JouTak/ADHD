@@ -44,12 +44,29 @@ class PillarsGame : Game() {
 
     private var isFinished = false
 
+    private lateinit var availableItmes: List<Material>
+
     override fun start(worldName: String, arena: Arena, members: Set<UUID>, modeMeta: ModeMeta?) {
         this.worldName = worldName
         this.arena = arena
         this.members = members
 
         this.meta = modeMeta as? PillarsModeMeta ?: throw IllegalArgumentException("PillarsGame requires PillarsModeMeta.")
+
+
+        val mapMeta = arena.metas["pillars"] as? PillarsMapMeta
+        val bannedSetsFromMap = mapMeta?.setsBanList ?: emptyList()
+
+        availableItmes = if (bannedSetsFromMap.isNotEmpty()) {
+            val bannedItems = bannedSetsFromMap.flatMap { setName ->
+                meta.itemSets[setName] ?: emptyList()
+            }.toSet()
+
+            meta.getAllItems().filter { it !in bannedItems }
+        } else {
+            meta.getAllItems()
+        }
+        
 
         val world = Bukkit.getWorld(worldName)!!
 
@@ -116,9 +133,9 @@ class PillarsGame : Game() {
     }
 
     private fun getRandomItem(): ItemStack? {
-        if (meta.items.isEmpty()) return null
+        if (availableItmes.isEmpty()) return null
 
-        val randomMaterial = meta.items.random()
+        val randomMaterial = availableItmes.random()
 
         return ItemStack(randomMaterial)
     }

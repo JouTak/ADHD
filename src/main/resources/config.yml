@@ -79,6 +79,9 @@ maps:
         yaw: 270
         pitch: 0
   3:
+    meta:
+      pillars:
+        banned_sets: [OP, BLOCKS]
     spawns:
       0:
         x: 251
