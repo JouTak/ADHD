@@ -308,6 +308,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
         for (rule in Registry.GAME_RULE) {
             resetGameRule(world, rule)
         }
+
+        world.setGameRule(GameRules.LOCATOR_BAR, false)
     }
 
     fun prepareCeremony() {
