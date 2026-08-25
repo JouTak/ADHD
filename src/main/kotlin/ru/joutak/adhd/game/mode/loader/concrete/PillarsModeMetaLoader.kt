@@ -11,6 +11,8 @@ class PillarsModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
         val interval = section.getDouble("interval")
 
+        val items = section.getStringList("items")
+
         val setsSection = section.getConfigurationSection("item_sets")
         val itemSets = mutableMapOf<String, List<Material>>()
 
