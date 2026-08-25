@@ -35,6 +35,9 @@ import kotlin.math.floor
 import kotlin.random.Random
 
 class SnipersGame : Game() {
+    companion object {
+        var frameOffsets: List<MutableMap<Triple<Int, Int, Int>, BlockData>>? = null
+    }
 
     lateinit var worldName: String
 
@@ -113,6 +116,8 @@ class SnipersGame : Game() {
 
             val placement = ventilatorMapMeta.placement
 
+            val fOffsets = mutableListOf(mutableMapOf<Triple<Int, Int, Int>, BlockData>())
+
             for (center in ventilatorMapMeta.frames) {
                 for (y in -3..3) {
                     for (z in -18..18) {
@@ -120,6 +125,8 @@ class SnipersGame : Game() {
                             val block = world.getBlockAt(Location(world, center.x + offsetX + x, center.y + y, center.z + offsetZ + z))
 
                             if (block.type == Material.AIR) continue
+
+                            fOffsets[fOffsets.size - 1][Triple(x, y, z)] = block.blockData
 
                             val aX = placement.x + offsetX + x
                             val aY = placement.y + y
@@ -146,9 +153,15 @@ class SnipersGame : Game() {
                 }
 
                 displays.add(mutableMapOf())
+
+                fOffsets.add(mutableMapOf())
             }
 
             displays.removeLast()
+
+            fOffsets.removeLast()
+
+            frameOffsets = fOffsets
 
             ventilatorFrames = displays
 
