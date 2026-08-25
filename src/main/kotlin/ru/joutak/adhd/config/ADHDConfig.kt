@@ -3,6 +3,7 @@ package ru.joutak.adhd.config
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.MemoryMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
@@ -149,6 +150,7 @@ object ADHDConfig {
         mapMetaLoaders["pvp"] = PVPMapMetaLoader()
         mapMetaLoaders["pillars"] = PillarsMapMetaLoader()
         mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
+        mapMetaLoaders["memory"] = MemoryMapMetaLoader()
     }
 
     fun loadModes() {
