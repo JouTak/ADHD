@@ -21,7 +21,8 @@ import kotlin.math.floor
 object ADHDConfig {
 
     val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", KnightsModeMetaLoader()), Pair("Snipers",
-        SnipersModeMetaLoader()), Pair("Pillars", PillarsModeMetaLoader()), Pair("RPS", null))
+        SnipersModeMetaLoader()), Pair("Pillars", PillarsModeMetaLoader()), Pair("RPS", null), Pair
+    ("Memory", null))
 
     val singleModeNames = mutableSetOf<String>()
 

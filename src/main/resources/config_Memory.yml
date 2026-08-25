@@ -1,0 +1,7 @@
+default:
+  enabled: true
+  single: true
+  displayName: Память
+  description: Запомните последовательность стендов и ударьте по ним в том же порядке!
+  maps:
+    - 1
