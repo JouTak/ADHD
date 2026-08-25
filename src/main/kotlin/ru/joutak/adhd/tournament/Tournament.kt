@@ -105,6 +105,8 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
                     games.filter { it.getGameState() != GameState.FINISH }.forEach { it.finish() }
 
+                    timeBossBar.prepareTitle()
+
                     tryAnnounce()
 
                     calculate()

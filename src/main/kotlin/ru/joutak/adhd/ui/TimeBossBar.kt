@@ -45,6 +45,14 @@ class TimeBossBar {
         }
     }
 
+    fun prepareTitle() {
+        bossBar.setTitle("Переключение...")
+        bossBar.progress = 1.0
+
+        bossBarSingle.setTitle("Переключение...")
+        bossBarSingle.progress = 1.0
+    }
+
     fun update() {
         val configDuration = ADHDConfig.modes[tournament.pool[tournament.round]]!!.duration * 20
 
