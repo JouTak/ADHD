@@ -3,12 +3,16 @@ package ru.joutak.adhd.game.concrete
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
+import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
+import ru.joutak.adhd.config.map.meta.concrete.MemoryMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.Arena
+import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
+import kotlin.math.floor
 
 class MemoryGame : Game() {
 
@@ -21,6 +25,10 @@ class MemoryGame : Game() {
     var state = GameState.START
 
     val result = mutableMapOf<UUID, Double>()
+
+    lateinit var points: List<SpawnPoint>
+
+    val stands = mutableSetOf<ArmorStand>()
 
     override fun start(
         worldName: String,
@@ -36,6 +44,31 @@ class MemoryGame : Game() {
             val player = Bukkit.getPlayer(uuid) ?: continue
 
             setPlayer(player)
+        }
+
+        val meta = arena.metas["memory"] as? MemoryMapMeta ?: error("Arena must have meta for this mode to operate...")
+
+        points = meta.points
+
+        spawnStands()
+    }
+
+    fun spawnStands() {
+        val world = Bukkit.getWorld(worldName)!!
+
+        val offsetX = floor(arena.spawnPoints[0].x / 512) * 512
+
+        val offsetZ = floor(arena.spawnPoints[0].z / 512) * 512
+
+        for (p in points) {
+            val loc = Location(world, p.x + offsetX, p.y, p.z + offsetZ)
+
+            val stand = world.spawn(loc, ArmorStand::class.java)
+
+            stands.add(stand)
+
+            stand.setGravity(true)
+            stand.isInvisible = true
         }
     }
 

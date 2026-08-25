@@ -5,6 +5,7 @@ import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.config.map.meta.concrete.MemoryMapMeta
 import ru.joutak.adhd.world.SpawnPoint
+import kotlin.math.floor
 
 class MemoryMapMetaLoader : MapMetaLoader {
     override fun load(section: ConfigurationSection): MapMeta {
@@ -17,7 +18,8 @@ class MemoryMapMetaLoader : MapMetaLoader {
 
             val x = pointSection.getDouble("x")
             val y = pointSection.getDouble("y")
-            val z = pointSection.getDouble("z")
+            var z = pointSection.getDouble("z")
+            z -= floor(z / 512) * 512
 
             points.add(SpawnPoint(x, y, z, 0.0f, 0.0f))
         }
