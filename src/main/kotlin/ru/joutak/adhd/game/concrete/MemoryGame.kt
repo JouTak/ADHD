@@ -67,8 +67,11 @@ class MemoryGame : Game() {
 
             stands.add(stand)
 
-            stand.setGravity(true)
-            stand.isInvisible = true
+            stand.setGravity(false)
+            stand.isInvisible = false
+            stand.isInvulnerable = true
+            stand.setArms(false)
+            stand.setBasePlate(true)
         }
     }
 
