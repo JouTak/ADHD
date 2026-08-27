@@ -39,6 +39,8 @@ class MemoryGame : Game() {
 
     val soundStands = mutableMapOf<ArmorStand, Float>()
 
+    val pool = mutableListOf<ArmorStand>()
+
     override fun start(
         worldName: String,
         arena: Arena,
@@ -60,6 +62,8 @@ class MemoryGame : Game() {
         points = meta.points
 
         spawnStands()
+
+        fillPool()
     }
 
     fun spawnStands() {
@@ -112,6 +116,18 @@ class MemoryGame : Game() {
         soundStands[stand] = (0.5 + 0.1 * soundStands.size).toFloat().coerceAtMost(2.0f)
 
         colorStands[stand] = color
+    }
+
+    fun fillPool() {
+        var last: ArmorStand? = null
+
+        for (i in 0..Random.nextInt(5, 7)) {
+            val current = (stands - mutableSetOf(last)).random()!!
+
+            last = current
+
+            pool.add(current)
+        }
     }
 
     fun setPlayer(player: Player) {
