@@ -126,6 +126,8 @@ class MemoryGame : Game() {
         fillPool()
 
         countDownTask.runTaskTimer(ADHDPlugin.instance, 100L, 20L)
+
+        state = GameState.RUN
     }
 
     fun spawnStands() {
@@ -144,7 +146,7 @@ class MemoryGame : Game() {
 
             stand.setGravity(false)
             stand.isInvisible = false
-            stand.isInvulnerable = true
+            stand.isInvulnerable = false
             stand.setArms(false)
             stand.setBasePlate(true)
 
@@ -183,7 +185,7 @@ class MemoryGame : Game() {
     fun fillPool() {
         var last: ArmorStand? = null
 
-        for (i in 0..Random.nextInt(5, 7)) {
+        for (i in 0..Random.nextInt(3, 5)) {
             val current = (stands - mutableSetOf(last)).random()!!
 
             last = current
@@ -215,6 +217,16 @@ class MemoryGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
+
+        try {
+            countDownTask.cancel()
+        } catch (_: Exception) {}
+
+        try {
+            acknowledgeTask.cancel()
+        } catch (_: Exception) {}
+
+        stands.forEach { it.remove() }
     }
 
     override fun summarize(): Map<UUID, Double> {
