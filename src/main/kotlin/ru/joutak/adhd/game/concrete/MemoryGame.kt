@@ -1,14 +1,20 @@
 package ru.joutak.adhd.game.concrete
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
+import org.bukkit.scheduler.BukkitRunnable
+import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.meta.concrete.MemoryMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
@@ -41,6 +47,28 @@ class MemoryGame : Game() {
 
     val pool = mutableListOf<ArmorStand>()
 
+    val countDownTask = object : BukkitRunnable() {
+        var seconds = 5
+
+        override fun run() {
+            if (seconds == 0) {
+                cancel()
+            }
+
+            val title = Title.title(Component.text(seconds).color(NamedTextColor.GOLD), Component.text(""), 5, 10, 5)
+
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.showTitle(title)
+
+                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
+            }
+
+            seconds -= 1
+        }
+    }
+
     override fun start(
         worldName: String,
         arena: Arena,
@@ -64,6 +92,8 @@ class MemoryGame : Game() {
         spawnStands()
 
         fillPool()
+
+        countDownTask.runTaskTimer(ADHDPlugin.instance, 100L, 20L)
     }
 
     fun spawnStands() {
