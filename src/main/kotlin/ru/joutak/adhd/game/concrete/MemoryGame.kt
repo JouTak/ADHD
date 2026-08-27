@@ -37,6 +37,8 @@ class MemoryGame : Game() {
 
     val colorStands = mutableMapOf<ArmorStand, Color>()
 
+    val soundStands = mutableMapOf<ArmorStand, Float>()
+
     override fun start(
         worldName: String,
         arena: Arena,
@@ -106,6 +108,8 @@ class MemoryGame : Game() {
         stand.equipment.setLeggings(colorItem(Material.LEATHER_LEGGINGS, color))
 
         stand.equipment.setBoots(colorItem(Material.LEATHER_BOOTS, color))
+
+        soundStands[stand] = (0.5 + 0.1 * soundStands.size).toFloat().coerceAtMost(2.0f)
 
         colorStands[stand] = color
     }
