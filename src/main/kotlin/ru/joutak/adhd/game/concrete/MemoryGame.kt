@@ -53,6 +53,8 @@ class MemoryGame : Game() {
         override fun run() {
             if (seconds == 0) {
                 cancel()
+
+                acknowledgeTask.runTaskTimer(ADHDPlugin.instance, 20L, 20L)
             }
 
             val title = Title.title(Component.text(seconds).color(NamedTextColor.GOLD), Component.text(""), 5, 10, 5)
@@ -68,6 +70,36 @@ class MemoryGame : Game() {
             seconds -= 1
         }
     }
+
+    val acknowledgeTask = object : BukkitRunnable() {
+        var pointer = 0
+
+        var last: ArmorStand? = null
+
+        override fun run() {
+            last?.let { it.isGlowing = false }
+
+            if (pointer == pool.size) {
+                cancel()
+
+                acknowledged = true
+
+                return
+            }
+
+            val stand = pool[pointer]
+
+            last = stand
+
+            stand.isGlowing = true
+
+            Bukkit.getWorld(worldName)?.playSound(stand.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1f, soundStands[stand]!!)
+
+            pointer++
+        }
+    }
+
+    var acknowledged = false
 
     override fun start(
         worldName: String,
