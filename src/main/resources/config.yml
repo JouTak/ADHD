@@ -81,7 +81,7 @@ maps:
   3:
     meta:
       pillars:
-        risingLava: true
+        banned_sets: [OP, BLOCKS]
       memory:
         points:
           0:
