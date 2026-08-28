@@ -82,6 +82,20 @@ maps:
     meta:
       pillars:
         banned_sets: [OP, BLOCKS]
+      memory:
+        points:
+          0:
+            x: 271.5
+            y: 71.5
+            z: 1795.5
+          1:
+            x: 273.5
+            y: 71.5
+            z: 1795.5
+          2:
+            x: 269.5
+            y: 71.5
+            z: 1795.5
     spawns:
       0:
         x: 251
