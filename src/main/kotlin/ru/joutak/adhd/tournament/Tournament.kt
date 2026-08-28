@@ -55,6 +55,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     var singleGame: Game? = null
 
+    private val pairs = mutableListOf<Pair<UUID, UUID>>()
+
+    private val singles = mutableListOf<UUID>()
+
     val ticker = object : BukkitRunnable() {
         override fun run() {
             tick()
@@ -173,16 +177,12 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
             val assignedMembers = mutableMapOf<MutableSet<UUID>, Arena>()
 
-            participants.shuffle()
+            val tournamentRound = generateRound()
 
-            for (i in 0 until participants.size - 1 step 2) {
-                val arena = gArenas[i / 2]
+            tournamentRound.pairs.forEachIndexed { index, (f, s) -> assignedMembers[mutableSetOf(f, s)] = gArenas[index] }
 
-                assignedMembers[mutableSetOf(participants[i], participants[i + 1])] = arena
-            }
-
-            if (participants.size % 2 != 0) {
-                val member = participants[participants.size - 1]
+            if (tournamentRound.single != null) {
+                val member = tournamentRound.single
 
                 val name = ADHDConfig.singleModeNames.random()
 
@@ -264,6 +264,54 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
             status = TournamentStatus.RUN
         }
+    }
+
+    data class Round(
+        val pairs: List<Pair<UUID, UUID>>,
+        val single: UUID?
+    )
+
+    fun generateRound(): Round {
+        val members = participants.toSet()
+
+        if ((members - singles.toSet()).isEmpty()) {
+            singles.clear()
+        }
+
+        val single = if (members.size % 2 != 0) {
+            (members - singles.toSet()).random()
+        } else {
+            null
+        }
+
+        single?.let {
+            singles += it
+            pairs.removeIf { pair ->
+                pair.first == it || pair.second == it
+            }
+        }
+
+        val remaining = (members - setOfNotNull(single)).toMutableSet()
+        val newPairs = mutableListOf<Pair<UUID, UUID>>()
+
+        while (remaining.isNotEmpty()) {
+            val a = remaining.random()
+            val b = (remaining - a).random()
+
+            pairs.removeIf {
+                it.first == a || it.second == a ||
+                        it.first == b || it.second == b
+            }
+
+            val pair = if (a < b) a to b else b to a
+
+            pairs += pair
+            newPairs += pair
+
+            remaining.removeAll(setOf(a, b))
+        }
+
+        return Round(newPairs, single)
     }
 
     fun tryAnnounce() {
