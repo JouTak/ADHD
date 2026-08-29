@@ -219,7 +219,29 @@ class CasinoGame : Game() {
         processBet(resultColor)
         currentBet = null
 
-        if (playerBalance <= 0 || playerBalance >= playerGoal) {
+        if (playerBalance <= 0 ) {
+            isFinished = true
+
+            val title = Title.title(Component.text("Вы проиграли все свои гроши :(").color(NamedTextColor.RED),
+                Component.text("В следующий раз повезёт").color(NamedTextColor.GRAY))
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+                player.showTitle(title)
+
+                player.playSound(player.location, Sound.ENTITY_ENDERMAN_DEATH, 0.5f, 1.0f)
+            }
+            finish()
+        } else if (playerBalance >= playerGoal) {
+            isFinished = true
+
+            val title = Title.title(Component.text("Вы обыграли казино!!!!").color(NamedTextColor.GOLD),
+                Component.text("Вы ушли, забрав с собой $playerBalance").color(NamedTextColor.YELLOW))
+            for (uuid in members) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+                player.showTitle(title)
+
+                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
+            }
             finish()
         } else {
             for (uuid in members) {
@@ -295,11 +317,9 @@ class CasinoGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
-        isFinished = true
 
-
-        if (playerBalance >= playerGoal) {
-            val title = Title.title(Component.text("Вы обыграли казино!!!!").color(NamedTextColor.GOLD),
+        if (!isFinished){
+            val title = Title.title(Component.text("К сожалению вы не успели").color(NamedTextColor.GOLD),
                 Component.text("Вы ушли, забрав с собой $playerBalance").color(NamedTextColor.YELLOW))
             for (uuid in members) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
@@ -307,16 +327,9 @@ class CasinoGame : Game() {
 
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
             }
-        } else {
-            val title = Title.title(Component.text("Вы проиграли все свои гроши :(").color(NamedTextColor.RED),
-                Component.text("В следующий раз повезёт").color(NamedTextColor.GRAY))
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-                player.showTitle(title)
-
-                player.playSound(player.location, Sound.ENTITY_ENDERMAN_DEATH, 0.5f, 1.0f)
-            }
         }
+
+        isFinished = true
     }
 
     data class ColorBet(
