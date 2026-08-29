@@ -19,9 +19,35 @@ import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
+import ru.joutak.minigames.MiniGamesAPI
+import ru.joutak.minigames.config.ConfigKeys
+import ru.joutak.minigames.results.model.CompletionStatus
+import ru.joutak.minigames.results.model.MatchContext
+import ru.joutak.minigames.results.model.MatchResult
+import ru.joutak.minigames.results.model.Metric
+import ru.joutak.minigames.results.model.PlayerResult
+import ru.joutak.minigames.results.model.ResultPlacementResolver
+import ru.joutak.minigames.results.model.TeamResult
 import java.util.*
 
-class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
+class Tournament(
+    val participants: MutableList<UUID>,
+    val pool: List<String>,
+    private val teamIdByPlayer: Map<UUID, Int>,
+    private val teamKeysByTeamId: Map<Int, String>,
+) {
+
+    val originalParticipants: List<UUID> = participants.toList()
+
+    private val leftAtMs = mutableMapOf<UUID, Long>()
+
+    private val playerNames = mutableMapOf<UUID, String>()
+
+    private val matchId: UUID = UUID.randomUUID()
+
+    private var startedAtMs: Long = 0L
+
+    private var resultRecorded = false
 
     lateinit var worldName: String
 
@@ -41,7 +67,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
     val playerGames = mutableMapOf<UUID, Game>()
 
-    val results = mutableMapOf<UUID, Double>()
+    val results = originalParticipants.associateWith { 0.0 }.toMutableMap()
 
     val announced = mutableListOf<Game>()
 
@@ -71,6 +97,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
         this.singleArenas = singleArenas
 
         status = TournamentStatus.START
+        startedAtMs = System.currentTimeMillis()
 
         TournamentManager.removePrepareAnnounce(this)
 
@@ -83,7 +110,7 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
             gameScoreboardManager.add(player)
 
-            results[uuid] = 0.0
+            playerNames[uuid] = player.name
         }
 
         ticker.runTaskTimer(ADHDPlugin.instance, 2L, 2L)
@@ -426,6 +453,10 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
     }
 
     fun remove(player: Player) {
+        if (player.uniqueId !in originalParticipants || player.uniqueId in leftAtMs) return
+        leftAtMs[player.uniqueId] = System.currentTimeMillis()
+        playerNames.putIfAbsent(player.uniqueId, player.name)
+
         val game = playerGames.remove(player.uniqueId)
 
         if (game != null && status == TournamentStatus.RUN) {
@@ -470,10 +501,82 @@ class Tournament(val participants: MutableList<UUID>, val pool: List<String>) {
 
         gameScoreboardManager.removeAll()
 
+        recordResultIfNeeded()
+
         try {
             ticker.cancel()
         } catch (_: Exception) {}
 
         TournamentManager.finish(this)
+    }
+
+    private fun recordResultIfNeeded() {
+        if (resultRecorded || startedAtMs <= 0L || TournamentManager.shutdownFlag) return
+        resultRecorded = true
+
+        val placements = ResultPlacementResolver.resolve(
+            originalParticipants.map { uuid ->
+                ResultPlacementResolver.Entry(
+                    key = uuid,
+                    score = results[uuid] ?: 0.0,
+                    completionStatus = if (uuid in leftAtMs) CompletionStatus.LEFT else CompletionStatus.FINISHED,
+                )
+            }
+        )
+
+        val resolvedTeamIdByPlayer = originalParticipants.mapIndexed { index, uuid ->
+            uuid to (teamIdByPlayer[uuid] ?: index + 1)
+        }.toMap()
+
+        val teamResults = originalParticipants.map { uuid ->
+            val status = if (uuid in leftAtMs) CompletionStatus.LEFT else CompletionStatus.FINISHED
+            val place = placements[uuid] ?: originalParticipants.size
+            TeamResult(
+                teamId = resolvedTeamIdByPlayer.getValue(uuid),
+                placement = place,
+                isWinner = status == CompletionStatus.FINISHED && place == 1,
+                score = results[uuid] ?: 0.0,
+                metrics = listOf(Metric.real("adhd_points", results[uuid] ?: 0.0)),
+                completionStatus = status,
+            )
+        }
+
+        val playerResults = originalParticipants.map { uuid ->
+            val place = placements[uuid] ?: originalParticipants.size
+            PlayerResult(
+                playerUuid = uuid,
+                playerName = playerNames[uuid] ?: Bukkit.getOfflinePlayer(uuid).name,
+                teamId = resolvedTeamIdByPlayer.getValue(uuid),
+                isWinner = uuid !in leftAtMs && place == 1,
+                joinedAtMs = startedAtMs,
+                leftAtMs = leftAtMs[uuid],
+                metrics = listOf(Metric.int("left", if (uuid in leftAtMs) 1L else 0L)),
+            )
+        }
+
+        val context = if (MiniGamesAPI.isTournamentEnabled()) {
+            val eventId = MiniGamesAPI.config.get(ConfigKeys.TOURNAMENT_EVENT_ID).trim()
+            val stage = MiniGamesAPI.config.get(ConfigKeys.TOURNAMENT_STAGE).trim()
+            if (eventId.isNotBlank() && stage.isNotBlank()) MatchContext(eventId, stage) else null
+        } else {
+            null
+        }
+
+        val result = MatchResult(
+            matchId = matchId,
+            modeKey = "adhd",
+            mapKey = "adhd",
+            startedAtMs = startedAtMs,
+            endedAtMs = System.currentTimeMillis(),
+            context = context,
+            teams = teamResults,
+            players = playerResults,
+        )
+
+        val ratingKeys = resolvedTeamIdByPlayer.map { (uuid, teamId) ->
+            teamId to (teamKeysByTeamId[teamId] ?: "player:$uuid")
+        }.toMap()
+
+        MiniGamesAPI.recordMatchResult(result, ratingKeys)
     }
 }
