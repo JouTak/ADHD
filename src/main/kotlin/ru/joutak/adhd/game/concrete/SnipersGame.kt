@@ -35,6 +35,9 @@ import kotlin.math.floor
 import kotlin.random.Random
 
 class SnipersGame : Game() {
+    companion object {
+        var frameOffsets: List<MutableMap<Triple<Int, Int, Int>, BlockData>>? = null
+    }
 
     lateinit var worldName: String
 
@@ -113,42 +116,83 @@ class SnipersGame : Game() {
 
             val placement = ventilatorMapMeta.placement
 
-            for (center in ventilatorMapMeta.frames) {
-                for (y in -3..3) {
-                    for (z in -18..18) {
-                        for (x in -18..18) {
-                            val block = world.getBlockAt(Location(world, center.x + offsetX + x, center.y + y, center.z + offsetZ + z))
+            if (frameOffsets == null) {
+                val fOffsets = mutableListOf(mutableMapOf<Triple<Int, Int, Int>, BlockData>())
 
-                            if (block.type == Material.AIR) continue
+                for (center in ventilatorMapMeta.frames) {
+                    for (y in -3..3) {
+                        for (z in -18..18) {
+                            for (x in -18..18) {
+                                val block = world.getBlockAt(Location(world, center.x + offsetX + x, center.y + y, center.z + offsetZ + z))
 
-                            val aX = placement.x + offsetX + x
-                            val aY = placement.y + y
-                            val aZ = placement.z + offsetZ + z
+                                if (block.type == Material.AIR) continue
 
-                            val token = "${aX.toInt()} ${aY.toInt()} ${aZ.toInt()}"
+                                fOffsets[fOffsets.size - 1][Triple(x, y, z)] = block.blockData
 
-                            val targetLocation = Location(world, aX, aY, aZ)
+                                val aX = placement.x + offsetX + x
+                                val aY = placement.y + y
+                                val aZ = placement.z + offsetZ + z
 
-                            val display = usedDisplays[token] ?: world.spawn(targetLocation, BlockDisplay::class.java)
+                                val token = "${aX.toInt()} ${aY.toInt()} ${aZ.toInt()}"
 
-                            display.interpolationDuration = 0
-                            display.interpolationDelay = 0
+                                val targetLocation = Location(world, aX, aY, aZ)
 
-                            usedDisplays[token] = display
+                                val display = usedDisplays[token] ?: world.spawn(targetLocation, BlockDisplay::class.java)
 
-                            displays[displays.size - 1][display] = block.blockData
+                                display.interpolationDuration = 0
+                                display.interpolationDelay = 0
 
-                            if (displays.size == 1) {
-                                display.block = block.blockData
+                                usedDisplays[token] = display
+
+                                displays[displays.size - 1][display] = block.blockData
+
+                                if (displays.size == 1) {
+                                    display.block = block.blockData
+                                }
                             }
                         }
                     }
+
+                    displays.add(mutableMapOf())
+
+                    fOffsets.add(mutableMapOf())
                 }
 
-                displays.add(mutableMapOf())
-            }
+                displays.removeLast()
 
-            displays.removeLast()
+                fOffsets.removeLast()
+
+                frameOffsets = fOffsets
+            } else {
+                for (i in frameOffsets!!.indices) {
+                    for ((t, b) in frameOffsets!![i]) {
+                        val aX = placement.x + offsetX + t.first
+                        val aY = placement.y + t.second
+                        val aZ = placement.z + offsetZ + t.third
+
+                        val token = "${aX.toInt()} ${aY.toInt()} ${aZ.toInt()}"
+
+                        val targetLocation = Location(world, aX, aY, aZ)
+
+                        val display = usedDisplays[token] ?: world.spawn(targetLocation, BlockDisplay::class.java)
+
+                        display.interpolationDuration = 0
+                        display.interpolationDelay = 0
+
+                        usedDisplays[token] = display
+
+                        displays[displays.size - 1][display] = b
+
+                        if (displays.size == 1) {
+                            display.block = b
+                        }
+                    }
+
+                    displays.add(mutableMapOf())
+                }
+
+                displays.removeLast()
+            }
 
             ventilatorFrames = displays
 

@@ -17,8 +17,6 @@ class PlayerSessionListener : Listener {
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
-        if (TournamentManager.isInLobby(event.player)) {
-            TournamentManager.handleQuit(event.player)
-        }
+        TournamentManager.handleQuit(event.player)
     }
 }

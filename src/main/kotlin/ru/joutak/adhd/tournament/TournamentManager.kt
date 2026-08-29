@@ -34,21 +34,39 @@ object TournamentManager {
     }
 
     fun handleQuit(player: Player) {
-        sendToLobby(player)
-
         val tournament = playerTournaments.remove(player.uniqueId) ?: return
 
         tournament.remove(player)
     }
 
     fun load() {
-        MatchmakingManager.loadInstances(listOf(GameInstanceConfig("default", ADHDConfig.maxPlayers, 1, matchmakingMode = MatchmakingMode.SOLO)))
+        MatchmakingManager.loadInstances(
+            listOf(
+                GameInstanceConfig(
+                    "default",
+                    ADHDConfig.maxPlayers,
+                    1,
+                    meta = mapOf("matchmaking_mode" to "SOLO"),
+                    matchmakingMode = MatchmakingMode.SOLO,
+                )
+            )
+        )
 
         WorldManager.clearOnStartUp()
     }
 
     fun createTournament(instance: GameInstance) {
         val everyone = instance.teams.flatten()
+        val teamIdByPlayer = buildMap {
+            instance.teams.forEachIndexed { index, players ->
+                players.forEach { put(it.uniqueId, index + 1) }
+            }
+        }
+        val teamKeysByTeamId = buildMap {
+            instance.tournamentTeamKeys.forEachIndexed { index, key ->
+                if (!key.isNullOrBlank()) put(index + 1, key)
+            }
+        }
 
         if (!WorldManager.isAvailable()) {
             ADHDPlugin.instance.logger.severe("World template can't load. Game won't start...")
@@ -74,7 +92,12 @@ object TournamentManager {
 
         val pool = createPool()
 
-        val tournament = Tournament(participants, pool)
+        val tournament = Tournament(
+            participants = participants,
+            pool = pool,
+            teamIdByPlayer = teamIdByPlayer.filterKeys { it in participants },
+            teamKeysByTeamId = teamKeysByTeamId,
+        )
 
         ADHDPlugin.instance.logger.info("Выбраны режимы для турнира $tournament - $pool")
 
