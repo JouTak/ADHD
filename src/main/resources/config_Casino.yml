@@ -2,9 +2,10 @@ default:
   enabled: true
   single: true
   displayName: Казино
-  description: Выиграй все деньги в рулетке. Введи в чат свою ставку (красное/черное/зеленое <сумма ставки>)
+  description: Выиграй все деньги в рулетке. Введи в чат свою ставку (красное/черное/зеленое <сумма ставки>).
   maps:
-    -1
+    - 1
+
 meta:
   initialBalance: 10
   goalBalance: 30
