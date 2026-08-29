@@ -10,6 +10,7 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
+import ru.joutak.adhd.game.concrete.CasinoGame
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.MemoryGame
 import ru.joutak.adhd.game.concrete.PVPGame
@@ -217,6 +218,7 @@ class Tournament(
 
                 val sGame = when (name) {
                     "RPS" -> RPSGame()
+                    "Casino" -> CasinoGame()
                     "Memory" -> MemoryGame()
                     else -> error("No such single mode...")
                 }

@@ -9,6 +9,7 @@ import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.mode.Mode
+import ru.joutak.adhd.game.mode.loader.concrete.CasinoModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
@@ -23,7 +24,7 @@ object ADHDConfig {
 
     val registeredModes = mapOf(Pair("PVP", PVPModeMetaLoader()), Pair("Knights", KnightsModeMetaLoader()), Pair("Snipers",
         SnipersModeMetaLoader()), Pair("Pillars", PillarsModeMetaLoader()), Pair("RPS", null), Pair
-    ("Memory", null))
+    ("Memory", null), Pair("Casino", CasinoModeMetaLoader()))
 
     val singleModeNames = mutableSetOf<String>()
 
