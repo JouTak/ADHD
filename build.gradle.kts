@@ -27,7 +27,7 @@ dependencies {
     compileOnly(libs.kotlin)
     compileOnly(libs.paper)
 
-    implementation("ru.joutak:minigamesapi:3.7.0")
+    implementation("ru.joutak:minigamesapi:3.8.0")
 
     paperweight.paperDevBundle("26.1.2.build.+")
 }
