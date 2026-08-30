@@ -8,5 +8,6 @@ contributors: []
 website: ${WEBSITE}
 
 depend: []
+softdepend: ['PlaceholderAPI']
 libraries:
   - 'org.jetbrains.kotlin:kotlin-stdlib:${KOTLIN_VERSION}'
