@@ -5,6 +5,7 @@ import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.entity.Player
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.tournament.Tournament
 
 class TimeBossBar {
@@ -61,7 +62,12 @@ class TimeBossBar {
         bossBar.setTitle(formatTitle(remaining, ADHDConfig.modes[tournament.pool[tournament.round]]!!.displayName))
 
         tournament.single?.let { (_, name) ->
-            bossBarSingle.setTitle(formatTitle(remaining, ADHDConfig.modes[name]!!.displayName))
+            val duoGames = tournament.games.filter { game -> game != tournament.singleGame }
+            val activeDuoGames = duoGames.count { game -> game.getGameState() == GameState.RUN }
+
+            bossBarSingle.setTitle(
+                "${formatTitle(remaining, ADHDConfig.modes[name]!!.displayName)} §7| Дуо-игры: §r$activeDuoGames/${duoGames.size}"
+            )
         }
 
         val progress = (remaining.toDouble() / configDuration).coerceIn(0.0, 1.0)

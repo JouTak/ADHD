@@ -191,6 +191,11 @@ class Tournament(
 
             resetGameRules()
 
+            for (uuid in participants) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+                player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
+            }
+
             val singlePlayer = single?.let{
                 Bukkit.getPlayer(it.first)
             }
@@ -235,6 +240,11 @@ class Tournament(
 
                 Bukkit.getPlayer(member)?.sendMessage(Component.text("Игроков не хватает. Вы играете против компьютера...").color(
                     NamedTextColor.YELLOW))
+
+                Bukkit.getPlayer(member)?.sendMessage(
+                    Component.text("Одиночная игра завершится вместе с последней дуо-игрой. Их количество показано в босс-баре.")
+                        .color(NamedTextColor.YELLOW)
+                )
 
                 val description = Component.text("[").color(NamedTextColor.GRAY)
                     .append(Component.text(ADHDConfig.modes[name]!!.displayName).color(NamedTextColor.GOLD))
@@ -390,7 +400,19 @@ class Tournament(
             resetGameRule(world, rule)
         }
 
+        world.setStorm(false)
+        world.isThundering = false
+
+        world.setGameRule(GameRules.ADVANCE_TIME, false)
+        world.setGameRule(GameRules.ADVANCE_WEATHER, false)
         world.setGameRule(GameRules.LOCATOR_BAR, false)
+        world.setGameRule(GameRules.SHOW_ADVANCEMENT_MESSAGES, false)
+        world.setGameRule(GameRules.SPAWN_MOBS, false)
+        world.setGameRule(GameRules.SPAWN_MONSTERS, false)
+        world.setGameRule(GameRules.SPAWN_PATROLS, false)
+        world.setGameRule(GameRules.SPAWN_PHANTOMS, false)
+        world.setGameRule(GameRules.SPAWN_WANDERING_TRADERS, false)
+        world.setGameRule(GameRules.SPAWN_WARDENS, false)
     }
 
     fun prepareCeremony() {
