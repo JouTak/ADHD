@@ -27,7 +27,8 @@ dependencies {
     compileOnly(libs.kotlin)
     compileOnly(libs.paper)
 
-    implementation("ru.joutak:minigamesapi:3.9.2")
+    implementation("ru.joutak:minigamesapi:3.9.3")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.5.10")
 
     paperweight.paperDevBundle("26.1.2.build.+")
 }
