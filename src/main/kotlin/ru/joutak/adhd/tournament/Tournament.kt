@@ -5,10 +5,13 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
 import org.bukkit.*
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
+import ru.joutak.adhd.game.GameInfo
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.CasinoGame
 import ru.joutak.adhd.game.concrete.KnightsGame
@@ -84,6 +87,10 @@ class Tournament(
 
     private val pairs = mutableListOf<Pair<UUID, UUID>>()
 
+    val idByGame = mutableMapOf<Game, Int>()
+
+    val gameInfos = mutableMapOf<Int, GameInfo>()
+
     private val singles = mutableListOf<UUID>()
 
     val ticker = object : BukkitRunnable() {
@@ -142,6 +149,12 @@ class Tournament(
 
                     tryAnnounce()
 
+                    for (uuid in participants) {
+                        val player = Bukkit.getPlayer(uuid) ?: continue
+
+                        switchSpectator(player, false)
+                    }
+
                     calculate()
 
                     if (checkWin()) prepareCeremony()
@@ -186,6 +199,10 @@ class Tournament(
             playerGames.clear()
 
             announced.clear()
+
+            idByGame.clear()
+
+            gameInfos.clear()
 
             currentTick = 0L
 
@@ -263,7 +280,13 @@ class Tournament(
                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
                 })
 
-                sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
+                val members = setOf(member)
+
+                idByGame[sGame] = 0
+
+                gameInfos[0] = GameInfo(members, arena)
+
+                sGame.start(worldName, arena, members, ADHDConfig.modes[name]!!.meta)
             }
 
             val description = Component.text("[").color(NamedTextColor.GRAY)
@@ -296,12 +319,59 @@ class Tournament(
                     Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
                 }
 
+                gameInfos[idByGame.size] = GameInfo(mS, assignedMembers[mS]!!)
+
+                idByGame[game] = idByGame.size
+
                 game.start(worldName, assignedMembers[mS]!!, mS, ADHDConfig.modes[pool[round]]!!.meta)
             }
 
             timeBossBar.update()
 
+            ADHDPlugin.instance.logger.info("$idByGame")
+
+            ADHDPlugin.instance.logger.info("$gameInfos")
+
             status = TournamentStatus.RUN
+        }
+    }
+
+    fun switchSpectator(player: Player, state: Boolean) {
+        if (state) {
+            player.gameMode = GameMode.ADVENTURE
+
+            player.allowFlight = true
+            player.isFlying = true
+            player.isCollidable = false
+            player.isInvisible = true
+            player.isInvulnerable = true
+
+            player.inventory.clear()
+
+            val switchItem = ItemStack(Material.COMPASS, 1)
+
+            val switchItemMeta = switchItem.itemMeta
+
+            switchItemMeta.persistentDataContainer.set(NamespacedKey(ADHDPlugin.instance, "switchItemArena"),
+                PersistentDataType.BOOLEAN,
+                true
+            )
+
+            switchItem.itemMeta = switchItemMeta
+
+            player.inventory.setItem(4, switchItem)
+
+            player.inventory.heldItemSlot = 4
+        } else {
+            player.inventory.clear()
+
+            player.allowFlight = false
+            player.isFlying = false
+            player.isCollidable = true
+            player.isInvisible = false
+            player.isInvulnerable = false
+
+            player.gameMode = GameMode.SPECTATOR
         }
     }
 
@@ -364,7 +434,7 @@ class Tournament(
             for (uuid in members) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
 
-                player.gameMode = GameMode.SPECTATOR
+                switchSpectator(player, true)
 
                 if (winners.contains(uuid) || (fakeAnnounced[uuid] ?: false)) {
                     player.sendMessage(Component.text("Вы выиграли в этом раунде!").color(NamedTextColor.GREEN))
