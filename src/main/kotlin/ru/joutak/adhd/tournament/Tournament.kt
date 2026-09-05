@@ -5,10 +5,13 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
 import org.bukkit.*
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
+import ru.joutak.adhd.game.GameInfo
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.CasinoGame
 import ru.joutak.adhd.game.concrete.KnightsGame
@@ -17,6 +20,8 @@ import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.RPSGame
 import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.listener.ArenaSwitchListener
+import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
@@ -84,7 +89,13 @@ class Tournament(
 
     private val pairs = mutableListOf<Pair<UUID, UUID>>()
 
+    val idByGame = mutableMapOf<Game, Int>()
+
+    val gameInfos = mutableMapOf<Int, GameInfo>()
+
     private val singles = mutableListOf<UUID>()
+
+    val spectators = mutableSetOf<UUID>()
 
     val ticker = object : BukkitRunnable() {
         override fun run() {
@@ -142,6 +153,12 @@ class Tournament(
 
                     tryAnnounce()
 
+                    for (uuid in participants) {
+                        val player = Bukkit.getPlayer(uuid) ?: continue
+
+                        switchSpectator(player, false)
+                    }
+
                     calculate()
 
                     if (checkWin()) prepareCeremony()
@@ -187,12 +204,19 @@ class Tournament(
 
             announced.clear()
 
+            idByGame.clear()
+
+            gameInfos.clear()
+
             currentTick = 0L
 
             resetGameRules()
 
             for (uuid in participants) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
+
+                switchSpectator(player, false)
+
                 player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
             }
 
@@ -263,7 +287,13 @@ class Tournament(
                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
                 })
 
-                sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
+                val members = setOf(member)
+
+                idByGame[sGame] = 0
+
+                gameInfos[0] = GameInfo(members, arena)
+
+                sGame.start(worldName, arena, members, ADHDConfig.modes[name]!!.meta)
             }
 
             val description = Component.text("[").color(NamedTextColor.GRAY)
@@ -296,12 +326,67 @@ class Tournament(
                     Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable {player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)})
                 }
 
+                gameInfos[idByGame.size] = GameInfo(mS, assignedMembers[mS]!!)
+
+                idByGame[game] = idByGame.size
+
                 game.start(worldName, assignedMembers[mS]!!, mS, ADHDConfig.modes[pool[round]]!!.meta)
             }
 
             timeBossBar.update()
 
             status = TournamentStatus.RUN
+        }
+    }
+
+    fun switchSpectator(player: Player, state: Boolean) {
+        if (state) {
+            player.gameMode = GameMode.ADVENTURE
+
+            player.allowFlight = true
+            player.isFlying = true
+            player.isCollidable = false
+            player.isInvisible = true
+            player.isInvulnerable = true
+
+            player.inventory.clear()
+
+            Bukkit.getOnlinePlayers().filter { it != player }.forEach { it.hideEntity(ADHDPlugin.instance, player) }
+
+            KeepInventoryListener.states[player.uniqueId] = true
+
+            spectators.add(player.uniqueId)
+
+            val switchItem = ItemStack(Material.COMPASS, 1)
+
+            val switchItemMeta = switchItem.itemMeta
+
+            switchItemMeta.persistentDataContainer.set(NamespacedKey(ADHDPlugin.instance, "switchItemArena"),
+                PersistentDataType.BOOLEAN,
+                true
+            )
+
+            switchItem.itemMeta = switchItemMeta
+
+            player.inventory.setItem(4, switchItem)
+
+            player.inventory.heldItemSlot = 4
+        } else {
+            player.inventory.clear()
+
+            Bukkit.getOnlinePlayers().filter { it != player }.forEach { it.showEntity(ADHDPlugin.instance, player) }
+
+            KeepInventoryListener.states[player.uniqueId] = false
+
+            spectators.remove(player.uniqueId)
+
+            player.allowFlight = false
+            player.isFlying = false
+            player.isCollidable = true
+            player.isInvisible = false
+            player.isInvulnerable = false
+
+            player.gameMode = GameMode.SPECTATOR
         }
     }
 
@@ -364,7 +449,7 @@ class Tournament(
             for (uuid in members) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
 
-                player.gameMode = GameMode.SPECTATOR
+                switchSpectator(player, true)
 
                 if (winners.contains(uuid) || (fakeAnnounced[uuid] ?: false)) {
                     player.sendMessage(Component.text("Вы выиграли в этом раунде!").color(NamedTextColor.GREEN))
@@ -372,6 +457,16 @@ class Tournament(
                     fakeAnnounced[uuid] = false
                 } else {
                     player.sendMessage(Component.text("Вы проиграли в этом раунде...").color(NamedTextColor.YELLOW))
+                }
+            }
+
+            for (uuid in spectators) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                if (player.openInventory.title() == Component.text("Арены")) {
+                    player.closeInventory()
+
+                    ArenaSwitchListener.createInventoryAndOpen(this, player)
                 }
             }
         } }
@@ -501,6 +596,8 @@ class Tournament(
 
         gameScoreboardManager.remove(player)
 
+        if (player.uniqueId in spectators) switchSpectator(player, false)
+
         if (participants.isEmpty()) {
             finish()
         } else if (participants.size == 1) {
@@ -520,6 +617,12 @@ class Tournament(
         status = TournamentStatus.FINISH
 
         games.filter { it.getGameState() != GameState.FINISH }.forEach { it.finish() }
+
+        for (uuid in spectators.toSet()) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            switchSpectator(player, false)
+        }
 
         timeBossBar.removeAll()
 
