@@ -20,6 +20,8 @@ import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.RPSGame
 import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.listener.ArenaSwitchListener
+import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.ui.GameScoreboardManager
 import ru.joutak.adhd.ui.TimeBossBar
 import ru.joutak.adhd.world.Arena
@@ -92,6 +94,8 @@ class Tournament(
     val gameInfos = mutableMapOf<Int, GameInfo>()
 
     private val singles = mutableListOf<UUID>()
+
+    val spectators = mutableSetOf<UUID>()
 
     val ticker = object : BukkitRunnable() {
         override fun run() {
@@ -210,6 +214,9 @@ class Tournament(
 
             for (uuid in participants) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
+
+                switchSpectator(player, false)
+
                 player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
             }
 
@@ -328,10 +335,6 @@ class Tournament(
 
             timeBossBar.update()
 
-            ADHDPlugin.instance.logger.info("$idByGame")
-
-            ADHDPlugin.instance.logger.info("$gameInfos")
-
             status = TournamentStatus.RUN
         }
     }
@@ -347,6 +350,10 @@ class Tournament(
             player.isInvulnerable = true
 
             player.inventory.clear()
+
+            KeepInventoryListener.states[player.uniqueId] = true
+
+            spectators.add(player.uniqueId)
 
             val switchItem = ItemStack(Material.COMPASS, 1)
 
@@ -364,6 +371,10 @@ class Tournament(
             player.inventory.heldItemSlot = 4
         } else {
             player.inventory.clear()
+
+            KeepInventoryListener.states[player.uniqueId] = false
+
+            spectators.remove(player.uniqueId)
 
             player.allowFlight = false
             player.isFlying = false
@@ -442,6 +453,16 @@ class Tournament(
                     fakeAnnounced[uuid] = false
                 } else {
                     player.sendMessage(Component.text("Вы проиграли в этом раунде...").color(NamedTextColor.YELLOW))
+                }
+            }
+
+            for (uuid in spectators) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                if (player.openInventory.title() == Component.text("Арены")) {
+                    player.closeInventory()
+
+                    ArenaSwitchListener.createInventoryAndOpen(this, player)
                 }
             }
         } }
