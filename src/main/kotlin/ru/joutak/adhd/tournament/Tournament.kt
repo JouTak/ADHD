@@ -351,6 +351,8 @@ class Tournament(
 
             player.inventory.clear()
 
+            Bukkit.getOnlinePlayers().filter { it != player }.forEach { it.hideEntity(ADHDPlugin.instance, player) }
+
             KeepInventoryListener.states[player.uniqueId] = true
 
             spectators.add(player.uniqueId)
@@ -371,6 +373,8 @@ class Tournament(
             player.inventory.heldItemSlot = 4
         } else {
             player.inventory.clear()
+
+            Bukkit.getOnlinePlayers().filter { it != player }.forEach { it.showEntity(ADHDPlugin.instance, player) }
 
             KeepInventoryListener.states[player.uniqueId] = false
 
@@ -592,6 +596,8 @@ class Tournament(
 
         gameScoreboardManager.remove(player)
 
+        if (player.uniqueId in spectators) switchSpectator(player, false)
+
         if (participants.isEmpty()) {
             finish()
         } else if (participants.size == 1) {
@@ -611,6 +617,12 @@ class Tournament(
         status = TournamentStatus.FINISH
 
         games.filter { it.getGameState() != GameState.FINISH }.forEach { it.finish() }
+
+        for (uuid in spectators.toSet()) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+
+            switchSpectator(player, false)
+        }
 
         timeBossBar.removeAll()
 
