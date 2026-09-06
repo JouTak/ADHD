@@ -86,6 +86,10 @@ class Tournament(
 
     private val singles = mutableListOf<UUID>()
 
+    var singleTick = 30 * 20L
+
+    var singleAnnounced = false
+
     val ticker = object : BukkitRunnable() {
         override fun run() {
             tick()
@@ -131,7 +135,22 @@ class Tournament(
             TournamentStatus.RUN -> {
                 tryAnnounce()
 
-                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (games.filter { game -> game != singleGame }.all { game -> game.getGameState() == GameState.FINISH })) {
+                val finished = (games.filter { game -> game != singleGame }.all { game -> game.getGameState() == GameState.FINISH })
+
+                if (singleGame != null && finished && singleTick >= 0 && !singleAnnounced) {
+                    val player = Bukkit.getPlayer(single?.first!!)!!
+
+                    player.sendMessage(Component.text("Все дуо игры окончены. Ваше время было ограничено.").color(
+                        NamedTextColor.YELLOW))
+
+                    player.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f)
+
+                    currentTick = ADHDConfig.modes[pool[round]]!!.duration * 20L - singleTick
+
+                    singleAnnounced = true
+                }
+
+                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (finished && !singleAnnounced) || (singleGame != null && singleGame!!.getGameState() == GameState.FINISH)) {
                     status = TournamentStatus.PREPARE
 
                     round++
@@ -156,6 +175,8 @@ class Tournament(
                 if (currentTick % 10L == 0L) gameScoreboardManager.updateAll()
 
                 currentTick += 2L
+
+                singleTick -= 2L
             }
             TournamentStatus.CEREMONY -> {
                 if (currentTick >= ADHDConfig.ceremonyDuration * 20L) {
@@ -185,6 +206,10 @@ class Tournament(
 
             playerGames.clear()
 
+            singleGame = null
+
+            singleAnnounced = false
+
             announced.clear()
 
             currentTick = 0L
@@ -203,6 +228,8 @@ class Tournament(
             singlePlayer?.let {
                 timeBossBar.switchSingle(it, false)
             }
+
+            single = null
 
             val modeName = pool[round]
 
@@ -264,6 +291,12 @@ class Tournament(
                 })
 
                 sGame.start(worldName, arena, setOf(member), ADHDConfig.modes[name]!!.meta)
+            }
+
+            singleTick = if (single != null) {
+                ADHDConfig.modes[single!!.second]!!.duration * 20L
+            } else {
+                0L
             }
 
             val description = Component.text("[").color(NamedTextColor.GRAY)
