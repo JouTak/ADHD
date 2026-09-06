@@ -98,7 +98,7 @@ class KnightsGame : Game() {
         val horse = world.spawn(loc, Horse::class.java)
 
         horse.setAdult()
-        horse.isInvulnerable = true
+        horse.isInvulnerable = false
 
         horse.isTamed = true
         horse.owner = player

@@ -32,7 +32,6 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.knights.RespawnListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.snipers.FireListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.snipers.RespawnListener(), instance)
-        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.knights.DismountListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.knights.FireListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.rps.ChatListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.ChatListener(), instance)
