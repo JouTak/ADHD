@@ -1,5 +1,6 @@
 package ru.joutak.adhd.ui
 
+import io.papermc.paper.scoreboard.numbers.NumberFormat
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -20,6 +21,8 @@ class GameScoreboardManager(val tournament: Tournament) {
         val objective = scoreboard.registerNewObjective("sidebar", Criteria.DUMMY, Component.text("Статистика").color(NamedTextColor.GOLD))
 
         objective.displaySlot = DisplaySlot.SIDEBAR
+
+        objective.numberFormat(NumberFormat.blank())
 
         scoreboards[player.uniqueId] = scoreboard
 

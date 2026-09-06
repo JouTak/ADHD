@@ -426,7 +426,7 @@ class Tournament(
 
         timeBossBar.removeAll()
 
-        gameScoreboardManager.removeAll()
+        gameScoreboardManager.updateAll()
 
         val winners = calculateWinners()
 
