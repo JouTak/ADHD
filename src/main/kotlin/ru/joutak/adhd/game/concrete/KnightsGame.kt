@@ -113,6 +113,9 @@ class KnightsGame : Game() {
         horse.jumpStrength = 0.7
 
         horse.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = horseSpeed
+        horse.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 40.0
+
+        horse.health = 40.0
 
         horse.addPassenger(player)
     }

@@ -150,7 +150,7 @@ class Tournament(
                     singleAnnounced = true
                 }
 
-                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (finished && !singleAnnounced) || (singleGame != null && singleGame!!.getGameState() == GameState.FINISH)) {
+                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (finished && !singleAnnounced) || (singleAnnounced && singleGame!!.getGameState() == GameState.FINISH)) {
                     status = TournamentStatus.PREPARE
 
                     round++
@@ -393,6 +393,8 @@ class Tournament(
             val members = playerGames.filter { it.value == game }.keys
 
             val winners = game.summarize().keys
+
+            gameScoreboardManager.updateAll()
 
             for (uuid in members) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
