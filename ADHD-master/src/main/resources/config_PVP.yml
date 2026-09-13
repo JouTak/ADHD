@@ -1,0 +1,14 @@
+default:
+  enabled: true
+  duration: 120
+  displayName: ПВП
+  description: Убейте своего противника!
+  maps:
+    - 1
+
+meta:
+  inventories:
+    1:
+      - IRON_SWORD
+      - COOKED_BEEF
+      - GOLDEN_APPLE

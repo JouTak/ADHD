@@ -1,0 +1,59 @@
+default:
+  enabled: true
+  duration: 120
+  displayName: Столбы удачи
+  description: Получай случайные предметы и убей своего противника, пока вы оба стоите на двух столбах!
+  maps:
+    - 3
+
+meta:
+  interval: 1.2
+  item_sets:
+    BLOCKS:
+      - "DIRT"
+      - "OAK_LOG"
+      - "SPRUCE_LOG"
+      - "MANGROVE_LOG"
+      - "WHITE_STAINED_GLASS"
+      - "MAGENTA_STAINED_GLASS"
+      - "SLIME_BLOCK"
+      - "RED_BED"
+      - "COBWEB"
+    OP:
+      - "NETHERITE_HELMET"
+      - "NETHERITE_CHESTPLATE"
+      - "NETHERITE_LEGGINGS"
+      - "NETHERITE_BOOTS"
+      - "TOTEM_OF_UNDYING"
+      - "DIAMOND_SWORD"
+      - "DIAMOND_AXE"
+      - "ENCHANTED_GOLDEN_APPLE"
+      - "MACE"
+      - "WIND_CHARGE"
+    PRO:
+      - "DIAMOND_HELMET"
+      - "DIAMOND_CHESTPLATE"
+      - "DIAMOND_LEGGINGS"
+      - "DIAMOND_BOOTS"
+      - "IRON_SWORD"
+    WEAPONS:
+      - "STONE_SWORD"
+      - "WOODEN_AXE"
+      - "BOW"
+      - "CROSSBOW"
+      - "ARROW"
+      - "SPECTRAL_ARROW"
+    FOOD:
+      - "COOKED_BEEF"
+      - "COOKED_PORKCHOP"
+      - "COOKED_CHICKEN"
+      - "COOKED_SALMON"
+      - "BREAD"
+      - "BAKED_POTATO"
+      - "GOLDEN_CARROT"
+    UTILITY:
+      - "ENDER_PEARL"
+      - "FISHING_ROD"
+      - "FLINT_AND_STEEL"
+      - "TNT"
+      - "WATER_BUCKET"
