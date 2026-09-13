@@ -6,8 +6,13 @@ import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
+import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
@@ -15,6 +20,9 @@ import ru.joutak.adhd.world.Arena
 import java.util.UUID
 
 class RPSGame : Game() {
+    companion object {
+        val cKey = NamespacedKey(ADHDPlugin.instance, "RPSVariant")
+    }
 
     lateinit var worldName: String
 
@@ -58,7 +66,7 @@ class RPSGame : Game() {
     }
 
     fun setPlayer(player: Player) {
-        player.inventory.clear()
+        giveLayout(player)
 
         player.gameMode = GameMode.ADVENTURE
         player.health = 20.0
@@ -68,6 +76,42 @@ class RPSGame : Game() {
         val spawn = arena.spawnPoints.random()
 
         player.teleport(Location(Bukkit.getWorld(worldName)!!, spawn.x, spawn.y, spawn.z, spawn.yaw, spawn.pitch))
+    }
+
+    fun giveLayout(player: Player) {
+        player.inventory.clear()
+
+        val rI = ItemStack(Material.FLINT, 1)
+
+        val rIm = rI.itemMeta
+
+        rIm.persistentDataContainer.set(cKey, PersistentDataType.STRING, "камень")
+
+        rI.itemMeta = rIm
+
+        player.inventory.setItem(2, rI)
+
+        val sI = ItemStack(Material.SHEARS, 1)
+
+        val sIm = sI.itemMeta
+
+        sIm.persistentDataContainer.set(cKey, PersistentDataType.STRING, "ножницы")
+
+        sI.itemMeta = sIm
+
+        player.inventory.setItem(4, sI)
+
+        val pI = ItemStack(Material.PAPER, 1)
+
+        val pIm = pI.itemMeta
+
+        pIm.persistentDataContainer.set(cKey, PersistentDataType.STRING, "бумага")
+
+        pI.itemMeta = pIm
+
+        player.inventory.setItem(6, pI)
+
+        player.inventory.heldItemSlot = 4
     }
 
     override fun update() {
