@@ -80,6 +80,12 @@ maps:
         pitch: 0
   3:
     meta:
+      parkour:
+        finish:
+          0:
+            x: 271.5
+            y: 70.5
+            z: 1795.5
       pillars:
         banned_sets: [OP, BLOCKS]
       memory:
