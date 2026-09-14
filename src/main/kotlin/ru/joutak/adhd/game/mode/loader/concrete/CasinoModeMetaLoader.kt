@@ -9,6 +9,7 @@ import ru.joutak.minigames.config.ConfigKey
 class CasinoModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
         val initialBalance = section.getInt("initialBalance")
+
         val goalBalance = section.getInt("goalBalance")
 
         return CasinoModeMeta(initialBalance, goalBalance)

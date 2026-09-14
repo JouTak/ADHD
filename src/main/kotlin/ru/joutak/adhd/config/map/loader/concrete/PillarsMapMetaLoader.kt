@@ -8,7 +8,7 @@ import ru.joutak.adhd.config.map.meta.concrete.PillarsMapMeta
 
 class PillarsMapMetaLoader : MapMetaLoader {
     override fun load(section: ConfigurationSection): MapMeta {
-        val bannedSets = section.getStringList("banned_sets") ?: emptyList()
+        val bannedSets = section.getStringList("banned_sets")
 
         return PillarsMapMeta(bannedSets)
     }
