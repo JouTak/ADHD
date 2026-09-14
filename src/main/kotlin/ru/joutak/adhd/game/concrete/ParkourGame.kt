@@ -66,6 +66,8 @@ class ParkourGame : Game() {
 
             restoreStats(player)
         }
+
+        state = GameState.RUN
     }
 
     fun teleportToSpawn(player: Player) {
@@ -97,7 +99,19 @@ class ParkourGame : Game() {
     }
 
     override fun update() {
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
 
+            for (i in finishes) {
+                if (player.boundingBox.overlaps(i.boundingBox)) {
+                    result[player.uniqueId] = 1.0
+
+                    finish()
+
+                    return
+                }
+            }
+        }
     }
 
     override fun getGameState(): GameState {
