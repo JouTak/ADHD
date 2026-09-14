@@ -31,7 +31,8 @@ object ADHDConfig {
         Pair("Pillars", PillarsModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
-        Pair("Casino", CasinoModeMetaLoader())
+        Pair("Casino", CasinoModeMetaLoader()),
+        Pair("Parkour", null)
     )
 
     var maxPlayers = 4
