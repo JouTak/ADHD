@@ -4,4 +4,4 @@ default:
   displayName: Паркур
   description: Пропрыгайте до финиша первым, вы можете драться!
   maps:
-    - 1
+    - 3
