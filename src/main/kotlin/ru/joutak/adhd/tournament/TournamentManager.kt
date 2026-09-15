@@ -57,11 +57,13 @@ object TournamentManager {
 
     fun createTournament(instance: GameInstance) {
         val everyone = instance.teams.flatten()
+
         val teamIdByPlayer = buildMap {
             instance.teams.forEachIndexed { index, players ->
                 players.forEach { put(it.uniqueId, index + 1) }
             }
         }
+
         val teamKeysByTeamId = buildMap {
             instance.tournamentTeamKeys.forEachIndexed { index, key ->
                 if (!key.isNullOrBlank()) put(index + 1, key)
@@ -184,6 +186,8 @@ object TournamentManager {
         player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
 
         player.leaveVehicle()
+
+        Bukkit.getOnlinePlayers().forEach { it.showEntity(ADHDPlugin.instance, player) }
 
         player.teleport(lobby.spawnLocation)
     }

@@ -4,8 +4,11 @@ import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.listener.BoundListener
+import ru.joutak.adhd.listener.ArenaSwitchListener
 import ru.joutak.adhd.listener.FreezeListener
+import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.listener.PlayerSessionListener
+import ru.joutak.adhd.listener.SpectatorListener
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.minigames.MiniGamesCore
 import ru.joutak.minigames.managers.MatchmakingManager
@@ -28,6 +31,9 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(PlayerSessionListener(), instance)
         Bukkit.getPluginManager().registerEvents(FreezeListener(), instance)
         Bukkit.getPluginManager().registerEvents(BoundListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ArenaSwitchListener(), instance)
+        Bukkit.getPluginManager().registerEvents(KeepInventoryListener(), instance)
+        Bukkit.getPluginManager().registerEvents(SpectatorListener(), instance)
 
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.pvp.RespawnListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.pillars.RespawnListener(), instance)
