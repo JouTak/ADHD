@@ -584,9 +584,16 @@ class Tournament(
                 player.sendMessage(message)
             }
 
+            player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
+
             player.gameMode = GameMode.ADVENTURE
+            player.health = 20.0
+            player.saturation = 20.0f
+            player.foodLevel = 20
 
             player.inventory.clear()
+
+            player.fireTicks = 0
 
             player.teleport(spawn)
         }
