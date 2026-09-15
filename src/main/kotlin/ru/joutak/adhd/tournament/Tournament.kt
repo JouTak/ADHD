@@ -95,6 +95,10 @@ class Tournament(
 
     private val singles = mutableListOf<UUID>()
 
+    var singleTick = 30 * 20L
+
+    var singleAnnounced = false
+  
     val spectators = mutableSetOf<UUID>()
 
     val ticker = object : BukkitRunnable() {
@@ -142,7 +146,22 @@ class Tournament(
             TournamentStatus.RUN -> {
                 tryAnnounce()
 
-                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (games.filter { game -> game != singleGame }.all { game -> game.getGameState() == GameState.FINISH })) {
+                val finished = (games.filter { game -> game != singleGame }.all { game -> game.getGameState() == GameState.FINISH })
+
+                if (singleGame != null && finished && singleTick >= 0 && !singleAnnounced) {
+                    val player = Bukkit.getPlayer(single?.first!!)!!
+
+                    player.sendMessage(Component.text("Все дуо игры окончены. Ваше время было ограничено.").color(
+                        NamedTextColor.YELLOW))
+
+                    player.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f)
+
+                    currentTick = ADHDConfig.modes[pool[round]]!!.duration * 20L - singleTick
+
+                    singleAnnounced = true
+                }
+
+                if ((currentTick >= ADHDConfig.modes[pool[round]]!!.duration * 20L) || (finished && !singleAnnounced) || (singleAnnounced && singleGame!!.getGameState() == GameState.FINISH)) {
                     status = TournamentStatus.PREPARE
 
                     round++
@@ -173,6 +192,8 @@ class Tournament(
                 if (currentTick % 10L == 0L) gameScoreboardManager.updateAll()
 
                 currentTick += 2L
+
+                singleTick -= 2L
             }
             TournamentStatus.CEREMONY -> {
                 if (currentTick >= ADHDConfig.ceremonyDuration * 20L) {
@@ -202,6 +223,10 @@ class Tournament(
 
             playerGames.clear()
 
+            singleGame = null
+
+            singleAnnounced = false
+
             announced.clear()
 
             idByGame.clear()
@@ -227,6 +252,8 @@ class Tournament(
             singlePlayer?.let {
                 timeBossBar.switchSingle(it, false)
             }
+
+            single = null
 
             val modeName = pool[round]
 
@@ -294,6 +321,12 @@ class Tournament(
                 gameInfos[0] = GameInfo(members, arena)
 
                 sGame.start(worldName, arena, members, ADHDConfig.modes[name]!!.meta)
+            }
+
+            singleTick = if (single != null) {
+                ADHDConfig.modes[single!!.second]!!.duration * 20L
+            } else {
+                0L
             }
 
             val description = Component.text("[").color(NamedTextColor.GRAY)
@@ -446,6 +479,8 @@ class Tournament(
 
             val winners = game.summarize().keys
 
+            gameScoreboardManager.updateAll()
+
             for (uuid in members) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
 
@@ -521,7 +556,7 @@ class Tournament(
 
         timeBossBar.removeAll()
 
-        gameScoreboardManager.removeAll()
+        gameScoreboardManager.updateAll()
 
         val winners = calculateWinners()
 
@@ -549,9 +584,16 @@ class Tournament(
                 player.sendMessage(message)
             }
 
+            player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
+
             player.gameMode = GameMode.ADVENTURE
+            player.health = 20.0
+            player.saturation = 20.0f
+            player.foodLevel = 20
 
             player.inventory.clear()
+
+            player.fireTicks = 0
 
             player.teleport(spawn)
         }
