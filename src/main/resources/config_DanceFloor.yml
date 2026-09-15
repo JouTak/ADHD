@@ -1,0 +1,26 @@
+default:
+  enabled: true
+  duration: 90
+  displayName: Танцы и пол
+  description: Собирай зелёные клетки и избегай красных!
+  maps:
+    - 4
+
+meta:
+  rect:
+    width: 6
+    length: 6
+
+  generation:
+    interval_ticks: 20
+    green_chance: 0.25
+
+  scoring:
+    win_points: 15
+    green_points: 1
+    red_penalty: 1
+
+  materials:
+    neutral: LIGHT_GRAY_CONCRETE
+    green: LIME_CONCRETE
+    red: RED_CONCRETE
