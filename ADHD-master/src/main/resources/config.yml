@@ -1,5 +1,5 @@
 default:
-  maxPlayers: 4
+  maxPlayers: 2
   pointsGoal: 10.0
   templateWorldName: template
   lobbyWorld: lobby
@@ -109,3 +109,9 @@ maps:
         z: 1305
         yaw: 180
         pitch: 0
+  4:
+    meta:
+      ricochet_arena:
+        loots:
+          1:
+            - LAPIS_LAZULI

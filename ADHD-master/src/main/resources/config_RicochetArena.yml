@@ -1,0 +1,20 @@
+default:
+  enabled: true
+  duration: 60
+  displayName: Ricochet Arena
+  maps:
+    - 1
+
+meta:
+  inventories:
+    1:
+      - LAPIS_LAZULI
+  points_to_win: 3
+
+  projectile:
+    speed: 1.5
+    max_bounces: 3
+    lifetime_ticks: 200
+
+  weapon:
+    cooldown_ticks: 20
