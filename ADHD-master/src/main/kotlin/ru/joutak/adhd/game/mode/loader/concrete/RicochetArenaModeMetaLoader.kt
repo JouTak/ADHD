@@ -10,7 +10,7 @@ class RicochetArenaModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
         val inventories = mutableMapOf<Int, List<Material>>()
 
-        val inventoriesSection = section.getConfigurationSection("inventories")!!
+        val inventoriesSection = section.getConfigurationSection("inventory")!!
 
         for (id in inventoriesSection.getKeys(false)) {
             val materials = inventoriesSection.getStringList(id)

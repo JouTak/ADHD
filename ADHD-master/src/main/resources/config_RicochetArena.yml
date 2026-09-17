@@ -1,12 +1,12 @@
 default:
   enabled: true
   duration: 60
-  displayName: Ricochet Arena
+  displayName: Рикошетная арена
   maps:
     - 1
 
 meta:
-  inventories:
+  inventory:
     1:
       - LAPIS_LAZULI
   points_to_win: 3

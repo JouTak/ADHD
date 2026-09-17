@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.listener.FreezeListener
 import ru.joutak.adhd.listener.PlayerSessionListener
+import ru.joutak.adhd.listener.mode.ricochet_arena.FireListener
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.minigames.MiniGamesCore
 import ru.joutak.minigames.managers.MatchmakingManager

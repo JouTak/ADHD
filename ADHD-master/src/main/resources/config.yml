@@ -43,6 +43,7 @@ maps:
               x: 142
               y: 67
               z: 795
+      ricochet_arena: {}
     spawns:
       0:
         x: 256
@@ -109,9 +110,3 @@ maps:
         z: 1305
         yaw: 180
         pitch: 0
-  4:
-    meta:
-      ricochet_arena:
-        loots:
-          1:
-            - LAPIS_LAZULI

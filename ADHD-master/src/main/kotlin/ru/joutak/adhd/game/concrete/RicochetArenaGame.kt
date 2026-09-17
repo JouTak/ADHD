@@ -5,14 +5,12 @@ import org.bukkit.GameMode
 import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.attribute.Attribute
-import org.bukkit.entity.Horse
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
+import ru.joutak.adhd.config.map.meta.concrete.RicochetArenaMapMeta
 import ru.joutak.adhd.game.mode.meta.ModeMeta
-import ru.joutak.adhd.game.mode.meta.concrete.KnightsModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
@@ -20,20 +18,13 @@ import java.util.UUID
 class RicochetArenaGame : Game() {
 
     lateinit var worldName: String
-
     lateinit var arena: Arena
-
     lateinit var members: Set<UUID>
-
-    var state = GameState.START
-
     var result = mutableMapOf<UUID, Double>()
-
+    var state = GameState.START
     var lSpawn: SpawnPoint? = null
 
-    var wMaterial = Material.DIAMOND_SPEAR
-
-    var horseSpeed = 0.16875
+    var gameMeta: RicochetArenaMapMeta? = null
 
     override fun start(
         worldName: String,
@@ -45,70 +36,28 @@ class RicochetArenaGame : Game() {
         this.arena = arena
         this.members = members
 
-        val meta = modeMeta as? KnightsModeMeta
-
-        if (meta != null) {
-            horseSpeed = meta.horseSpeed
-
-            wMaterial = meta.weapons.random()
-        }
+        this.gameMeta = modeMeta as? RicochetArenaMapMeta
 
         val world = Bukkit.getWorld(worldName)!!
-
         world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
-
-            sitOnHorse(player)
-
+            teleportToSpawn(player)
             restoreStats(player)
-
             giveLayout(player)
         }
 
         state = GameState.RUN
     }
 
-    override fun update() {
-
-    }
-
-    fun sitOnHorse(player: Player) {
+    fun teleportToSpawn(player: Player) {
         val world = Bukkit.getWorld(worldName)!!
-
         val spawns = arena.spawnPoints.toMutableSet()
-
-        if (lSpawn != null) {
-            spawns -= mutableSetOf(lSpawn!!)
-        }
-
-        val chosen: SpawnPoint = if (spawns.isEmpty()) {
-            lSpawn!!
-        } else {
-            spawns.random()
-        }
-
+        if (lSpawn != null) spawns -= mutableSetOf(lSpawn!!)
+        val chosen: SpawnPoint = if (spawns.isEmpty()) lSpawn!! else spawns.random()
         lSpawn = chosen
-
-        val loc = Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch)
-
-        player.teleport(loc)
-
-        val horse = world.spawn(loc, Horse::class.java)
-
-        horse.setAdult()
-        horse.isInvulnerable = true
-
-        horse.isTamed = true
-        horse.owner = player
-        horse.inventory.saddle = ItemStack(Material.SADDLE)
-
-        horse.jumpStrength = 0.7
-
-        horse.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = horseSpeed
-
-        horse.addPassenger(player)
+        player.teleport(Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch))
     }
 
     fun restoreStats(player: Player) {
@@ -121,10 +70,13 @@ class RicochetArenaGame : Game() {
     fun giveLayout(player: Player) {
         player.inventory.clear()
 
-        player.inventory.setItem(0, ItemStack(wMaterial, 1))
+        player.inventory.setItem(0, ItemStack(Material.LAPIS_LAZULI, 1))
 
-        if (wMaterial == Material.CROSSBOW || wMaterial == Material.BOW) {
-            player.inventory.setItem(8, ItemStack(Material.ARROW, 64))
+        val meta = gameMeta ?: return
+        val startItems = meta.loots[1] ?: return
+
+        for ((index, material) in startItems.withIndex()) {
+            player.inventory.setItem(index, ItemStack(material, 1))
         }
 
         player.inventory.heldItemSlot = 0
@@ -134,21 +86,11 @@ class RicochetArenaGame : Game() {
         members.filter { uUID -> uUID != player.uniqueId }.forEach { uUID -> result[uUID] = 1.0 }
     }
 
-    override fun getGameState(): GameState {
-        return state
-    }
+    override fun update() {}
 
-    override fun finish() {
-        state = GameState.FINISH
+    override fun getGameState(): GameState = state
 
-        for (uuid in members) {
-            val player = Bukkit.getPlayer(uuid) ?: continue
+    override fun finish() { state = GameState.FINISH }
 
-            player.leaveVehicle()
-        }
-    }
-
-    override fun summarize(): Map<UUID, Double> {
-        return result
-    }
+    override fun summarize(): Map<UUID, Double> = result
 }
