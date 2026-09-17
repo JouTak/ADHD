@@ -154,7 +154,7 @@ class Tournament(
                     player.sendMessage(Component.text("Все дуо игры окончены. Ваше время было ограничено.").color(
                         NamedTextColor.YELLOW))
 
-                    player.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f)
+                    player.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 0.5f, 1.0f)
 
                     currentTick = ADHDConfig.modes[pool[round]]!!.duration * 20L - singleTick
 
