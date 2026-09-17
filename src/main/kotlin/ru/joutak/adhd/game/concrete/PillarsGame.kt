@@ -6,14 +6,11 @@ import org.bukkit.GameMode
 import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import org.bukkit.scheduler.BukkitRunnable
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.meta.concrete.PillarsMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
-import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.game.mode.meta.concrete.PillarsModeMeta
 import ru.joutak.adhd.listener.FreezeListener
@@ -44,7 +41,7 @@ class PillarsGame : Game() {
 
     private var isFinished = false
 
-    private lateinit var availableItmes: List<Material>
+    private lateinit var set: MutableMap<String, MutableList<Material>>
 
     override fun start(worldName: String, arena: Arena, members: Set<UUID>, modeMeta: ModeMeta?) {
         this.worldName = worldName
@@ -53,20 +50,7 @@ class PillarsGame : Game() {
 
         this.meta = modeMeta as? PillarsModeMeta ?: throw IllegalArgumentException("PillarsGame requires PillarsModeMeta.")
 
-
-        val mapMeta = arena.metas["pillars"] as? PillarsMapMeta
-        val bannedSetsFromMap = mapMeta?.setsBanList ?: emptyList()
-
-        availableItmes = if (bannedSetsFromMap.isNotEmpty()) {
-            val bannedItems = bannedSetsFromMap.flatMap { setName ->
-                meta.itemSets[setName] ?: emptyList()
-            }.toSet()
-
-            meta.getAllItems().filter { it !in bannedItems }
-        } else {
-            meta.getAllItems()
-        }
-        
+        set = getRandomSet() ?: return
 
         val world = Bukkit.getWorld(worldName)!!
 
@@ -128,42 +112,54 @@ class PillarsGame : Game() {
 
         if (tickCounter >= intervalTicks) {
             tickCounter = 0
-            giveRandomItem()
-        }
-    }
-
-    private fun getRandomItem(): ItemStack? {
-        if (availableItmes.isEmpty()) return null
-
-        val randomMaterial = availableItmes.random()
-
-        return ItemStack(randomMaterial)
-    }
-
-    private fun giveRandomItem(){
-        if (isFinished) return
-
-        for (uuid in members) {
+            for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
 
             if (player.isDead || !player.isOnline) continue
 
-            getRandomItem()?.let { item ->
+            getRandomItem(set)?.let { item ->
                 player.inventory.addItem(item)
             }
         }
+        }
     }
+
+    private fun getRandomSet(): MutableMap<String, MutableList<Material>>? {
+        val mapMeta = arena.metas["pillars"] as? PillarsMapMeta
+        val bannedSetsFromMap = mapMeta?.setsBanList ?: emptyList()
+
+        val availableSets: Map<String, MutableMap<String, MutableList<Material>>> = if (bannedSetsFromMap.isNotEmpty()) {
+            meta.getSetsExcluding(bannedSetsFromMap)
+        } else{
+            meta.getAllSets()
+        }
+
+        ADHDPlugin.instance.logger.info("Pillars: banned=$bannedSetsFromMap, availableSets keys=${availableSets.keys}, size=${availableSets.size}")
+
+        return availableSets.values.randomOrNull()
+    }
+
+    private fun getRandomItem(currentSet: MutableMap<String, MutableList<Material>>): ItemStack? {
+        if (currentSet.isEmpty()) return null
+
+        val randomType = currentSet.keys.random()
+        val materials = currentSet[randomType] ?: return null
+        if (materials.isEmpty()) return null
+
+        val randomMaterial = materials.random()
+
+        return ItemStack(randomMaterial)
+    }
+
 
     override fun getGameState(): GameState { return state }
 
     override fun summarize(): Map<UUID, Double> {
         return result
-
     }
 
     override fun finish() {
         isFinished = true
-
         state = GameState.FINISH
     }
 }
