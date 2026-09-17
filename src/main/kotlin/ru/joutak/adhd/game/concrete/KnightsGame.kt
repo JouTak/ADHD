@@ -6,6 +6,7 @@ import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
+import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Horse
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -16,6 +17,7 @@ import ru.joutak.adhd.game.mode.meta.concrete.KnightsModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
+import kotlin.random.Random
 
 class KnightsGame : Game() {
 
@@ -32,6 +34,8 @@ class KnightsGame : Game() {
     var lSpawn: SpawnPoint? = null
 
     var wMaterial = Material.DIAMOND_SPEAR
+
+    val rEnchantments = mutableSetOf<Pair<Enchantment, Int>>()
 
     var horseSpeed = 0.16875
 
@@ -52,6 +56,8 @@ class KnightsGame : Game() {
 
             wMaterial = meta.weapons.random()
         }
+
+        generateRandomEnchantments()
 
         val world = Bukkit.getWorld(worldName)!!
 
@@ -98,7 +104,7 @@ class KnightsGame : Game() {
         val horse = world.spawn(loc, Horse::class.java)
 
         horse.setAdult()
-        horse.isInvulnerable = true
+        horse.isInvulnerable = false
 
         horse.isTamed = true
         horse.owner = player
@@ -107,6 +113,9 @@ class KnightsGame : Game() {
         horse.jumpStrength = 0.7
 
         horse.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = horseSpeed
+        horse.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 40.0
+
+        horse.health = 40.0
 
         horse.addPassenger(player)
     }
@@ -121,13 +130,57 @@ class KnightsGame : Game() {
     fun giveLayout(player: Player) {
         player.inventory.clear()
 
-        player.inventory.setItem(0, ItemStack(wMaterial, 1))
+        val weapon = ItemStack(wMaterial, 1)
+
+        val wMeta = weapon.itemMeta
+
+        if (wMaterial == Material.CROSSBOW) {
+            wMeta.addEnchant(Enchantment.QUICK_CHARGE, 3, true)
+        }
+
+        rEnchantments.forEach { (e, l) -> wMeta.addEnchant(e, l, true) }
+
+        weapon.itemMeta = wMeta
+
+        player.inventory.setItem(0, weapon)
 
         if (wMaterial == Material.CROSSBOW || wMaterial == Material.BOW) {
             player.inventory.setItem(8, ItemStack(Material.ARROW, 64))
         }
 
         player.inventory.heldItemSlot = 0
+    }
+
+    fun generateRandomEnchantments() {
+        val eVariants: MutableSet<Pair<Enchantment, Int>> = mutableSetOf()
+
+        when (wMaterial) {
+            Material.BOW -> {
+                eVariants.add(Pair(Enchantment.POWER, 5))
+                eVariants.add(Pair(Enchantment.PUNCH, 2))
+                eVariants.add(Pair(Enchantment.FLAME, 1))
+            }
+            Material.CROSSBOW -> {
+                eVariants.add(Pair(Enchantment.MULTISHOT, 1))
+                eVariants.add(Pair(Enchantment.PIERCING, 4))
+            }
+            else -> {}
+        }
+
+        if (wMaterial.name.lowercase().contains("spear")) {
+            eVariants.add(Pair(Enchantment.SHARPNESS, 5))
+            eVariants.add(Pair(Enchantment.FIRE_ASPECT, 2))
+            eVariants.add(Pair(Enchantment.KNOCKBACK, 2))
+            eVariants.add(Pair(Enchantment.LUNGE, 3))
+        }
+
+        val chosen = mutableSetOf<Pair<Enchantment, Int>>()
+
+        for ((e, l) in eVariants.shuffled().take(Random.nextInt(1, 3))) {
+            chosen.add(Pair(e, Random.nextInt(1, l + 1)))
+        }
+
+        rEnchantments.addAll(chosen)
     }
 
     fun calculateResult(player: Player) {
