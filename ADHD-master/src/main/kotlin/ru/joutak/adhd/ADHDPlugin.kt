@@ -39,6 +39,7 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.ChatListener(), instance)
 
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.ricochet_arena.FireListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.ricochet_arena.RespawnListener(), instance)
 
         Bukkit.getScheduler().runTaskTimer(instance, Runnable {
             val gInstance = MatchmakingManager.pollReady()

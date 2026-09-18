@@ -5,14 +5,19 @@ import org.bukkit.GameMode
 import org.bukkit.GameRules
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.bukkit.entity.Snowball
 import org.bukkit.inventory.ItemStack
+import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.config.map.loader.concrete.RicochetArenaMapMetaLoader
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.config.map.meta.concrete.RicochetArenaMapMeta
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
+import java.io.File
 import java.util.UUID
 
 class RicochetArenaGame : Game() {
@@ -26,6 +31,25 @@ class RicochetArenaGame : Game() {
 
     var gameMeta: RicochetArenaMapMeta? = null
 
+    val activeProjectiles = mutableListOf<Snowball>()
+    init {
+        val plugin = ADHDPlugin.instance
+        val configFile = File(plugin.dataFolder, "config_RicochetArena.yml")
+
+        if (!configFile.exists()) {
+            plugin.dataFolder.mkdirs()
+            plugin.saveResource("config_RicochetArena.yml", false)
+        }
+
+        val config = YamlConfiguration.loadConfiguration(configFile)
+        val metaSection = config.getConfigurationSection("meta")
+
+        if (metaSection != null) {
+            val loader = RicochetArenaMapMetaLoader()
+            this.gameMeta = loader.load(metaSection) as? RicochetArenaMapMeta
+        }
+    }
+
     override fun start(
         worldName: String,
         arena: Arena,
@@ -36,15 +60,18 @@ class RicochetArenaGame : Game() {
         this.arena = arena
         this.members = members
 
-        this.gameMeta = modeMeta as? RicochetArenaMapMeta
+        activeProjectiles.clear()
 
         val world = Bukkit.getWorld(worldName)!!
         world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
+
             teleportToSpawn(player)
+
             restoreStats(player)
+
             giveLayout(player)
         }
 
@@ -53,10 +80,18 @@ class RicochetArenaGame : Game() {
 
     fun teleportToSpawn(player: Player) {
         val world = Bukkit.getWorld(worldName)!!
+
         val spawns = arena.spawnPoints.toMutableSet()
+
         if (lSpawn != null) spawns -= mutableSetOf(lSpawn!!)
-        val chosen: SpawnPoint = if (spawns.isEmpty()) lSpawn!! else spawns.random()
+
+        val chosen: SpawnPoint = if (spawns.isEmpty())
+            lSpawn!!
+        else
+            spawns.random()
+
         lSpawn = chosen
+
         player.teleport(Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch))
     }
 
@@ -72,13 +107,6 @@ class RicochetArenaGame : Game() {
 
         player.inventory.setItem(0, ItemStack(Material.LAPIS_LAZULI, 1))
 
-        val meta = gameMeta ?: return
-        val startItems = meta.loots[1] ?: return
-
-        for ((index, material) in startItems.withIndex()) {
-            player.inventory.setItem(index, ItemStack(material, 1))
-        }
-
         player.inventory.heldItemSlot = 0
     }
 
@@ -88,9 +116,23 @@ class RicochetArenaGame : Game() {
 
     override fun update() {}
 
-    override fun getGameState(): GameState = state
+    override fun getGameState(): GameState {
+        return state
+    }
 
-    override fun finish() { state = GameState.FINISH }
+    override fun finish() {
+        state = GameState.FINISH
 
-    override fun summarize(): Map<UUID, Double> = result
+        activeProjectiles.forEach { snowball ->
+            if (snowball.isValid) {
+                snowball.remove()
+            }
+        }
+
+        activeProjectiles.clear()
+    }
+
+    override fun summarize(): Map<UUID, Double> {
+        return result
+    }
 }
