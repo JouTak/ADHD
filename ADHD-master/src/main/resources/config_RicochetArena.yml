@@ -2,6 +2,7 @@ default:
   enabled: true
   duration: 60
   displayName: Рикошетная арена
+  description: Застрелите своего противника!
   maps:
     - 1
 
