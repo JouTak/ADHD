@@ -1,0 +1,112 @@
+default:
+  maxPlayers: 2
+  pointsGoal: 10.0
+  templateWorldName: template
+  lobbyWorld: lobby
+
+ceremony:
+  enabled: true
+  duration: 16
+  center:
+    x: 160
+    y: 60
+    z: 160
+    yaw: 0
+    pitch: 0
+
+maps:
+  1:
+    meta:
+      ventilator:
+        placement:
+          x: 256
+          y: 60
+          z: 735
+        frames:
+          1:
+            center:
+              x: 256
+              y: 67
+              z: 796
+          2:
+            center:
+              x: 218
+              y: 67
+              z: 796
+          3:
+            center:
+              x: 180
+              y: 67
+              z: 795
+          4:
+            center:
+              x: 142
+              y: 67
+              z: 795
+      ricochet_arena: {}
+    spawns:
+      0:
+        x: 256
+        y: 65.5
+        z: 725
+        yaw: 0
+        pitch: 0
+      1:
+        x: 256
+        y: 65.5
+        z: 745
+        yaw: 180
+        pitch: 0
+  2:
+    meta:
+      pvp:
+        loots:
+          1:
+            - IRON_SWORD
+            - COOKED_BEEF
+            - GOLDEN_APPLE
+            - ARROW
+    spawns:
+      0:
+        x: 192
+        y: 60
+        z: 192
+        yaw: 90
+        pitch: 0
+      1:
+        x: 128
+        y: 60
+        z: 128
+        yaw: 270
+        pitch: 0
+  3:
+    meta:
+      pillars:
+        banned_sets: [OP, BLOCKS]
+      memory:
+        points:
+          0:
+            x: 271.5
+            y: 71.5
+            z: 1795.5
+          1:
+            x: 273.5
+            y: 71.5
+            z: 1795.5
+          2:
+            x: 269.5
+            y: 71.5
+            z: 1795.5
+    spawns:
+      0:
+        x: 251
+        y: 92
+        z: 1293
+        yaw: 0
+        pitch: 0
+      1:
+        x: 251
+        y: 92
+        z: 1305
+        yaw: 180
+        pitch: 0

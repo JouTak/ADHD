@@ -1,0 +1,19 @@
+default:
+  enabled: true
+  duration: 60
+  displayName: Рикошетная арена
+  description: Застрелите своего противника!
+  maps:
+    - 1
+
+meta:
+  points_to_win: 3
+
+  projectile:
+    speed: 1.5
+    max_bounces: 3
+    lifetime_ticks: 200
+    damage: 6.0
+
+  weapon:
+    cooldown_ticks: 20

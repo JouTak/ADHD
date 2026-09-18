@@ -1,0 +1,13 @@
+[versions]
+kotlin = "2.3.0"
+jdk = "25"
+paper = "26.1.2.build.+"
+shadow = "9.1.0"
+
+[libraries]
+kotlin = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+paper = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
