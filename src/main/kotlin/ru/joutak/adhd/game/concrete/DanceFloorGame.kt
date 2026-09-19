@@ -81,7 +81,7 @@ class DanceFloorGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
-        var winner: UUID
+        lateinit var winner: UUID
         var max: Int = -1000000
         for((id, score) in scores){
             if (score > max) {
@@ -96,8 +96,8 @@ class DanceFloorGame : Game() {
         return result
     }
 
-    fun spawnPlayer(player: Player, spawn: SpawnPoint){
-
+    fun spawnPlayer(player: Player, spawn: SpawnPoint?){
+        if (spawn == null) return
         player.teleport(Location(world, spawn.x, spawn.y, spawn.z, spawn.yaw, spawn.pitch))
         prevLoc[player.uniqueId] = Pair(player.x.toInt(), player.z.toInt())
     }
@@ -117,7 +117,7 @@ class DanceFloorGame : Game() {
         var type: Material = red_material
         var x: Int = Random.nextInt(width)
         var z: Int = Random.nextInt(length)
-        if (Random.nextDouble(0.0, 1.0.next_up()) <= chance) type = green_material
+        if (Random.nextDouble(0.0, 1.0) <= chance) type = green_material
         world.getBlockAt(x + 1, 0, z + 1).type = type
         world.getBlockAt(-x - 1, 0, z + 1).type = type
     }
@@ -130,17 +130,18 @@ class DanceFloorGame : Game() {
             neutral_material -> return
             green_material -> award(player)
             red_material -> fine(player)
+            else -> return
         }
     }
 
     fun award(player: Player){
-        scores[player.uniqueId] += awardPoints
-        if (scores[player.uniqueId] >= winPoints){
+        scores[player.uniqueId]?.plus(awardPoints)
+        if ((scores[player.uniqueId] ?: 0) >= winPoints){
             finish()
         }
     }
 
     fun fine(player: Player){
-        scores[player.uniqueId] -= finePoints
+        scores[player.uniqueId]?.plus(-finePoints)
     }
 }
