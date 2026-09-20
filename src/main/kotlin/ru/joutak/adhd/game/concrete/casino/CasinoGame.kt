@@ -1,4 +1,4 @@
-package ru.joutak.adhd.game.concrete
+package ru.joutak.adhd.game.concrete.casino
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -16,6 +16,7 @@ import ru.joutak.adhd.game.mode.meta.concrete.CasinoModeMeta
 import ru.joutak.adhd.world.Arena
 import java.time.Duration
 import java.util.*
+import kotlin.collections.iterator
 
 class CasinoGame : Game() {
     lateinit var arena: Arena
@@ -25,25 +26,19 @@ class CasinoGame : Game() {
     var state = GameState.START
 
     private val result = mutableMapOf<UUID, Double>()
-    private var currentBet: ColorBet? = null
-    private var playerBalance = 10
-    private var playerGoal = 30
+    private var bets = mutableMapOf<UUID, ColorBet>()
+    private var balances = mutableMapOf<UUID, Int>()
+    var playerGoal = 30
 
     private var isSpinning = false
     private var isFinished = false
 
     private var spinTicks = 0
-    private var currentDisplayNumber = 0
     private var finalNumber = 0
 
     private val redNumbers = setOf(1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
     private val blackNumbers = setOf(2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35)
 
-    private val colorSymbols = mapOf(
-        "красное" to "§c●",
-        "черное" to "§8●",
-        "зеленое" to "§a●"
-    )
 
     override fun start(worldName: String, arena: Arena, members: Set<UUID>, modeMeta: ModeMeta?) {
         this.worldName = worldName
@@ -52,17 +47,15 @@ class CasinoGame : Game() {
 
         val meta = modeMeta as? CasinoModeMeta
 
-
-
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
             setPlayer(player)
             if (meta != null) {
-                playerBalance = meta.initialBalance
+                balances[uuid] = meta.initialBalance
                 playerGoal = meta.goalBalance
             }
 
-            player.sendMessage("Ваш начальный баланс: $playerBalance. Цель заработать $playerGoal")
+            player.sendMessage("Ваш начальный баланс: ${balances[uuid]}. Цель заработать $playerGoal")
         }
 
 
@@ -75,6 +68,7 @@ class CasinoGame : Game() {
         player.health = 20.0
         player.saturation = 20.0f
         player.foodLevel = 20
+        player.inventory.setItem(8, CasinoMenu.makeOpenButton())
 
         val spawn = arena.spawnPoints.random()
         player.teleport(
@@ -86,15 +80,14 @@ class CasinoGame : Game() {
         )
     }
 
-    fun getPlayerBalance(uuid: UUID): Int {
-        return playerBalance ?: 0
+    fun getPlayerBalance(uuid: UUID): Int = balances[uuid] ?: 0
+
+    private fun setBalance(uuid: UUID, value: Int) {
+        balances[uuid] = value
     }
 
-    fun canPlaceBet(player: Player): Boolean {
-        val uuid = player.uniqueId
-        if (!members.contains(uuid)) return false
-        if (isSpinning) return false
-        return true
+    private fun addBalance(uuid: UUID, value: Int) {
+        balances[uuid] = getPlayerBalance(uuid) + value
     }
 
     fun placeBet(player: Player,color: String, amount: Int): Boolean {
@@ -109,10 +102,15 @@ class CasinoGame : Game() {
             return false
         }
 
-        currentBet = ColorBet(color, amount)
-        val balance = playerBalance ?: 0
-        playerBalance = balance - amount
+        val balance = getPlayerBalance(uuid)
+        if (amount !in 1..balance) {
+            player.sendMessage(Component.text("Недостаточно средств. Баланс: $balance").color(NamedTextColor.RED))
+            return false
+        }
 
+        bets[uuid] = ColorBet(color, amount)
+        setBalance(uuid, balance - amount)
+        player.sendMessage(Component.text("Ставка $amount на $color принята").color(NamedTextColor.YELLOW))
         startSpin()
 
         return true
@@ -122,7 +120,6 @@ class CasinoGame : Game() {
         if (isSpinning) return
 
         finalNumber = (0..36).random()
-        currentDisplayNumber = 0
         spinTicks = 0
         isSpinning = true
 
@@ -147,12 +144,11 @@ class CasinoGame : Game() {
         if (spinTicks % 4 == 0){
             val displayNumber = (0..36).random()
             val progress = spinTicks / 4
-            val totalSteps = 20
 
             val speed = when {
-                progress < 10 -> 4
+                progress < 10 -> 3
                 progress < 15 -> 6
-                else -> 10
+                else -> 6
             }
 
             if (spinTicks % speed == 0){
@@ -215,73 +211,74 @@ class CasinoGame : Game() {
         }
 
         processBet(resultColor)
-        currentBet = null
+        bets.clear()
 
-        if (playerBalance <= 0 ) {
-            isFinished = true
-
-            val title = Title.title(Component.text("Вы проиграли все свои гроши :(").color(NamedTextColor.RED),
-                Component.text("В следующий раз повезёт").color(NamedTextColor.GRAY))
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-                player.showTitle(title)
-
-                player.playSound(player.location, Sound.ENTITY_ENDERMAN_DEATH, 0.5f, 1.0f)
-            }
-            finish()
-        } else if (playerBalance >= playerGoal) {
-            isFinished = true
-
-            val title = Title.title(Component.text("Вы обыграли казино!!!!").color(NamedTextColor.GOLD),
-                Component.text("Вы ушли, забрав с собой $playerBalance").color(NamedTextColor.YELLOW))
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-                player.showTitle(title)
-
-                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
-            }
-            finish()
-        } else {
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-
-                player!!.sendMessage(Component.text("Вы еще не достигли цели в $playerGoal. Продолжай играть, мучачо").color(NamedTextColor.GOLD))
-                player!!.sendMessage(Component.text("Напишите в чат: <цвет> <сумма>").color(NamedTextColor.GRAY))
-            }
-        }
+        checkFinishConditions()
     }
 
     private fun processBet(resultColor: String) {
-        val bet = currentBet ?: return
-        var winAmount = 0
+        for ((uuid,bet) in bets) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
 
-        if (bet.color == resultColor) {
-            if (resultColor == "черное" || resultColor == "красное"){
-                winAmount = bet.amount * 2
-            }
-            else if (resultColor == "зеленое"){
-                winAmount = bet.amount * 35
-            }
+            val won = bet.color == resultColor
 
-            playerBalance += winAmount
-
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
+            if (won){
+                val winAmount = when (resultColor) {
+                    "зеленое" -> bet.amount * 35
+                    else -> bet.amount * 2
+                }
+                addBalance(uuid, winAmount)
                 player.sendMessage(Component.text("Выигрыш +$winAmount").color(NamedTextColor.GREEN))
-                player.sendMessage(Component.text("Новый баланс: $playerBalance").color(NamedTextColor.YELLOW))
-
+                player.sendMessage(Component.text("Новый баланс: ${getPlayerBalance(uuid)}").color(NamedTextColor.YELLOW))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
 
-                if (playerBalance >= playerGoal) {
-                    result[player.uniqueId] = 1.0
-                }
-            }
-        } else {
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
+            } else {
                 player.sendMessage(Component.text("Проигрыш -${bet.amount}").color(NamedTextColor.RED))
-                player.sendMessage(Component.text("Новый баланс: $playerBalance").color(NamedTextColor.YELLOW))
+                player.sendMessage(Component.text("Новый баланс: ${getPlayerBalance(uuid)}").color(NamedTextColor.YELLOW))
             }
+        }
+
+    }
+
+    private fun checkFinishConditions(){
+        for (uuid in members) {
+            val balance = getPlayerBalance(uuid)
+
+            if (balance <= 0) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.showTitle(
+                    Title.title(
+                        Component.text("Вы проиграли все свои гроши :(").color(NamedTextColor.RED),
+                        Component.text("В следующий раз повезёт").color(NamedTextColor.GRAY)
+                    )
+                )
+                player.playSound(player.location, Sound.ENTITY_ENDERMAN_DEATH, 0.5f, 1.0f)
+                finish()
+                return
+            }
+
+            if (balance >= playerGoal) {
+                val player = Bukkit.getPlayer(uuid) ?: continue
+
+                player.showTitle(
+                    Title.title(
+                        Component.text("Вы обыграли казино!!!!").color(NamedTextColor.GOLD),
+                        Component.text("Вы ушли, забрав с собой $balance").color(NamedTextColor.YELLOW)
+                    )
+                )
+                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
+                finish()
+                return
+            }
+        }
+
+        // Игра продолжается
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+            player.sendMessage(
+                Component.text("Цель — $playerGoal. Ставь дальше, мучачо!").color(NamedTextColor.GOLD)
+            )
         }
     }
 
@@ -314,20 +311,37 @@ class CasinoGame : Game() {
     }
 
     override fun finish() {
+        if(isFinished) return
         state = GameState.FINISH
+        isFinished = true
 
-        if (!isFinished){
-            val title = Title.title(Component.text("К сожалению вы не успели").color(NamedTextColor.GOLD),
-                Component.text("Вы ушли, забрав с собой $playerBalance").color(NamedTextColor.YELLOW))
-            for (uuid in members) {
-                val player = Bukkit.getPlayer(uuid) ?: continue
-                player.showTitle(title)
+        for (uuid in members) {
+            val balance = getPlayerBalance(uuid)
+            val win = balance >= playerGoal
+            result[uuid] = if (win) 1.0 else 0.0
 
-                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
+            val player = Bukkit.getPlayer(uuid) ?: continue
+            player.closeInventory()
+            val title = when {
+                win -> Title.title(
+                    Component.text("Вы обыграли казино!!!!").color(NamedTextColor.GOLD),
+                    Component.text("Вы ушли, забрав с собой $balance").color(NamedTextColor.YELLOW)
+                )
+                balance <= 0 -> Title.title(
+                    Component.text("Вы проиграли все свои гроши :(").color(NamedTextColor.RED),
+                    Component.text("В следующий раз повезёт").color(NamedTextColor.GRAY)
+                )
+                else -> Title.title(
+                    Component.text("К сожалению вы не успели").color(NamedTextColor.GOLD),
+                    Component.text("Вы ушли, забрав с собой $balance").color(NamedTextColor.YELLOW)
+                )
             }
+            player.showTitle(title)
+
+            val sound = if (win) Sound.ENTITY_PLAYER_LEVELUP else Sound.ENTITY_ENDERMAN_DEATH
+            player.playSound(player.location, sound, 1.0f, 1.0f)
         }
 
-        isFinished = true
     }
 
     data class ColorBet(
