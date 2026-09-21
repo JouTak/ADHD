@@ -68,7 +68,7 @@ class CasinoGame : Game() {
         player.health = 20.0
         player.saturation = 20.0f
         player.foodLevel = 20
-        player.inventory.setItem(8, CasinoMenu.makeOpenButton())
+        player.inventory.setItem(4, CasinoMenu.makeOpenButton())
 
         val spawn = arena.spawnPoints.random()
         player.teleport(
