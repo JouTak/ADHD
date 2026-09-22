@@ -19,6 +19,7 @@ import ru.joutak.adhd.game.concrete.MemoryGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.RPSGame
+import ru.joutak.adhd.game.concrete.RicochetArenaGame
 import ru.joutak.adhd.game.concrete.SnipersGame
 import ru.joutak.adhd.listener.ArenaSwitchListener
 import ru.joutak.adhd.listener.KeepInventoryListener
@@ -340,6 +341,7 @@ class Tournament(
                     "Pillars" -> PillarsGame()
                     "Knights" -> KnightsGame()
                     "Snipers" -> SnipersGame()
+                    "RicochetArena" -> RicochetArenaGame()
                     else -> error("No such mode...")
                 }
 
