@@ -6,6 +6,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent
 import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerPickupArrowEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import java.util.UUID
 
@@ -37,6 +38,13 @@ class KeepInventoryListener : Listener {
 
     @EventHandler
     fun onPickUp(event: PlayerAttemptPickupItemEvent) {
+        if (states[event.player.uniqueId] ?: false) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onPickUpArrow(event: PlayerPickupArrowEvent) {
         if (states[event.player.uniqueId] ?: false) {
             event.isCancelled = true
         }
