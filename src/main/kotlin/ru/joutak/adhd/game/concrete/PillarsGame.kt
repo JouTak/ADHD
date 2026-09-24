@@ -66,11 +66,7 @@ class PillarsGame : Game() {
         } else {
             meta.getAllItems()
         }
-        
 
-        val world = Bukkit.getWorld(worldName)!!
-
-        world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
