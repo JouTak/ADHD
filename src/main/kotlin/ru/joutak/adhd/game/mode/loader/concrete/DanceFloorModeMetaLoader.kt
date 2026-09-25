@@ -21,6 +21,6 @@ class DanceFloorModeMetaLoader: ModeMetaLoader {
         val green = section.getString("materials.green")
         val red = section.getString("materials.red")
 
-        return DanceFloorModeMeta(width, length, interval_ticks, green_chance, win_points, green_points, red_penalty, neutral, green, red)
+        return DanceFloorModeMeta(width, length, interval_ticks, green_chance, win_points, green_points, red_penalty, neutral, red, green)
     }
 }

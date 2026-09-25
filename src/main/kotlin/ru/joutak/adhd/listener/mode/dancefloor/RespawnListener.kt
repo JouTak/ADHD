@@ -12,7 +12,7 @@ class RespawnListener: Listener {
     fun onRespawn(event: PlayerRespawnEvent){
         val game = TournamentManager.getGame(event.player)
         if (game != null && game.getGameState() == GameState.RUN && game is DanceFloorGame){
-            game.spawnPlayer(event.player, game.respawns[event.player.uniqueId])
+            event.player.setRespawnLocation(game.respawns[event.player.uniqueId], true)
         }
     }
 }

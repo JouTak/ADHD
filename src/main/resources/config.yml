@@ -112,14 +112,14 @@ maps:
   4:
     spawns:
       0:
-        x: 1
+        x: 128
         y: 1
-        z: 1
+        z: 127
         yaw: 0
         pitch: 0
       1:
-        x: -1
+        x: 126
         y: 1
-        z: 1
+        z: 127
         yaw: 0
         pitch: 0
