@@ -73,7 +73,6 @@ class DanceFloorGame : Game() {
             val spawn = spawns.random()
             spawns -= mutableSetOf(spawn)
             scores[player.uniqueId] = 0
-            result[player.uniqueId] = 0.0
             respawns[player.uniqueId] = Location(world, spawn.x, spawn.y, spawn.z)
             spawnPlayer(player, spawn)
             player.gameMode = GameMode.ADVENTURE
@@ -92,11 +91,11 @@ class DanceFloorGame : Game() {
     }
 
     override fun finish() {
-        getResult()
         state = GameState.FINISH
     }
 
     override fun summarize(): Map<UUID, Double> {
+        if (state != GameState.FINISH) finish()
         return result
     }
 
@@ -148,8 +147,9 @@ class DanceFloorGame : Game() {
         scores[player.uniqueId] = scores[player.uniqueId]!! + awardPoints
         world.getBlockAt(player.x.toInt(), 0, player.z.toInt()).type = neutral_material
         player.sendMessage(Component.text("Ты наступил на зелёную клетку, сейчас у тебя " + scores[player.uniqueId] + " очков").color(NamedTextColor.GREEN))
+        dynamic_result()
         if (scores[player.uniqueId]!! >= winPoints){
-            getResult()
+            finish()
         }
     }
 
@@ -157,18 +157,11 @@ class DanceFloorGame : Game() {
         scores[player.uniqueId] = scores[player.uniqueId]!! - finePoints
         world.getBlockAt(player.x.toInt(), 0, player.z.toInt()).type = neutral_material
         player.sendMessage(Component.text("Ты наступил на красную клетку, сейчас у тебя " + scores[player.uniqueId] + " очков").color(NamedTextColor.RED))
+        dynamic_result()
     }
 
-    fun getResult(){
-        lateinit var winner: UUID
-        var max: Int = -1000000
-        for((id, score) in scores){
-            if (score > max) {
-                max = score
-                winner = id
-            }
-        }
-        result[winner] = 1.0
-        ADHDPlugin.instance.logger.config(Bukkit.getPlayer(winner)!!.name)
+    fun dynamic_result(){
+        result = mutableMapOf<UUID, Double>()
+        result[scores.maxBy{it.value}.key] = 1.0
     }
 }
