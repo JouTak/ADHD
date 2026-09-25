@@ -13,13 +13,7 @@ import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameInfo
 import ru.joutak.adhd.game.GameState
-import ru.joutak.adhd.game.concrete.CasinoGame
-import ru.joutak.adhd.game.concrete.KnightsGame
-import ru.joutak.adhd.game.concrete.MemoryGame
-import ru.joutak.adhd.game.concrete.PVPGame
-import ru.joutak.adhd.game.concrete.PillarsGame
-import ru.joutak.adhd.game.concrete.RPSGame
-import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.game.concrete.*
 import ru.joutak.adhd.listener.ArenaSwitchListener
 import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.ui.GameScoreboardManager
@@ -340,6 +334,7 @@ class Tournament(
                     "Pillars" -> PillarsGame()
                     "Knights" -> KnightsGame()
                     "Snipers" -> SnipersGame()
+                    "DanceFloor" -> DanceFloorGame()
                     else -> error("No such mode...")
                 }
 
