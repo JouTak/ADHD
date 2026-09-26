@@ -1,7 +1,10 @@
 package ru.joutak.adhd
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import org.apache.logging.log4j.core.LifeCycle
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import ru.joutak.adhd.command.ADHDCommand
 import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.listener.BoundListener
 import ru.joutak.adhd.listener.ArenaSwitchListener
@@ -42,6 +45,14 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.rps.GuiListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.ChatListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.memory.HitListener(), instance)
+
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
+            event.registrar().register(
+                ADHDCommand.create(),
+                "ADHD commands",
+                setOf("ad")
+            )
+        }
 
         Bukkit.getScheduler().runTaskTimer(instance, Runnable {
             val gInstance = MatchmakingManager.pollReady()
