@@ -120,6 +120,10 @@ class ParkourGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
+
+        finishes.forEach { it.remove() }
+
+        finishes.clear()
     }
 
     override fun summarize(): Map<UUID, Double> {
