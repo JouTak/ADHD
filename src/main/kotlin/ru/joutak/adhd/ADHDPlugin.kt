@@ -3,6 +3,7 @@ package ru.joutak.adhd
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import ru.joutak.adhd.config.ADHDConfig
+import ru.joutak.adhd.listener.BoundListener
 import ru.joutak.adhd.listener.ArenaSwitchListener
 import ru.joutak.adhd.listener.FreezeListener
 import ru.joutak.adhd.listener.KeepInventoryListener
@@ -29,6 +30,7 @@ class ADHDPlugin : JavaPlugin() {
 
         Bukkit.getPluginManager().registerEvents(PlayerSessionListener(), instance)
         Bukkit.getPluginManager().registerEvents(FreezeListener(), instance)
+        Bukkit.getPluginManager().registerEvents(BoundListener(), instance)
         Bukkit.getPluginManager().registerEvents(ArenaSwitchListener(), instance)
         Bukkit.getPluginManager().registerEvents(KeepInventoryListener(), instance)
         Bukkit.getPluginManager().registerEvents(SpectatorListener(), instance)
@@ -38,7 +40,6 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.knights.RespawnListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.snipers.FireListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.snipers.RespawnListener(), instance)
-        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.knights.DismountListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.knights.FireListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.GuiListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.InteractListener(), instance)
