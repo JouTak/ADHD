@@ -32,8 +32,6 @@ object ADHDConfig {
         Pair("Casino", CasinoModeMetaLoader())
     )
 
-    val singleModeNames = mutableSetOf<String>()
-
     var maxPlayers = 4
         private set
 
@@ -58,7 +56,24 @@ object ADHDConfig {
 
     val modes = mutableMapOf<String, Mode>()
 
+    val singleModeNames = mutableSetOf<String>()
+
     private val mapMetaLoaders = mutableMapOf<String, MapMetaLoader>()
+
+    fun getSnapshot(): ConfigSnapshot {
+        return ConfigSnapshot(
+            maxPlayers,
+            pointsGoal,
+            templateWorldName,
+            lobbyWorld,
+            ceremonyEnabled,
+            ceremonyDuration,
+            ceremonySpawnPoint.copy(),
+            configMaps.toMap(),
+            modes.toMap(),
+            singleModeNames.toSet()
+        )
+    }
 
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
