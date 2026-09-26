@@ -1,0 +1,7 @@
+default:
+  enabled: true
+  duration: 120
+  displayName: Паркур
+  description: Пропрыгайте до финиша первым, вы можете драться!
+  maps:
+    - 3

@@ -5,6 +5,7 @@ import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.MemoryMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.ParkourMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
@@ -29,7 +30,8 @@ object ADHDConfig {
         Pair("Pillars", PillarsModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
-        Pair("Casino", CasinoModeMetaLoader())
+        Pair("Casino", CasinoModeMetaLoader()),
+        Pair("Parkour", null)
     )
 
     val singleModeNames = mutableSetOf<String>()
@@ -158,6 +160,7 @@ object ADHDConfig {
         mapMetaLoaders["pillars"] = PillarsMapMetaLoader()
         mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
         mapMetaLoaders["memory"] = MemoryMapMetaLoader()
+        mapMetaLoaders["parkour"] = ParkourMapMetaLoader()
     }
 
     fun loadModes() {
