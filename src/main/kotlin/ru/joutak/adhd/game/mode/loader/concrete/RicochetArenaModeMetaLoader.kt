@@ -7,8 +7,6 @@ import ru.joutak.adhd.game.mode.meta.concrete.RicochetArenaModeMeta
 
 class RicochetArenaModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
-        val pointsToWin = section.getInt("points_to_win")
-
         val projectileSpeed = section.getDouble("projectile.speed")
 
         val maxBounces = section.getInt("projectile.max_bounces")
@@ -19,6 +17,6 @@ class RicochetArenaModeMetaLoader : ModeMetaLoader {
 
         val cooldownTicks = section.getInt("weapon.cooldown_ticks")
 
-        return RicochetArenaModeMeta(pointsToWin, projectileSpeed, maxBounces, lifetimeTicks, cooldownTicks, projectileDamage)
+        return RicochetArenaModeMeta(projectileSpeed, maxBounces, lifetimeTicks, cooldownTicks, projectileDamage)
     }
 }

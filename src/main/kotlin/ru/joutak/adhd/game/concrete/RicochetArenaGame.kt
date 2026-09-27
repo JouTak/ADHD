@@ -30,9 +30,7 @@ class RicochetArenaGame : Game() {
         arena: Arena,
         members: Set<UUID>,
         modeMeta: ModeMeta?
-
     ) {
-
         this.worldName = worldName
         this.arena = arena
         this.members = members

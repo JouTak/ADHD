@@ -23,7 +23,6 @@ class FireListener : Listener {
 
     @EventHandler
     fun onLapisRightClick(event: PlayerInteractEvent) {
-
         val player = event.player
 
         if (event.action != Action.RIGHT_CLICK_AIR && event.action != Action.RIGHT_CLICK_BLOCK) {
@@ -70,10 +69,8 @@ class FireListener : Listener {
             }
         }.runTaskLater(ru.joutak.adhd.ADHDPlugin.instance, lifetimeTicks)
     }
-
     @EventHandler
     fun onProjectileHit(event: ProjectileHitEvent) {
-
         val snowball = event.entity as? Snowball ?: return
 
         val shooter = snowball.shooter as? Player ?: return

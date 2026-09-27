@@ -7,8 +7,6 @@ default:
     - 1
 
 meta:
-  points_to_win: 3
-
   projectile:
     speed: 1.5
     max_bounces: 3
