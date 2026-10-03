@@ -1,3 +1,5 @@
 package ru.joutak.adhd.config.map.meta
 
-open class MapMeta
+import ru.joutak.adhd.world.SpawnPoint
+
+open class MapMeta()
