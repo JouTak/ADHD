@@ -45,7 +45,7 @@ class CasinoGame : Game() {
         this.arena = arena
         this.members = members
 
-        val meta = modeMeta as? CasinoModeMeta
+        val meta = modeMeta as? CasinoModeMeta ?: error("modeMeta must be CasinoModeMeta")
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue

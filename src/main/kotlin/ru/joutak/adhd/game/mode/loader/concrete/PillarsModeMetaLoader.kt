@@ -19,16 +19,6 @@ class PillarsModeMetaLoader : ModeMetaLoader {
 
         if (setsSection != null) {
             for (setName in setsSection.getKeys(false)) {
-//                val itemNames = setsSection.getStringList(setName)
-//                val materials = itemNames.mapNotNull { itemName ->
-//                    try {
-//                        Material.valueOf(itemName)
-//                    } catch (e: IllegalArgumentException) {
-//                        ADHDPlugin.instance.logger.warning("Предмет '$itemName' в наборе '$setName' не найден")
-//                        null
-//                    }
-//                }
-//                itemSets[setName] = materials
 
                 val setNode = setsSection.getConfigurationSection(setName) ?: continue
                 val typeMap = mutableMapOf<String, MutableList<Material>>()
