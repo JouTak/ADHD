@@ -45,6 +45,8 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.rps.GuiListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.ChatListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.memory.HitListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.ricochet_arena.FireListener(), instance)
+        Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.ricochet_arena.RespawnListener(), instance)
 
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             event.registrar().register(
