@@ -25,7 +25,7 @@ object ADHDCommand {
                             return@executes -1
                         }
 
-                        ADHDConfig.load()
+                        ADHDConfig.reload()
 
                         context.source.sender.sendMessage(Component.text("Конфиг успешно перезагружен!").color(
                             NamedTextColor.GREEN))

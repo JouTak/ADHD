@@ -1,5 +1,6 @@
 package ru.joutak.adhd.config
 
+import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
@@ -15,6 +16,7 @@ import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.SnipersModeMetaLoader
 import ru.joutak.adhd.game.mode.meta.ModeMeta
+import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.adhd.world.ConfigMap
 import ru.joutak.adhd.world.SpawnPoint
 import java.io.File
@@ -217,5 +219,11 @@ object ADHDConfig {
 
             modes[modeName] = Mode(duration, maps.toList(), meta, displayName, description)
         }
+    }
+
+    fun reload() {
+        load()
+
+        Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable { TournamentManager.load() })
     }
 }

@@ -4,6 +4,7 @@ import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.world.ConfigMap
 import ru.joutak.adhd.world.SpawnPoint
 
+// TODO: Implement
 data class ConfigSnapshot(
     val maxPlayers: Int,
     val pointsGoal: Double,
