@@ -543,6 +543,7 @@ class Tournament(
         world.setGameRule(GameRules.SPAWN_PHANTOMS, false)
         world.setGameRule(GameRules.SPAWN_WANDERING_TRADERS, false)
         world.setGameRule(GameRules.SPAWN_WARDENS, false)
+        world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
     }
 
     fun prepareCeremony() {
