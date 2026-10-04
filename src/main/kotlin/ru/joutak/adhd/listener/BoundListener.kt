@@ -24,7 +24,7 @@ class BoundListener : Listener {
 
                 player.kill(DamageSource.builder(DamageType.OUTSIDE_BORDER).build())
 
-                player.sendMessage(Component.text("Вы были убиты причине попытки вылета за пределы арены...").color(
+                player.sendMessage(Component.text("Вы вышли за пределы арены и поэтому были убиты...").color(
                     NamedTextColor.RED))
             }
         }
