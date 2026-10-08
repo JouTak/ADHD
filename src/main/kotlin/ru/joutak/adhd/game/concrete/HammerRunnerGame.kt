@@ -1,20 +1,21 @@
 package ru.joutak.adhd.game.concrete
 
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.World
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.title.Title
+import org.bukkit.*
 import org.bukkit.entity.ArmorStand
-import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.checkerframework.checker.units.qual.C
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
+import ru.joutak.adhd.game.mode.loader.concrete.RabbitSpawnPoint
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.game.mode.meta.concrete.HammerRunnerModeMeta
 import ru.joutak.adhd.listener.FreezeListener
 import ru.joutak.adhd.world.Arena
+import ru.joutak.adhd.world.SpawnPoint
 import java.util.*
 
 class HammerRunnerGame: Game() {
@@ -23,10 +24,10 @@ class HammerRunnerGame: Game() {
     lateinit var arena: Arena
     lateinit var members: Set<UUID>
 
-    lateinit var player: Player
+    lateinit var gamer: Player
     lateinit var origin: Location
     lateinit var rabbit: ArmorStand
-    private var rabbitPositions = mutableSetOf<Location>()
+    private var rabbitPoints = mutableSetOf<SpawnPoint>()
     private var result = mutableMapOf<UUID, Double>()
     private var state: GameState = GameState.START
     private var hits: Int = 0
@@ -37,6 +38,7 @@ class HammerRunnerGame: Game() {
     private var hammerName: String = ""
     private var winHits: Int = 0
     private var tickInterval: Int = 0
+    private var rabbitMessage: String = ""
 
     override fun start(worldName: String, arena: Arena, members: Set<UUID>, modeMeta: ModeMeta?) {
         this.worldName = worldName
@@ -49,24 +51,26 @@ class HammerRunnerGame: Game() {
         hammerName = meta.hammerName
         winHits = meta.winHits
         hammer = ItemStack.of(hammerMaterial, 1)
-        hammer.itemMeta.setDisplayName(hammerName)
+        hammer.editMeta { hmeta ->
+            hmeta.itemName(Component.text(hammerName))
+        }
         tickInterval = meta.tickInterval
+        rabbitPoints = meta.rabbitPoints
+        rabbitMessage = meta.rabbitMessage
 
         for(UUID in members){
             val spawn = arena.spawnPoints.random()
             FreezeListener.freeze[UUID] = true
             Bukkit.getScheduler().runTaskLater(ADHDPlugin.instance, Runnable {
                 rabbit = world.spawn(Location(world, 0.0, 0.0, 0.0), ArmorStand::class.java)
-                rabbit.isSmall = true
-                rabbit.isGlowing = true
                 rabbit.setGravity(false)
                 rabbit.setArms(true)
-                rabbit.setBasePlate(false)
                 FreezeListener.freeze[UUID] = false
                 state = GameState.RUN}, 20L)
-            player = Bukkit.getPlayer(UUID)!!
-            player.teleport(Location(world, spawn.x, spawn.y, spawn.z, spawn.yaw, spawn.pitch))
-            origin = player.location
+            gamer = Bukkit.getPlayer(UUID)!!
+            gamer.teleport(Location(world, spawn.x, spawn.y, spawn.z, spawn.yaw, spawn.pitch))
+            setPlayer(gamer)
+            origin = gamer.location
         }
     }
 
@@ -83,7 +87,7 @@ class HammerRunnerGame: Game() {
 
     override fun finish() {
         state = GameState.FINISH
-        rabbit.kill()
+        rabbit.remove()
     }
 
     override fun getGameState(): GameState {
@@ -92,14 +96,28 @@ class HammerRunnerGame: Game() {
 
     fun hit() {
         hits++
+        tiks = 0
         if (hits > winHits){
-            result[player.uniqueId] = 1.0
+            result[gamer.uniqueId] = 1.0
             finish()
         }
     }
 
     fun spawnRabbit() {
-        val newPoint = rabbitPositions.random()
-        rabbit.teleport(Location(world, origin.x + newPoint.x, origin.y + newPoint.y, origin.z + newPoint.z))
+        val newPoint = rabbitPoints.random()
+        rabbit.remove()
+        rabbit = world.spawn(Location(world, origin.x + newPoint.x, origin.y + newPoint.y, origin.z + newPoint.z, newPoint.yaw, newPoint.pitch), ArmorStand::class.java)
+        rabbit.setGravity(false)
+        rabbit.setArms(true)
+        gamer.showTitle(Title.title(Component.text(rabbitMessage), Component.empty(), 5, 20, 10))
     }
+
+    fun setPlayer(player: Player) {
+        player.inventory.clear()
+        player.gameMode = GameMode.ADVENTURE
+        player.health = 20.0
+        player.saturation = 20.0f
+        player.foodLevel = 20
+        player.inventory.setItem(0, hammer)
+        }
 }
