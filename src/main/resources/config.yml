@@ -109,3 +109,11 @@ maps:
         z: 1305
         yaw: 180
         pitch: 0
+  5:
+    spawns:
+      0:
+        x: 256
+        y: 65
+        z: 256
+        yaw: 0
+        pitch: 0
