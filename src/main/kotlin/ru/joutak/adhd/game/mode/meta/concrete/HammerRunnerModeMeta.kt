@@ -1,6 +1,5 @@
 package ru.joutak.adhd.game.mode.meta.concrete
 
-import ru.joutak.adhd.game.mode.loader.concrete.RabbitSpawnPoint
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.SpawnPoint
 
