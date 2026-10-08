@@ -81,7 +81,7 @@ class RPSGame : Game() {
     fun giveLayout(player: Player) {
         player.inventory.clear()
 
-        val rI = ItemStack(Material.FLINT, 1)
+        val rI = ItemStack(Material.STONE, 1)
 
         val rIm = rI.itemMeta
 
