@@ -6,11 +6,9 @@ import org.bukkit.*
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.checkerframework.checker.units.qual.C
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
-import ru.joutak.adhd.game.mode.loader.concrete.RabbitSpawnPoint
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.game.mode.meta.concrete.HammerRunnerModeMeta
 import ru.joutak.adhd.listener.FreezeListener
