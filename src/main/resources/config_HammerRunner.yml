@@ -9,8 +9,33 @@ default:
 
 meta:
   hammer:
-    material: Mace
+    material: MACE
     name: §cСупер-молот§r
   game:
     winHits: 5
     tickInterval: 200
+    message: §eКролик переместился§r
+  0:
+    x: 3
+    y: 0
+    z: 3
+    yaw: -45
+    pitch: 0
+  1:
+    x: 3
+    y: 0
+    z: -3
+    yaw: -135
+    pitch: 0
+  2:
+    x: -3
+    y: 0
+    z: 3
+    yaw: 45
+    pitch: 0
+  3:
+    x: -3
+    y: 0
+    z: -3
+    yaw: 135
+    pitch: 0
