@@ -1,0 +1,7 @@
+default:
+  enabled: true
+  duration: 120
+  displayName: Красный свет Зелёный свет
+  description: Идите к финишу когда горит зеленый свет, стойте на месте, когда красный!
+  maps:
+    - 1

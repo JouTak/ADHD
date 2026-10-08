@@ -7,8 +7,10 @@ import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.MemoryMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.RGLightMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
+import ru.joutak.adhd.game.concrete.RGLightGame
 import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.loader.concrete.CasinoModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
@@ -31,7 +33,8 @@ object ADHDConfig {
         Pair("Pillars", PillarsModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
-        Pair("Casino", CasinoModeMetaLoader())
+        Pair("Casino", CasinoModeMetaLoader()),
+        Pair("RGLight", null)
     )
 
     var maxPlayers = 4
@@ -175,6 +178,7 @@ object ADHDConfig {
         mapMetaLoaders["pillars"] = PillarsMapMetaLoader()
         mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
         mapMetaLoaders["memory"] = MemoryMapMetaLoader()
+        mapMetaLoaders["rglight"] = RGLightMapMetaLoader()
     }
 
     fun loadModes() {
