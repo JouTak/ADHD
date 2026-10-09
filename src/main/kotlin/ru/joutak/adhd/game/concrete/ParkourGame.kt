@@ -30,6 +30,8 @@ class ParkourGame : Game() {
 
     var lSpawn: SpawnPoint? = null
 
+    val spawns = mutableMapOf<UUID, MutableList<SpawnPoint>>()
+
     override fun start(
         worldName: String,
         arena: Arena,
@@ -86,6 +88,8 @@ class ParkourGame : Game() {
         }
 
         lSpawn = chosen
+
+        this.spawns[player.uniqueId] = mutableListOf(chosen)
 
         player.teleport(Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch))
     }
