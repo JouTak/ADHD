@@ -2,19 +2,19 @@ package ru.joutak.adhd.game.concrete
 
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.GameRules
 import org.bukkit.Location
-import org.bukkit.Material
+import org.bukkit.entity.Interaction
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
+import ru.joutak.adhd.config.map.meta.concrete.ParkourMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
+import kotlin.math.floor
 
-class PVPGame : Game() {
+class ParkourGame : Game() {
 
     lateinit var worldName: String
 
@@ -22,11 +22,15 @@ class PVPGame : Game() {
 
     lateinit var members: Set<UUID>
 
-    var result = mutableMapOf<UUID, Double>()
-
     var state = GameState.START
 
+    var result = mutableMapOf<UUID, Double>()
+
+    val finishes = mutableSetOf<Interaction>()
+
     var lSpawn: SpawnPoint? = null
+
+    val spawns = mutableMapOf<UUID, MutableList<SpawnPoint>>()
 
     override fun start(
         worldName: String,
@@ -38,14 +42,31 @@ class PVPGame : Game() {
         this.arena = arena
         this.members = members
 
+        val meta = arena.metas["parkour"] as? ParkourMapMeta ?: error("Arena must have parkour meta for this mode to operate...")
+
+        val world = Bukkit.getWorld(worldName)!!
+
+        val xOffset = floor(arena.spawnPoints[0].x / 512) * 512
+
+        val zOffset = floor(arena.spawnPoints[0].z / 512) * 512
+
+        for (p in meta.finish) {
+            val loc = Location(world, p.x + xOffset, p.y, p.z + zOffset)
+
+            val interaction = world.spawn(loc, Interaction::class.java) {
+                it.interactionWidth = 1f
+                it.interactionHeight = 1f
+            }
+
+            finishes.add(interaction)
+        }
+
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
 
             teleportToSpawn(player)
 
             restoreStats(player)
-
-            giveLayout(player)
         }
 
         state = GameState.RUN
@@ -68,6 +89,8 @@ class PVPGame : Game() {
 
         lSpawn = chosen
 
+        this.spawns[player.uniqueId] = mutableListOf(chosen)
+
         player.teleport(Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch))
     }
 
@@ -76,22 +99,23 @@ class PVPGame : Game() {
         player.health = 20.0
         player.saturation = 20.0f
         player.foodLevel = 20
-    }
-
-    fun giveLayout(player: Player) {
         player.inventory.clear()
-
-        player.inventory.setItem(0, ItemStack(Material.NETHERITE_SWORD, 1))
-
-        player.inventory.heldItemSlot = 0
-    }
-
-    fun calculateResult(player: Player) {
-        members.filter { uUID -> uUID != player.uniqueId }.forEach { uUID -> result[uUID] = 1.0 }
     }
 
     override fun update() {
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
 
+            for (i in finishes) {
+                if (player.boundingBox.overlaps(i.boundingBox)) {
+                    result[player.uniqueId] = 1.0
+
+                    finish()
+
+                    return
+                }
+            }
+        }
     }
 
     override fun getGameState(): GameState {
@@ -100,6 +124,10 @@ class PVPGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
+
+        finishes.forEach { it.remove() }
+
+        finishes.clear()
     }
 
     override fun summarize(): Map<UUID, Double> {
