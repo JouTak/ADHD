@@ -13,7 +13,7 @@ import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameInfo
 import ru.joutak.adhd.game.GameState
-import ru.joutak.adhd.game.concrete.CasinoGame
+import ru.joutak.adhd.game.concrete.casino.CasinoGame
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.MemoryGame
 import ru.joutak.adhd.game.concrete.PVPGame
