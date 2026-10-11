@@ -109,3 +109,38 @@ maps:
         z: 1305
         yaw: 180
         pitch: 0
+  6:
+    tnt_bounds:
+      1:
+        start:
+          x: 0
+          y: 0
+          z: 0
+        end:
+          x: 0
+          y: 0
+          z: 0
+      2:
+        start:
+          x: 0
+          y: 0
+          z: 0
+        end:
+          x: 0
+          y: 0
+          z: 0
+
+    spawns:
+      0:
+        x: 0
+        y: 0
+        z: 0
+        yaw: 0
+        pitch: 0
+      1:
+        x: 0
+        y: 0
+        z: 0
+        yaw: 0
+        pitch: 0
+
