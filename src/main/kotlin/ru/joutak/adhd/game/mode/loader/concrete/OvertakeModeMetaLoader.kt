@@ -9,7 +9,7 @@ class OvertakeModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
         val winPoints = section.getInt("points_to_win")
         val pointsPerSec = section.getInt("points_per_second")
-        val knockMulti = section.getDouble("knockback_multiplier")
+        val knockMulti = section.getInt("knockback_multiplier")
 
         return OvertakeModeMeta(winPoints, pointsPerSec, knockMulti)
     }

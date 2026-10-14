@@ -56,12 +56,12 @@ maps:
         z: 725
         yaw: 0
         pitch: 0
-      #1:
-      #  x: 256
-      #  y: 65.5
-      #  z: 745
-      #  yaw: 180
-      #  pitch: 0
+      1:
+        x: 256
+        y: 65.5
+        z: 745
+        yaw: 180
+        pitch: 0
   2:
     meta:
       pvp:

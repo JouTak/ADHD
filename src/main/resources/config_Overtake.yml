@@ -1,13 +1,12 @@
 default:
   enabled: true
-  single: true
   duration: 90
   displayName: Царь горы
-  description: Пока что здесь ничего нет
+  description: Вытолкните противника из зоны захвата и займите ее сами!
   maps:
     - 1
 
 meta:
   points_to_win: 100
   points_per_second: 5
-  knockback_multiplier: 1.2
+  knockback_multiplier: 3
