@@ -35,7 +35,7 @@ object ADHDConfig {
         Pair("RPS", null),
         Pair("Memory", null),
         Pair("Casino", CasinoModeMetaLoader()),
-        Pair("RGLight", null)
+        Pair("RGLight", null),
         Pair("Parkour", null)
     )
 
