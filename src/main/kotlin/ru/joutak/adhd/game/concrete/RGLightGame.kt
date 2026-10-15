@@ -190,6 +190,8 @@ class RGLightGame : Game() {
         return Light
     }
 
+    fun getWarden() = warden
+
     fun switchLight(){
 
         Light = if (Light == LightColor.GREEN) LightColor.RED else LightColor.GREEN

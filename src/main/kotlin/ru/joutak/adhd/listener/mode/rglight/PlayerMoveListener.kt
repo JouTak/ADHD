@@ -26,8 +26,9 @@ class PlayerMoveListener : Listener {
 
         if (game.getGameState() == GameState.RUN &&
             game.getLightColor() == RGLightGame.LightColor.RED &&
-            game.isRedGraceOver()
+            game.isRedGraceOver() && game.getWarden()?.hasLineOfSight(event.player) == true
         ) {
+
             game.punishPlayer(event.player)
         }
     }
