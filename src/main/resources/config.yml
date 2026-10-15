@@ -17,6 +17,25 @@ ceremony:
 maps:
   1:
     meta:
+      tnt_bows:
+        1:
+          start:
+            x: 0
+            y: 0
+            z: 0
+          end:
+            x: 0
+            y: 0
+            z: 0
+        2:
+          start:
+            x: 0
+            y: 0
+            z: 0
+          end:
+            x: 0
+            y: 0
+            z: 0
       ventilator:
         placement:
           x: 256
@@ -110,26 +129,26 @@ maps:
         yaw: 180
         pitch: 0
   6:
-    tnt_bounds:
-      1:
-        start:
-          x: 0
-          y: 0
-          z: 0
-        end:
-          x: 0
-          y: 0
-          z: 0
-      2:
-        start:
-          x: 0
-          y: 0
-          z: 0
-        end:
-          x: 0
-          y: 0
-          z: 0
-
+    meta:
+      tnt_bows:
+        1:
+          start:
+            x: 0
+            y: 0
+            z: 0
+          end:
+            x: 0
+            y: 0
+            z: 0
+        2:
+          start:
+            x: 0
+            y: 0
+            z: 0
+          end:
+            x: 0
+            y: 0
+            z: 0
     spawns:
       0:
         x: 0

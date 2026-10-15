@@ -11,6 +11,7 @@ import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.game.concrete.TntBowsGame
 import ru.joutak.adhd.tournament.TournamentManager
 
 class GameDeathRespawnListener : Listener {
@@ -60,6 +61,13 @@ class GameDeathRespawnListener : Listener {
 
                 game.finish()
             }
+
+            is TntBowsGame -> {
+                game.calculateResult(event.player)
+
+                game.finish()
+            }
+
         }
     }
 }

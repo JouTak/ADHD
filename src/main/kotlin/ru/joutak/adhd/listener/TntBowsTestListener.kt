@@ -13,6 +13,8 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Vector
+import ru.joutak.adhd.game.concrete.TntBowsGame
+import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.minigames.MiniGamesAPI.plugin
 
 
@@ -29,9 +31,6 @@ class TntBowsTestListener : Listener {
         val item = event.item ?: return
 
         if (item.type != Material.APPLE) return
-
-        org.bukkit.Bukkit.broadcast(Component.text("Попытка ТНТ"))
-        getConsoleSender().sendMessage("Попытка TNT")
 
         event.isCancelled = true
         val location = player.location;
@@ -56,6 +55,9 @@ class TntBowsTestListener : Listener {
         }
 
         armorStand.addPassenger(tntFallingBlock)
+        val game = TournamentManager.getGame(player) as? TntBowsGame ?: return
+        game.activeArmorStands.add(armorStand)
+
 
         object : BukkitRunnable() {
             override fun run() {
