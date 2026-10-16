@@ -2,6 +2,8 @@ package ru.joutak.adhd.game.concrete
 
 import net.minecraft.world.phys.Vec3
 import org.bukkit.*
+import org.bukkit.damage.DamageSource
+import org.bukkit.damage.DamageType
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
@@ -209,6 +211,15 @@ class TntBowsGame : Game() {
 
     override fun update() {
         if (state != GameState.RUN) return
+
+        val fallY = gameMeta?.fallY ?: Double.NEGATIVE_INFINITY
+        members.forEach { uuid ->
+            val player = Bukkit.getPlayer(uuid) ?: return@forEach
+            if (player.location.y < fallY) {
+                player.kill(DamageSource.builder(DamageType.OUTSIDE_BORDER).build())
+            }
+        }
+
         val tntBowsMapMeta = arena.metas["tnt_bows"] as? TntBowsMapMeta ?: return
 
         if (counterTicks <= 0){
