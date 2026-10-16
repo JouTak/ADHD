@@ -9,12 +9,10 @@ class TntBowsModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
         val fallY = section.getDouble("tnt.fall_y")
 
-        val explosionRadius = section.getInt("tnt.explosion_radius").toFloat()
-
         val movementSpeedTnt = section.getDouble("tnt.movement_speed_tnt")
 
-        val spawnSpeedTnt = section.getDouble("tnt.spawn_speed_tnt")
+        val spawnSpeedTnt = section.getLong("tnt.spawn_speed_tnt")
 
-        return TntBowsModeMeta(fallY, explosionRadius, spawnSpeedTnt, movementSpeedTnt)
+        return TntBowsModeMeta(fallY, spawnSpeedTnt, movementSpeedTnt)
     }
 }

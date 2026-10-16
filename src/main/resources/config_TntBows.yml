@@ -1,6 +1,6 @@
 default:
   enabled: true
-  duration: 60
+  duration: 120
   displayName: Взрывные луки
   description: Подорвите своего противника!
   maps:
@@ -9,6 +9,5 @@ default:
 meta:
   tnt:
     fall_y: 0
-    explosion_radius: 4
-    movement_speed_tnt: 1.5
-    spawn_speed_tnt: 1.5
+    movement_speed_tnt: 2.5
+    spawn_speed_tnt: 2

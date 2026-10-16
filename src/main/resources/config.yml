@@ -20,22 +20,22 @@ maps:
       tnt_bows:
         1:
           start:
-            x: 0
-            y: 0
-            z: 0
+            x: 240
+            y: 73
+            z: 729
           end:
-            x: 0
-            y: 0
-            z: 0
+            x: 275
+            y: 73
+            z: 729
         2:
           start:
-            x: 0
-            y: 0
-            z: 0
+            x: 240
+            y: 73
+            z: 741
           end:
-            x: 0
-            y: 0
-            z: 0
+            x: 275
+            y: 73
+            z: 741
       ventilator:
         placement:
           x: 256
@@ -130,7 +130,7 @@ maps:
         pitch: 0
   6:
     meta:
-      tnt_bows:
+      tnt_bounds:
         1:
           start:
             x: 0

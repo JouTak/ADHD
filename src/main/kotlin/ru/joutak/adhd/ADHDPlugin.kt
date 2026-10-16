@@ -1,7 +1,6 @@
 package ru.joutak.adhd
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
-import org.apache.logging.log4j.core.LifeCycle
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import ru.joutak.adhd.command.ADHDCommand
@@ -13,7 +12,6 @@ import ru.joutak.adhd.listener.GameDeathRespawnListener
 import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.listener.PlayerSessionListener
 import ru.joutak.adhd.listener.SpectatorListener
-import ru.joutak.adhd.listener.TntBowsTestListener
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.minigames.MiniGamesCore
 import ru.joutak.minigames.managers.MatchmakingManager
@@ -46,9 +44,7 @@ class ADHDPlugin : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.rps.GuiListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.casino.ChatListener(), instance)
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.memory.HitListener(), instance)
-
         Bukkit.getPluginManager().registerEvents(ru.joutak.adhd.listener.mode.tnt_bows.FireListener(), instance)
-        Bukkit.getPluginManager().registerEvents(TntBowsTestListener(), instance)
 
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             event.registrar().register(
