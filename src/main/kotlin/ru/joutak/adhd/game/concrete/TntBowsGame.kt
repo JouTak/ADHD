@@ -97,11 +97,11 @@ class TntBowsGame : Game() {
         val curY = stand.y
         val curZ = stand.z
 
-        val endX = pdc.get(endX, PersistentDataType.DOUBLE) ?: 0.0
-        val endY = pdc.get(endY, PersistentDataType.DOUBLE) ?: 0.0
-        val endZ = pdc.get(endZ, PersistentDataType.DOUBLE) ?: 0.0
+        val endXLoc = pdc.get(endX, PersistentDataType.DOUBLE) ?: 0.0
+        val endYLoc = pdc.get(endY, PersistentDataType.DOUBLE) ?: 0.0
+        val endZLoc = pdc.get(endZ, PersistentDataType.DOUBLE) ?: 0.0
 
-        val diff = Vec3(endX-curX, endY-curY, endZ-curZ).length()
+        val diff = Vec3(endXLoc-curX, endYLoc-curY, endZLoc-curZ).length()
 
         if (diff <= 1){
             val passenger = stand.passengers.firstOrNull()
@@ -115,9 +115,9 @@ class TntBowsGame : Game() {
 
         val nextLoc = Location(
             stand.world,
-            stand.x + (tntSpeed/10)*dirX,
+            stand.x + (tntSpeed/20)*dirX,
             stand.y,
-            stand.z + (tntSpeed/10)*dirZ)
+            stand.z + (tntSpeed/20)*dirZ)
 
         val passenger = stand.passengers.firstOrNull()
         stand.eject()
@@ -129,8 +129,9 @@ class TntBowsGame : Game() {
 
     fun spawnTnt(start: SpawnPoint, end: SpawnPoint) {
         val world = Bukkit.getWorld(worldName) ?: return
-        val offsetX = floor(arena.spawnPoints[0].x / 512) * 512
-        val offsetZ = floor(arena.spawnPoints[0].z / 512) * 512
+        val firstSpawn = arena.spawnPoints.firstOrNull() ?: return
+        val offsetX = floor(firstSpawn.x / 512) * 512
+        val offsetZ = floor(firstSpawn.z / 512) * 512
         val startLoc = Location(world, start.x + offsetX, start.y, start.z + offsetZ)
 
         val armorStand = startLoc.world.spawn(startLoc, ArmorStand::class.java) { stand ->
@@ -139,6 +140,7 @@ class TntBowsGame : Game() {
             stand.setBasePlate(false)
             stand.setArms(false)
             stand.isSmall = true
+            stand.isMarker = true
         }
 
         val direction = Vec3(end.x - start.x, 0.0, end.z - start.z).normalize()
@@ -223,7 +225,7 @@ class TntBowsGame : Game() {
         val tntBowsMapMeta = arena.metas["tnt_bows"] as? TntBowsMapMeta ?: return
 
         if (counterTicks <= 0){
-            counterTicks = (gameMeta?.spawnSpeedTnt ?: 0) * 10L
+            counterTicks = (gameMeta?.spawnSpeedTnt ?: 1L) * 10L
 
             tntBowsMapMeta.tntBounds.forEachIndexed { index, linePoints ->
                 val startPoint = linePoints.getOrNull(0) ?: return@forEachIndexed
