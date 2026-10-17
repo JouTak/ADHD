@@ -130,7 +130,7 @@ maps:
         pitch: 0
   6:
     meta:
-      tnt_bounds:
+      tnt_bows:
         1:
           start:
             x: 0
