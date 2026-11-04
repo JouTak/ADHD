@@ -1,7 +1,7 @@
 default:
   maxPlayers: 4
   pointsGoal: 10.0
-  templateWorldName: adhd_a
+  templateWorldName: template
   lobbyWorld: lobby
 
 ceremony:

@@ -17,9 +17,6 @@ import ru.joutak.adhd.tournament.TournamentManager
 
 class ZoneListener : Listener {
 
-    val overtakeMapMeta = ADHDConfig.configMaps[1]!!.metas["overtake"] as OvertakeMapMeta
-    val center = overtakeMapMeta.center
-    val radius = overtakeMapMeta.radius
     val lastSoundTime = mutableMapOf<Player, Long>()
 
     @EventHandler
@@ -43,6 +40,10 @@ class ZoneListener : Listener {
     }
 
     fun isInZone(location: Location, game: OvertakeGame): Boolean {
+        val overtakeMapMeta = game.arena.metas["overtake"] as OvertakeMapMeta
+        val center = overtakeMapMeta.center
+        val radius = overtakeMapMeta.radius
+
         if (location.x in (center.x + 512 * game.pointer - radius)..(center.x + 512 * game.pointer + radius) &&
             location.z in (center.z - radius)..(center.z + radius)) {
             return true

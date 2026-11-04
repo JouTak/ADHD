@@ -159,19 +159,13 @@ class OvertakeGame : Game() {
 
     fun calculateCorners(): List<Triple<Double, Double, Double>> {
         val mapMeta = arena.metas["overtake"] as OvertakeMapMeta
-        val corner1 = Triple(mapMeta.center.x + 512 * pointer + mapMeta.radius,
-            mapMeta.center.y, mapMeta.center.z + mapMeta.radius)
-        val corner2 = Triple(mapMeta.center.x + 512 * pointer - mapMeta.radius,
-            mapMeta.center.y, mapMeta.center.z - mapMeta.radius)
-        val corner3 = Triple(mapMeta.center.x + 512 * pointer + mapMeta.radius,
-            mapMeta.center.y, mapMeta.center.z - mapMeta.radius)
-        val corner4 = Triple(mapMeta.center.x + 512 * pointer - mapMeta.radius,
-            mapMeta.center.y, mapMeta.center.z + mapMeta.radius)
         val corners = mutableListOf<Triple<Double, Double, Double>>()
-        corners.add(corner1)
-        corners.add(corner2)
-        corners.add(corner3)
-        corners.add(corner4)
+        for (i in listOf(1, -1)) {
+            for (j in listOf(1, -1)) {
+                corners.add(Triple(mapMeta.center.x + 512 * pointer + mapMeta.radius * i,
+                    mapMeta.center.y, mapMeta.center.z + mapMeta.radius * j))
+            }
+        }
         return corners
     }
 
@@ -181,7 +175,7 @@ class OvertakeGame : Game() {
             val player = currentPlayers[0]
             points[player] = points[player]!! + meta.pointsPerSec
             bossBars[player]!!.progress = points[player]!! / meta.winPoints.toDouble()
-            if (points[player] == meta.winPoints) {
+            if (points[player]!! >= meta.winPoints) {
                 result[player] = 1.0
                 finish()
             }
