@@ -1,21 +1,37 @@
 package ru.joutak.adhd.listener
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.damage.DamageSource
+import org.bukkit.damage.DamageType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
 import ru.joutak.adhd.tournament.TournamentManager
+import ru.joutak.adhd.tournament.TournamentStatus
 import kotlin.math.floor
 
 class BoundListener : Listener {
 
     @EventHandler
     fun onMove(event: PlayerMoveEvent) {
-        if (!TournamentManager.isInLobby(event.player)) {
+        val tournament = TournamentManager.playerTournaments[event.player.uniqueId] ?: return
+
+        if (tournament.status == TournamentStatus.RUN) {
             val xL = floor(event.from.x / 512.0) * 512
             val zL = floor(event.from.z / 512.0) * 512
 
-            if ((event.to.x !in xL..<(xL + 512)) || (event.to.z !in zL..<(zL + 512))) {
-                event.isCancelled = true
+            if ((event.to.x !in (xL + 8)..<(xL + 504)) || (event.to.z !in (zL + 8)..<(zL + 504))) {
+                if (tournament.spectators.contains(event.player.uniqueId)) {
+                    event.isCancelled = true
+                } else {
+                    val player = event.player
+
+                    player.kill(DamageSource.builder(DamageType.OUTSIDE_BORDER).build())
+
+                    player.sendMessage(Component.text("Вы вышли за пределы арены и поэтому были убиты...").color(
+                        NamedTextColor.RED))
+                }
             }
         }
     }
