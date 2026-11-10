@@ -8,6 +8,7 @@ import ru.joutak.adhd.config.map.loader.concrete.MemoryMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.ParkourMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.TntBowsMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.mode.Mode
@@ -16,6 +17,7 @@ import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.SnipersModeMetaLoader
+import ru.joutak.adhd.game.mode.loader.concrete.TntBowsModeMetaLoader
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.adhd.world.ConfigMap
@@ -32,6 +34,7 @@ object ADHDConfig {
         Pair("Pillars", PillarsModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
+        Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("Casino", CasinoModeMetaLoader()),
         Pair("Parkour", null)
     )
@@ -178,6 +181,7 @@ object ADHDConfig {
         mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
         mapMetaLoaders["memory"] = MemoryMapMetaLoader()
         mapMetaLoaders["parkour"] = ParkourMapMetaLoader()
+        mapMetaLoaders["tnt_bows"] = TntBowsMapMetaLoader()
     }
 
     fun loadModes() {

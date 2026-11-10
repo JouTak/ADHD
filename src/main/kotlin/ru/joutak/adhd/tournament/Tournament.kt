@@ -21,6 +21,7 @@ import ru.joutak.adhd.game.concrete.ParkourGame
 import ru.joutak.adhd.game.concrete.PillarsGame
 import ru.joutak.adhd.game.concrete.RPSGame
 import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.game.concrete.TntBowsGame
 import ru.joutak.adhd.listener.ArenaSwitchListener
 import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.ui.GameScoreboardManager
@@ -342,6 +343,7 @@ class Tournament(
                     "Knights" -> KnightsGame()
                     "Snipers" -> SnipersGame()
                     "Parkour" -> ParkourGame()
+                    "TntBows" -> TntBowsGame()
                     else -> error("No such mode...")
                 }
 
