@@ -12,12 +12,7 @@ import ru.joutak.adhd.config.map.loader.concrete.TntBowsMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.mode.Mode
-import ru.joutak.adhd.game.mode.loader.concrete.CasinoModeMetaLoader
-import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
-import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
-import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
-import ru.joutak.adhd.game.mode.loader.concrete.SnipersModeMetaLoader
-import ru.joutak.adhd.game.mode.loader.concrete.TntBowsModeMetaLoader
+import ru.joutak.adhd.game.mode.loader.concrete.*
 import ru.joutak.adhd.game.mode.meta.ModeMeta
 import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.adhd.world.ConfigMap
@@ -34,9 +29,14 @@ object ADHDConfig {
         Pair("Pillars", PillarsModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
+<<<<<<< HEAD
         Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("Casino", CasinoModeMetaLoader()),
         Pair("Parkour", null)
+=======
+        Pair("Casino", CasinoModeMetaLoader()),
+        Pair("HammerRunner", HammerRunnerModeMetaLoader())
+>>>>>>> 9e87f3c (Первый результат - ещё не проверен)
     )
 
     var maxPlayers = 4
