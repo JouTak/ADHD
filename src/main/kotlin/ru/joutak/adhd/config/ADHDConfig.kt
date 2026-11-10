@@ -29,14 +29,10 @@ object ADHDConfig {
         Pair("Pillars", PillarsModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
-<<<<<<< HEAD
         Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("Casino", CasinoModeMetaLoader()),
-        Pair("Parkour", null)
-=======
-        Pair("Casino", CasinoModeMetaLoader()),
+        Pair("Parkour", null),
         Pair("HammerRunner", HammerRunnerModeMetaLoader())
->>>>>>> 9e87f3c (Первый результат - ещё не проверен)
     )
 
     var maxPlayers = 4
