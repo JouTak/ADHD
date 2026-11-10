@@ -78,13 +78,16 @@ class GameDeathRespawnListener : Listener {
             is TntBowsGame -> {
                 game.calculateResult(event.player)
 
+                respawns[event.player.uniqueId] = getDefaultSpawn(event.player)
+
                 game.finish()
             }
-
 
             is ParkourGame -> {
                 respawns[event.player.uniqueId] = game.spawns[event.player.uniqueId]?.get(game.spawns[event.player.uniqueId]?.lastIndex ?: 0)
             }
+
+            else -> respawns[event.player.uniqueId] = getDefaultSpawn(event.player)
         }
     }
 

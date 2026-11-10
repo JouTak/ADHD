@@ -686,6 +686,7 @@ class Tournament(
 
     private fun recordResultIfNeeded() {
         if (resultRecorded || startedAtMs <= 0L || TournamentManager.shutdownFlag) return
+
         resultRecorded = true
 
         val placements = ResultPlacementResolver.resolve(
