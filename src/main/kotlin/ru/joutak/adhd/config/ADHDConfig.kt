@@ -34,11 +34,8 @@ object ADHDConfig {
         Pair("Memory", null),
         Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("Casino", CasinoModeMetaLoader()),
-        Pair("Overtake", OvertakeModeMetaLoader()),
-        Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("RGLight", null),
-        Pair("Parkour", null),
-        Pair("HammerRunner", HammerRunnerModeMetaLoader())
+        Pair("Parkour", null)
     )
 
     var maxPlayers = 4
@@ -182,7 +179,6 @@ object ADHDConfig {
         mapMetaLoaders["pillars"] = PillarsMapMetaLoader()
         mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
         mapMetaLoaders["memory"] = MemoryMapMetaLoader()
-        mapMetaLoaders["overtake"] = OvertakeMapMetaLoader()
         mapMetaLoaders["rglight"] = RGLightMapMetaLoader()
         mapMetaLoaders["parkour"] = ParkourMapMetaLoader()
         mapMetaLoaders["tnt_bows"] = TntBowsMapMetaLoader()
