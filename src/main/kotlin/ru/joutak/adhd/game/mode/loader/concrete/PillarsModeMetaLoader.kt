@@ -19,22 +19,15 @@ class PillarsModeMetaLoader : ModeMetaLoader {
 
         if (setsSection != null) {
             for (setName in setsSection.getKeys(false)) {
-
-                val setNode = setsSection.getConfigurationSection(setName) ?: continue
                 val typeMap = mutableMapOf<String, MutableList<Material>>()
+                val setNode = setsSection.getConfigurationSection(setName)
 
-                for (typeName in setNode.getKeys(false)) {
-                    val rawList: List<String> = setNode.getStringList(typeName)
-
-                    val materials = rawList.mapNotNull { raw ->
-                        val mat = Material.matchMaterial(raw)
-                        if (mat == null) {
-                            plugin.logger.warning("Неизвестный Material: '$raw' в $setName.$typeName")
-                        }
-                        mat
-                    }.toMutableList()
-
-                    typeMap[typeName] = materials
+                if (setNode == null) {
+                    typeMap["items"] = parseMaterials(setsSection.getStringList(setName), setName, "items")
+                } else {
+                    for (typeName in setNode.getKeys(false)) {
+                        typeMap[typeName] = parseMaterials(setNode.getStringList(typeName), setName, typeName)
+                    }
                 }
 
                 sets[setName] = typeMap
@@ -42,5 +35,15 @@ class PillarsModeMetaLoader : ModeMetaLoader {
         }
 
         return PillarsModeMeta(sets, interval)
+    }
+
+    private fun parseMaterials(rawList: List<String>, setName: String, typeName: String): MutableList<Material> {
+        return rawList.mapNotNull { raw ->
+            val mat = Material.matchMaterial(raw)
+            if (mat == null) {
+                plugin.logger.warning("Неизвестный Material: '$raw' в $setName.$typeName")
+            }
+            mat
+        }.toMutableList()
     }
 }
