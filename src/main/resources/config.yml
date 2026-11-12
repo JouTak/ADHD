@@ -168,4 +168,10 @@ maps:
         z: 0
         yaw: 0
         pitch: 0
+  7:
+    spawns:
+      0:
+        x: 128
+        y: 0
+        z: 128
 
