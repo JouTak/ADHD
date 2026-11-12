@@ -1,0 +1,25 @@
+default:
+  enabled: true
+  single: true
+  displayName: Сапёр
+  description: Найди все мины на поле!
+  maps:
+    - 7
+field:
+  width: 10
+  length: 10
+  mines: 10
+materials:
+  closed: "IRON_BLOCK"
+  free: "BARRIER"
+  digit: "SPAWNER"
+  mine: "DYNAMITE"
+colors:
+  1: ""
+  2: ""
+  3: ""
+  4: ""
+  5: ""
+  6: ""
+  7: ""
+  8: ""
