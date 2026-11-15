@@ -34,7 +34,7 @@ object ADHDConfig {
         Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("Casino", CasinoModeMetaLoader()),
         Pair("Parkour", null),
-        Pair("HammerRunner", HammerRunnerModeMetaLoader())
+        Pair("HammerRunner", HammerRunnerModeMetaLoader()),
         Pair("RGLight", null)
     )
 
