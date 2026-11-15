@@ -134,45 +134,54 @@ maps:
         z: 1793.5
         yaw: 90
         pitch: 0
-  6:
-    meta:
-      tnt_bows:
-        1:
-          start:
-            x: 0
-            y: 0
-            z: 0
-          end:
-            x: 0
-            y: 0
-            z: 0
-        2:
-          start:
-            x: 0
-            y: 0
-            z: 0
-          end:
-            x: 0
-            y: 0
-            z: 0
+  4:
     spawns:
       0:
-        x: 0
-        y: 0
-        z: 0
+        x: 128
+        y: 5
+        z: 128
         yaw: 0
         pitch: 0
       1:
-        x: 251
-        y: 92
-        z: 1305
-        yaw: 180
+        x: 126
+        y: 5
+        z: 128
+        yaw: 0
         pitch: 0
   5:
     spawns:
       0:
-        x: 256
-        y: 65
-        z: 256
-        yaw: 0
+        x: 173
+        y: 77
+        z: 3333
+        yaw: -90
+        pitch: 0
+      1:
+        x: 173
+        y: 77
+        z: 3342
+        yaw: -90
+        pitch: 0
+  6:
+    meta:
+      rglight:
+        wardenLocation:
+          x: 218
+          y: 77
+          z: 3338
+          yaw: -90
+          pitch: 0
+        finishX: 215
+    spawns:
+      0:
+        x: 173
+        y: 77
+        z: 3333
+        yaw: -90
+        pitch: 0
+      1:
+        x: 173
+        y: 77
+        z: 3342
+        yaw: -90
         pitch: 0
