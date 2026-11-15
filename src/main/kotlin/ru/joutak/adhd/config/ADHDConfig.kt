@@ -4,14 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.MemoryMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.OvertakeMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.ParkourMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.RGLightMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.TntBowsMapMetaLoader
-import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.*
 import ru.joutak.adhd.config.map.meta.MapMeta
 import ru.joutak.adhd.game.concrete.RGLightGame
 import ru.joutak.adhd.game.mode.Mode
@@ -183,6 +176,7 @@ object ADHDConfig {
         mapMetaLoaders["rglight"] = RGLightMapMetaLoader()
         mapMetaLoaders["parkour"] = ParkourMapMetaLoader()
         mapMetaLoaders["tnt_bows"] = TntBowsMapMetaLoader()
+        mapMetaLoaders["hammerrunner"] = HammerRunnerMapMetaLoader()
     }
 
     fun loadModes() {
