@@ -1,13 +1,18 @@
 package ru.joutak.adhd.config
 
+import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.config.map.loader.MapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.MemoryMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PVPMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.ParkourMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.PillarsMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.RGLightMapMetaLoader
+import ru.joutak.adhd.config.map.loader.concrete.TntBowsMapMetaLoader
 import ru.joutak.adhd.config.map.loader.concrete.VentilatorMapMetaLoader
 import ru.joutak.adhd.config.map.meta.MapMeta
+import ru.joutak.adhd.game.concrete.RGLightGame
 import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.loader.concrete.CasinoModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
@@ -15,7 +20,9 @@ import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.RicochetArenaModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.SnipersModeMetaLoader
+import ru.joutak.adhd.game.mode.loader.concrete.TntBowsModeMetaLoader
 import ru.joutak.adhd.game.mode.meta.ModeMeta
+import ru.joutak.adhd.tournament.TournamentManager
 import ru.joutak.adhd.world.ConfigMap
 import ru.joutak.adhd.world.SpawnPoint
 import java.io.File
@@ -31,10 +38,11 @@ object ADHDConfig {
         Pair("RicochetArena", RicochetArenaModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
-        Pair("Casino", CasinoModeMetaLoader())
+        Pair("TntBows", TntBowsModeMetaLoader()),
+        Pair("Casino", CasinoModeMetaLoader()),
+        Pair("RGLight", null),
+        Pair("Parkour", null)
     )
-
-    val singleModeNames = mutableSetOf<String>()
 
     var maxPlayers = 4
         private set
@@ -60,7 +68,24 @@ object ADHDConfig {
 
     val modes = mutableMapOf<String, Mode>()
 
+    val singleModeNames = mutableSetOf<String>()
+
     private val mapMetaLoaders = mutableMapOf<String, MapMetaLoader>()
+
+    fun getSnapshot(): ConfigSnapshot {
+        return ConfigSnapshot(
+            maxPlayers,
+            pointsGoal,
+            templateWorldName,
+            lobbyWorld,
+            ceremonyEnabled,
+            ceremonyDuration,
+            ceremonySpawnPoint.copy(),
+            configMaps.toMap(),
+            modes.toMap(),
+            singleModeNames.toSet()
+        )
+    }
 
     fun load() {
         val file = File(ADHDPlugin.instance.dataFolder, "config.yml")
@@ -160,6 +185,9 @@ object ADHDConfig {
         mapMetaLoaders["pillars"] = PillarsMapMetaLoader()
         mapMetaLoaders["ventilator"] = VentilatorMapMetaLoader()
         mapMetaLoaders["memory"] = MemoryMapMetaLoader()
+        mapMetaLoaders["rglight"] = RGLightMapMetaLoader()
+        mapMetaLoaders["parkour"] = ParkourMapMetaLoader()
+        mapMetaLoaders["tnt_bows"] = TntBowsMapMetaLoader()
     }
 
     fun loadModes() {
@@ -204,5 +232,11 @@ object ADHDConfig {
 
             modes[modeName] = Mode(duration, maps.toList(), meta, displayName, description)
         }
+    }
+
+    fun reload() {
+        load()
+
+        Bukkit.getScheduler().runTask(ADHDPlugin.instance, Runnable { TournamentManager.load() })
     }
 }

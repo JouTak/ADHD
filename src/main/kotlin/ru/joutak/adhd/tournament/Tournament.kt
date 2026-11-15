@@ -13,14 +13,17 @@ import ru.joutak.adhd.config.ADHDConfig
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameInfo
 import ru.joutak.adhd.game.GameState
-import ru.joutak.adhd.game.concrete.CasinoGame
+import ru.joutak.adhd.game.concrete.casino.CasinoGame
 import ru.joutak.adhd.game.concrete.KnightsGame
 import ru.joutak.adhd.game.concrete.MemoryGame
 import ru.joutak.adhd.game.concrete.PVPGame
+import ru.joutak.adhd.game.concrete.ParkourGame
 import ru.joutak.adhd.game.concrete.PillarsGame
+import ru.joutak.adhd.game.concrete.RGLightGame
 import ru.joutak.adhd.game.concrete.RPSGame
 import ru.joutak.adhd.game.concrete.RicochetArenaGame
 import ru.joutak.adhd.game.concrete.SnipersGame
+import ru.joutak.adhd.game.concrete.TntBowsGame
 import ru.joutak.adhd.listener.ArenaSwitchListener
 import ru.joutak.adhd.listener.KeepInventoryListener
 import ru.joutak.adhd.ui.GameScoreboardManager
@@ -342,6 +345,9 @@ class Tournament(
                     "Knights" -> KnightsGame()
                     "Snipers" -> SnipersGame()
                     "RicochetArena" -> RicochetArenaGame()
+                    "RGLight" -> RGLightGame()
+                    "Parkour" -> ParkourGame()
+                    "TntBows" -> TntBowsGame()
                     else -> error("No such mode...")
                 }
 
@@ -545,6 +551,7 @@ class Tournament(
         world.setGameRule(GameRules.SPAWN_PHANTOMS, false)
         world.setGameRule(GameRules.SPAWN_WANDERING_TRADERS, false)
         world.setGameRule(GameRules.SPAWN_WARDENS, false)
+        world.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
     }
 
     fun prepareCeremony() {
@@ -683,6 +690,7 @@ class Tournament(
 
     private fun recordResultIfNeeded() {
         if (resultRecorded || startedAtMs <= 0L || TournamentManager.shutdownFlag) return
+
         resultRecorded = true
 
         val placements = ResultPlacementResolver.resolve(
