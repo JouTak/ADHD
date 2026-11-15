@@ -14,7 +14,6 @@ class HitListener: Listener {
         val player: Player = event.damager as? Player ?: return
         val game = TournamentManager.getGame(player)
         if (game != null && game.getGameState() == GameState.RUN && game is HammerRunnerGame){
-            player.sendMessage((event.entity == game.rabbit).toString() + " | " + (player.inventory.itemInMainHand == game.hammer))
             if (event.entity == game.rabbit && player.inventory.itemInMainHand == game.hammer) game.hit()
         }
         event.isCancelled = true
