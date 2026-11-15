@@ -1,0 +1,11 @@
+default:
+  enabled: true
+  single: true
+  displayName: Математика
+  description: Успейте решить все примеры! Пишите ответы в чат.
+  maps:
+    - 1
+
+meta:
+  quantity: 6
+  interval: 5.0

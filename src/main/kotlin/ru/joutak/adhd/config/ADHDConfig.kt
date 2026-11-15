@@ -16,6 +16,7 @@ import ru.joutak.adhd.game.concrete.RGLightGame
 import ru.joutak.adhd.game.mode.Mode
 import ru.joutak.adhd.game.mode.loader.concrete.CasinoModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
+import ru.joutak.adhd.game.mode.loader.concrete.MathModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.SnipersModeMetaLoader
@@ -39,7 +40,8 @@ object ADHDConfig {
         Pair("TntBows", TntBowsModeMetaLoader()),
         Pair("Casino", CasinoModeMetaLoader()),
         Pair("RGLight", null),
-        Pair("Parkour", null)
+        Pair("Parkour", null),
+        Pair("Math", MathModeMetaLoader())
     )
 
     var maxPlayers = 4

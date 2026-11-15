@@ -15,6 +15,7 @@ import ru.joutak.adhd.game.GameInfo
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.concrete.casino.CasinoGame
 import ru.joutak.adhd.game.concrete.KnightsGame
+import ru.joutak.adhd.game.concrete.MathGame
 import ru.joutak.adhd.game.concrete.MemoryGame
 import ru.joutak.adhd.game.concrete.PVPGame
 import ru.joutak.adhd.game.concrete.ParkourGame
@@ -279,6 +280,7 @@ class Tournament(
                     "RPS" -> RPSGame()
                     "Casino" -> CasinoGame()
                     "Memory" -> MemoryGame()
+                    "Math" -> MathGame()
                     else -> error("No such single mode...")
                 }
 
