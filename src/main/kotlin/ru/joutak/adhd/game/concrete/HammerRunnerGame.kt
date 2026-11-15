@@ -7,6 +7,8 @@ import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import ru.joutak.adhd.ADHDPlugin
+import ru.joutak.adhd.config.map.meta.concrete.HammerRunnerMapMeta
+import ru.joutak.adhd.config.map.meta.concrete.RGLightMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
@@ -25,7 +27,7 @@ class HammerRunnerGame: Game() {
     lateinit var gamer: Player
     lateinit var origin: Location
     lateinit var rabbit: ArmorStand
-    private var rabbitPoints = mutableSetOf<SpawnPoint>()
+    private var rabbitPoints: MutableList<MutableMap<String, Double>> = mutableListOf()
     private var result = mutableMapOf<UUID, Double>()
     private var state: GameState = GameState.START
     private var hits: Int = 0
@@ -45,6 +47,10 @@ class HammerRunnerGame: Game() {
         world = Bukkit.getWorld(worldName)!!
 
         val meta = modeMeta as HammerRunnerModeMeta
+        val mapMeta = arena.metas["hammerrunner"] as? HammerRunnerMapMeta ?: return
+        for(loc in mapMeta.offsets.values){
+            rabbitPoints.add(loc)
+        }
         hammerMaterial = Material.valueOf(meta.hammerMaterial)
         hammerName = meta.hammerName
         winHits = meta.winHits
@@ -53,11 +59,10 @@ class HammerRunnerGame: Game() {
             hmeta.itemName(Component.text(hammerName))
         }
         tickInterval = meta.tickInterval
-        rabbitPoints = meta.rabbitPoints
         rabbitMessage = meta.rabbitMessage
 
         for(UUID in members){
-            val spawn = arena.spawnPoints.random()
+            val spawn = arena.spawnPoints.toMutableSet().random()
             FreezeListener.freeze[UUID] = true
             Bukkit.getScheduler().runTaskLater(ADHDPlugin.instance, Runnable {
                 rabbit = world.spawn(Location(world, 0.0, 0.0, 0.0), ArmorStand::class.java)
@@ -102,9 +107,9 @@ class HammerRunnerGame: Game() {
     }
 
     fun spawnRabbit() {
-        val newPoint = rabbitPoints.random()
+        val newPoint = rabbitPoints.toMutableSet().random()
         rabbit.remove()
-        rabbit = world.spawn(Location(world, origin.x + newPoint.x, origin.y + newPoint.y, origin.z + newPoint.z, newPoint.yaw, newPoint.pitch), ArmorStand::class.java)
+        rabbit = world.spawn(Location(world, origin.x + newPoint["x"]!!, origin.y + newPoint["y"]!!, origin.z + newPoint["z"]!!, newPoint["yaw"]!!.toFloat(), newPoint["pitch"]!!.toFloat()), ArmorStand::class.java)
         rabbit.setGravity(false)
         rabbit.setArms(true)
         gamer.showTitle(Title.title(Component.text(rabbitMessage), Component.empty(), 5, 20, 10))
