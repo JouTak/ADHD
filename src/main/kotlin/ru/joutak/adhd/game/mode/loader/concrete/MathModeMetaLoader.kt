@@ -9,7 +9,8 @@ class MathModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
         val quantity = section.getInt("quantity")
         val interval = section.getDouble("interval")
+        val minimum = section.getInt("minimum")
 
-        return MathModeMeta(quantity, interval)
+        return MathModeMeta(quantity, interval, minimum)
     }
 }

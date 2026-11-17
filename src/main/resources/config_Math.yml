@@ -7,5 +7,6 @@ default:
     - 1
 
 meta:
-  quantity: 6
-  interval: 5.0
+  quantity: 5
+  interval: 7.0
+  minimum: 4
