@@ -1,7 +1,9 @@
 package ru.joutak.adhd.game.concrete
 
+import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -38,7 +40,9 @@ class MathGame : Game() {
     var right = 0
     var questionTicks = 0
 
-    val timeBar = Bukkit.createBossBar("ПОДГОТОВКА", BarColor.RED, BarStyle.SOLID)
+    //val timeBar = Bukkit.createBossBar("ПОДГОТОВКА", BarColor.RED, BarStyle.SOLID)
+    val timeBar = BossBar.bossBar(Component.text("ПОДГОТОВКА"), 0F,
+        BossBar.Color.RED, BossBar.Overlay.PROGRESS)
 
     override fun start(
         worldName: String,
@@ -68,8 +72,7 @@ class MathGame : Game() {
                     spawn.yaw, spawn.pitch
                 )
             )
-
-            timeBar.addPlayer(player)
+            player.showBossBar(timeBar)
         }
 
         nextExp()
@@ -112,7 +115,11 @@ class MathGame : Game() {
         total += 1
         exp = listOf(generateExp2(), generateExp3()).random()
 
-        timeBar.setTitle(exp.expString)
+        val counterPart = Component.text("($right/${meta.quota}) ").color(NamedTextColor.YELLOW)
+        val expPart = Component.text(exp.expString).color(NamedTextColor.GREEN).decorate(
+            TextDecoration.BOLD)
+
+        timeBar.name(counterPart.append(expPart))
         questionTicks = (meta.interval * 20).toInt()
 
         for (uuid in members) {
@@ -123,10 +130,13 @@ class MathGame : Game() {
     }
 
     override fun update() {
-        if (total == meta.quantity) finish()
+        if (right == meta.quota) {
+            for (uuid in members) result[uuid] = 1.0
+            finish()
+        }
 
         questionTicks -= 1
-        timeBar.progress = questionTicks / (meta.interval * 20)
+        timeBar.progress((questionTicks / (meta.interval * 20)).toFloat())
         if (questionTicks <= 0) nextExp()
     }
 
@@ -136,14 +146,7 @@ class MathGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
-
-        timeBar.removeAll()
-
-        if (right == meta.minimum) {
-            for (uuid in members) {
-                result[uuid] = 1.0
-            }
-        }
+        for (uuid in members) Bukkit.getPlayer(uuid)!!.hideBossBar(timeBar)
     }
 
     override fun summarize(): Map<UUID, Double> {

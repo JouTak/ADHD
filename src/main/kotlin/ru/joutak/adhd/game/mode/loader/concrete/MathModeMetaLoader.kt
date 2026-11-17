@@ -7,10 +7,9 @@ import ru.joutak.adhd.game.mode.meta.concrete.MathModeMeta
 
 class MathModeMetaLoader : ModeMetaLoader {
     override fun load(section: ConfigurationSection): ModeMeta {
-        val quantity = section.getInt("quantity")
+        val quota = section.getInt("quota")
         val interval = section.getDouble("interval")
-        val minimum = section.getInt("minimum")
 
-        return MathModeMeta(quantity, interval, minimum)
+        return MathModeMeta(quota, interval)
     }
 }

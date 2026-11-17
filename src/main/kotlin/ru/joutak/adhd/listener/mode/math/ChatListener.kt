@@ -22,7 +22,7 @@ class ChatListener : Listener {
             if (answer == game.exp.result) {
                 game.right += 1
                 player.sendMessage(Component.text("Верно!").color(NamedTextColor.GREEN))
-                game.nextExp()
+                if (game.right < game.meta.quota) game.nextExp()
             } else if (answer != null) {
                 player.sendMessage(Component.text("Неверно! Попробуй еще раз.").color(NamedTextColor.RED))
             } else {
