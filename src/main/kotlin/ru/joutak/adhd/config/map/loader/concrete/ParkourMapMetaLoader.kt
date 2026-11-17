@@ -10,6 +10,7 @@ import kotlin.math.floor
 class ParkourMapMetaLoader : MapMetaLoader {
     override fun load(section: ConfigurationSection): MapMeta {
         val finishSection = section.getConfigurationSection("finish")!!
+        val borderYSection = section.getConfigurationSection("borderY")!!
 
         val finish = mutableSetOf<SpawnPoint>()
 
@@ -24,6 +25,8 @@ class ParkourMapMetaLoader : MapMetaLoader {
             finish.add(SpawnPoint(x, y, z, 0.0f, 0.0f))
         }
 
-        return ParkourMapMeta(finish)
+        val borderY = borderYSection.getDouble("borderY")
+
+        return ParkourMapMeta(finish, borderY)
     }
 }

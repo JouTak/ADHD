@@ -28,6 +28,8 @@ class ParkourGame : Game() {
 
     val finishes = mutableSetOf<Interaction>()
 
+    var borderY : Double = 0.0
+
     var lSpawn: SpawnPoint? = null
 
     val spawns = mutableMapOf<UUID, MutableList<SpawnPoint>>()
@@ -60,6 +62,8 @@ class ParkourGame : Game() {
 
             finishes.add(interaction)
         }
+
+        this.borderY = meta.borderY
 
         for (uuid in members) {
             val player = Bukkit.getPlayer(uuid) ?: continue
