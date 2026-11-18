@@ -8,8 +8,10 @@ import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
-import org.bukkit.boss.BarColor
-import org.bukkit.boss.BarStyle
+import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.scheduler.BukkitTask
+import ru.joutak.adhd.ADHDPlugin
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
@@ -40,9 +42,10 @@ class MathGame : Game() {
     var right = 0
     var questionTicks = 0
 
-    //val timeBar = Bukkit.createBossBar("ПОДГОТОВКА", BarColor.RED, BarStyle.SOLID)
     val timeBar = BossBar.bossBar(Component.text("ПОДГОТОВКА"), 0F,
         BossBar.Color.RED, BossBar.Overlay.PROGRESS)
+
+    val boom = mutableListOf<BukkitTask>()
 
     override fun start(
         worldName: String,
@@ -73,6 +76,16 @@ class MathGame : Game() {
                 )
             )
             player.showBossBar(timeBar)
+
+            boom.add(Bukkit.getScheduler().runTaskTimer(ADHDPlugin.instance, Runnable {
+                player.spawnParticle(
+                    Particle.EXPLOSION_EMITTER,
+                    player.location,
+                    1,
+                    0.1, 0.1, 0.1
+                )
+                player.playSound(player.location, Sound.ENTITY_GENERIC_EXPLODE, 2F, 1F)
+            }, 1L, 3L))
         }
 
         nextExp()
@@ -80,43 +93,71 @@ class MathGame : Game() {
         state = GameState.RUN
     }
 
-    fun generateExp2(): Expression {
-        val a = Random.nextInt(1, 11)
-        val b = Random.nextInt(1, 11)
-        val op = operations.keys.random()
-
-        val text = "$a $op $b = ?"
-        val result = operations[op]!!(a, b)
-
-        return Expression(text, result)
-    }
+//    fun generateExp2(): Expression {
+//        val a = Random.nextInt(1, 11)
+//        val b = Random.nextInt(1, 11)
+//        val op = operations.keys.random()
+//
+//        val text = "$a $op $b = ?"
+//        val result = operations[op]!!(a, b)
+//
+//        return Expression(text, result)
+//    }
 
     fun generateExp3(): Expression {
-        val a = Random.nextInt(1, 11)
-        val b = Random.nextInt(1, 11)
-        val c = Random.nextInt(1, 11)
+        val expQueue = mutableListOf<Expression>()
+        val opQueue = mutableListOf<String>()
 
-        val opMut = operations.toMutableMap()
-        val op1 = opMut.keys.random()
-        opMut.remove(op1)
-        val op2 = opMut.keys.random()
-
-        val text = "$a $op1 $b $op2 $c = ?"
-        val result = if (op2 == "*") {
-            operations[op1]!!(a, operations[op2]!!(b, c))
-        } else {
-            operations[op2]!!(c, operations[op1]!!(a, b))
+        val size = setOf(3, 4).random()
+        for (i in 0..<size) {
+            val n = Random.nextInt(3, 16)
+            expQueue.add(Expression(n.toString(), n))
         }
+        val opMut = operations.toMutableMap()
+        for (j in 0..<size-1) {
+            val op = opMut.keys.random()
+            opQueue.add(op)
+            opMut.remove(op)
+        }
+
+        while (opQueue.isNotEmpty()) {
+            val e1 = expQueue.removeFirst()
+            val e2 = expQueue.removeFirst()
+            val part = generatePart(e1, e2, opQueue.removeFirst())
+            expQueue.addFirst(part)
+        }
+//        val a = Random.nextInt(3, 15)
+//        val b = Random.nextInt(3, 15)
+//        val c = Random.nextInt(3, 15)
+//
+//        val op1 = opMut.keys.random()
+//        opMut.remove(op1)
+//        val op2 = opMut.keys.random()
+
+//        val text = "$a $op1 $b $op2 $c = ?"
+//        val result = if (op2 == "*") {
+//            operations[op1]!!(a, operations[op2]!!(b, c))
+//        } else {
+//            operations[op2]!!(operations[op1]!!(a, b), c)
+//        }
+
+        return expQueue.first()
+    }
+
+    fun generatePart(a: Expression, b: Expression, op: String): Expression {
+        val text = if (op == "*" && a.expString.contains(" ")) "(${a.expString}) $op ${b.expString}"
+        else "${a.expString} $op ${b.expString}"
+        val result = operations[op]!!(a.result, b.result)
 
         return Expression(text, result)
     }
 
     fun nextExp() {
         total += 1
-        exp = listOf(generateExp2(), generateExp3()).random()
+        exp = generateExp3()
 
         val counterPart = Component.text("($right/${meta.quota}) ").color(NamedTextColor.YELLOW)
-        val expPart = Component.text(exp.expString).color(NamedTextColor.GREEN).decorate(
+        val expPart = Component.text("${exp.expString} = ?").color(NamedTextColor.GREEN).decorate(
             TextDecoration.BOLD)
 
         timeBar.name(counterPart.append(expPart))
@@ -124,7 +165,7 @@ class MathGame : Game() {
 
         for (uuid in members) {
             Bukkit.getPlayer(uuid)!!.showTitle(
-                Title.title(Component.text(exp.expString).color(NamedTextColor.YELLOW),
+                Title.title(Component.text("${exp.expString} = ?").color(NamedTextColor.YELLOW),
                 Component.text("Введите ответ в чат.").color(NamedTextColor.YELLOW)))
         }
     }
@@ -147,6 +188,7 @@ class MathGame : Game() {
     override fun finish() {
         state = GameState.FINISH
         for (uuid in members) Bukkit.getPlayer(uuid)!!.hideBossBar(timeBar)
+        for (task in boom) task.cancel()
     }
 
     override fun summarize(): Map<UUID, Double> {
