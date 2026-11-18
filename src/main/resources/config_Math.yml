@@ -8,5 +8,5 @@ default:
     - 1
 
 meta:
-  quota: 10
-  interval: 6.5
+  quota: 5
+  interval: 10.0

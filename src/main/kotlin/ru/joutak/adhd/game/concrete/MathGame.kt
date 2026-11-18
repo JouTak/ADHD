@@ -59,7 +59,7 @@ class MathGame : Game() {
         this.meta = modeMeta as MathModeMeta
 
         for (uuid in members) {
-            val player = Bukkit.getPlayer(uuid)!!
+            val player = Bukkit.getPlayer(uuid) ?: continue
 
             player.inventory.clear()
             player.gameMode = GameMode.ADVENTURE
@@ -93,31 +93,14 @@ class MathGame : Game() {
         state = GameState.RUN
     }
 
-//    fun generateExp2(): Expression {
-//        val a = Random.nextInt(1, 11)
-//        val b = Random.nextInt(1, 11)
-//        val op = operations.keys.random()
-//
-//        val text = "$a $op $b = ?"
-//        val result = operations[op]!!(a, b)
-//
-//        return Expression(text, result)
-//    }
-
     fun generateExp3(): Expression {
         val expQueue = mutableListOf<Expression>()
-        val opQueue = mutableListOf<String>()
-
         val size = setOf(3, 4).random()
+        val opQueue = operations.keys.shuffled().take(size-1).toMutableList()
+
         for (i in 0..<size) {
             val n = Random.nextInt(3, 16)
             expQueue.add(Expression(n.toString(), n))
-        }
-        val opMut = operations.toMutableMap()
-        for (j in 0..<size-1) {
-            val op = opMut.keys.random()
-            opQueue.add(op)
-            opMut.remove(op)
         }
 
         while (opQueue.isNotEmpty()) {
@@ -126,20 +109,6 @@ class MathGame : Game() {
             val part = generatePart(e1, e2, opQueue.removeFirst())
             expQueue.addFirst(part)
         }
-//        val a = Random.nextInt(3, 15)
-//        val b = Random.nextInt(3, 15)
-//        val c = Random.nextInt(3, 15)
-//
-//        val op1 = opMut.keys.random()
-//        opMut.remove(op1)
-//        val op2 = opMut.keys.random()
-
-//        val text = "$a $op1 $b $op2 $c = ?"
-//        val result = if (op2 == "*") {
-//            operations[op1]!!(a, operations[op2]!!(b, c))
-//        } else {
-//            operations[op2]!!(operations[op1]!!(a, b), c)
-//        }
 
         return expQueue.first()
     }
@@ -164,7 +133,8 @@ class MathGame : Game() {
         questionTicks = (meta.interval * 20).toInt()
 
         for (uuid in members) {
-            Bukkit.getPlayer(uuid)!!.showTitle(
+            val player = Bukkit.getPlayer(uuid) ?: continue
+            player.showTitle(
                 Title.title(Component.text("${exp.expString} = ?").color(NamedTextColor.YELLOW),
                 Component.text("Введите ответ в чат.").color(NamedTextColor.YELLOW)))
         }
@@ -187,7 +157,10 @@ class MathGame : Game() {
 
     override fun finish() {
         state = GameState.FINISH
-        for (uuid in members) Bukkit.getPlayer(uuid)!!.hideBossBar(timeBar)
+        for (uuid in members) {
+            val player = Bukkit.getPlayer(uuid) ?: continue
+            player.hideBossBar(timeBar)
+        }
         for (task in boom) task.cancel()
     }
 
