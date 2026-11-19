@@ -27,7 +27,7 @@ class HammerRunnerGame: Game() {
     lateinit var gamer: Player
     lateinit var origin: Location
     lateinit var rabbit: ArmorStand
-    private var rabbitPoints: MutableList<MutableMap<String, Double>> = mutableListOf()
+    private var rabbitPoints: MutableSet<SpawnPoint> = mutableSetOf()
     private var result = mutableMapOf<UUID, Double>()
     private var state: GameState = GameState.START
     private var hits: Int = 0
@@ -48,7 +48,7 @@ class HammerRunnerGame: Game() {
 
         val meta = modeMeta as HammerRunnerModeMeta
         val mapMeta = arena.metas["hammerrunner"] as? HammerRunnerMapMeta ?: return
-        for(loc in mapMeta.offsets.values){
+        for(loc in mapMeta.spawns){
             rabbitPoints.add(loc)
         }
         hammerMaterial = Material.valueOf(meta.hammerMaterial)
@@ -107,9 +107,9 @@ class HammerRunnerGame: Game() {
     }
 
     fun spawnRabbit() {
-        val newPoint = rabbitPoints.toMutableSet().random()
+        val newPoint: SpawnPoint = rabbitPoints.random()
         rabbit.remove()
-        rabbit = world.spawn(Location(world, origin.x + newPoint["x"]!!, origin.y + newPoint["y"]!!, origin.z + newPoint["z"]!!, newPoint["yaw"]!!.toFloat(), newPoint["pitch"]!!.toFloat()), ArmorStand::class.java)
+        rabbit = world.spawn(Location(world, newPoint.x, newPoint.y, newPoint.z, newPoint.yaw, newPoint.pitch), rabbit::class.java)
         rabbit.setGravity(false)
         rabbit.setArms(true)
         gamer.showTitle(Title.title(Component.text(rabbitMessage), Component.empty(), 5, 20, 10))

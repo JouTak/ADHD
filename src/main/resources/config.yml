@@ -151,7 +151,7 @@ maps:
   5:
     meta:
       hammerruner:
-        offsets:
+        spawns:
           0:
             x: 0
             y: 0
