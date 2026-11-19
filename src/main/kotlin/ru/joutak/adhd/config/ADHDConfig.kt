@@ -20,6 +20,7 @@ import ru.joutak.adhd.game.mode.loader.concrete.KnightsModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.OvertakeModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PVPModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.PillarsModeMetaLoader
+import ru.joutak.adhd.game.mode.loader.concrete.RicochetArenaModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.SnipersModeMetaLoader
 import ru.joutak.adhd.game.mode.loader.concrete.TntBowsModeMetaLoader
 import ru.joutak.adhd.game.mode.meta.ModeMeta
@@ -36,6 +37,7 @@ object ADHDConfig {
         Pair("Knights", KnightsModeMetaLoader()),
         Pair("Snipers", SnipersModeMetaLoader()),
         Pair("Pillars", PillarsModeMetaLoader()),
+        Pair("RicochetArena", RicochetArenaModeMetaLoader()),
         Pair("RPS", null),
         Pair("Memory", null),
         Pair("Casino", CasinoModeMetaLoader()),
