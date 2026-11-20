@@ -38,7 +38,6 @@ class MathGame : Game() {
     data class Expression(val expString: String, val result: Int)
     lateinit var exp: Expression
 
-    var total = -1
     var right = 0
     var questionTicks = 0
 
@@ -122,7 +121,6 @@ class MathGame : Game() {
     }
 
     fun nextExp() {
-        total += 1
         exp = generateExp3()
 
         val counterPart = Component.text("($right/${meta.quota}) ").color(NamedTextColor.YELLOW)
