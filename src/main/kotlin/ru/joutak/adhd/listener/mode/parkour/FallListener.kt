@@ -17,11 +17,10 @@ class FallListener : Listener {
         if (game is ParkourGame && game.state == GameState.RUN) {
             val loc = player.location
 
-            if (loc.y <= game.borderY){
-
+            if (loc.y <= game.borderY) {
+                val checkpoint = game.spawns[player.uniqueId]?.lastOrNull() ?: return
+                player.teleport(game.toLocation(checkpoint))
             }
         }
-
-
     }
 }

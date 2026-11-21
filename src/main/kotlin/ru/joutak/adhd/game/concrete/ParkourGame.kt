@@ -9,6 +9,7 @@ import ru.joutak.adhd.config.map.meta.concrete.ParkourMapMeta
 import ru.joutak.adhd.game.Game
 import ru.joutak.adhd.game.GameState
 import ru.joutak.adhd.game.mode.meta.ModeMeta
+import ru.joutak.adhd.listener.FreezeListener
 import ru.joutak.adhd.world.Arena
 import ru.joutak.adhd.world.SpawnPoint
 import java.util.UUID
@@ -56,8 +57,8 @@ class ParkourGame : Game() {
             val loc = Location(world, p.x + xOffset, p.y, p.z + zOffset)
 
             val interaction = world.spawn(loc, Interaction::class.java) {
-                it.interactionWidth = 1f
-                it.interactionHeight = 1f
+                it.interactionWidth = p.width.toFloat()
+                it.interactionHeight = p.height.toFloat()
             }
 
             finishes.add(interaction)
@@ -72,6 +73,7 @@ class ParkourGame : Game() {
 
             restoreStats(player)
         }
+
 
         state = GameState.RUN
     }
@@ -96,6 +98,20 @@ class ParkourGame : Game() {
         this.spawns[player.uniqueId] = mutableListOf(chosen)
 
         player.teleport(Location(world, chosen.x, chosen.y, chosen.z, chosen.yaw, chosen.pitch))
+    }
+
+    fun saveCheckpoint(player: Player, checkpoint: SpawnPoint) {
+        val checkpoints = spawns[player.uniqueId] ?: return
+        if (checkpoints.lastOrNull()?.let { it.x == checkpoint.x && it.y == checkpoint.y && it.z == checkpoint.z } == true) {
+            return
+        }
+
+        checkpoints.add(checkpoint)
+    }
+
+    fun toLocation(spawn: SpawnPoint): Location {
+        val world = Bukkit.getWorld(worldName)!!
+        return Location(world, spawn.x, spawn.y, spawn.z, spawn.yaw, spawn.pitch)
     }
 
     fun restoreStats(player: Player) {
