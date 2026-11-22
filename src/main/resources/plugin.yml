@@ -8,6 +8,6 @@ contributors: []
 website: ${WEBSITE}
 
 depend: []
-softdepend: ['PlaceholderAPI']
+softdepend: ['PlaceholderAPI', 'Multiverse-Core']
 libraries:
   - 'org.jetbrains.kotlin:kotlin-stdlib:${KOTLIN_VERSION}'
