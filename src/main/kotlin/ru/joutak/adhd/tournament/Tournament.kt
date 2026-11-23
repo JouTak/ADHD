@@ -268,7 +268,6 @@ class Tournament(
 
                 val sGame = when (name) {
                     "RPS" -> RPSGame()
-                    "Casino" -> CasinoGame()
                     "Memory" -> MemoryGame()
                     "HammerRunner" -> HammerRunnerGame()
                     else -> error("No such single mode...")
