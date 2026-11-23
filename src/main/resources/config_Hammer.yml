@@ -1,0 +1,16 @@
+default:
+  enabled: true
+  single: true
+  duration: 90
+  displayName: Нападение
+  description: Успей ударить кролика (не совсем) молотком (тоже не совсем), пока он не исчез
+  maps:
+    - 5
+
+meta:
+  hammer:
+    material: Mace
+    name: §cСупер-молот§r
+  game:
+    winHits: 5
+    tickInterval: 200
